@@ -1,5 +1,5 @@
 #################
-Open edX Platform
+Open edX Platform Palm 2 NienTB
 #################
 | |License: AGPL v3| |Status| |Python CI|
 
