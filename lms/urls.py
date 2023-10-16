@@ -19,6 +19,8 @@ from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.features.enterprise_support.api import enterprise_enabled
 
+# FUNiX added - 20210520 - Feedback module
+from lms.djangoapps.feedback import views as feedback_views
 
 # Uncomment the next two lines to enable the admin:
 if settings.DEBUG or settings.FEATURES.get('ENABLE_DJANGO_ADMIN_SITE'):
@@ -459,8 +461,14 @@ urlpatterns += (
         'lms.djangoapps.instructor.views.instructor_dashboard.instructor_dashboard_2',
         name='instructor_dashboard',
     ),
-
-
+    # For FUNiX Score Module
+    url(
+        r'^courses/{}/score$'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'lms.djangoapps.fx_score.views.score_dashboard',
+        name='score_dashboard',
+    ),
     url(
         r'^courses/{}/set_course_mode_price$'.format(
             settings.COURSE_ID_PATTERN,
@@ -1030,3 +1038,8 @@ if settings.FEATURES.get('ENABLE_FINANCIAL_ASSISTANCE_FORM'):
             name='submit_financial_assistance_request'
         )
     )
+
+# FUNiX added - 20210520 - Feedback module
+urlpatterns += [
+    url(r'^feedback/$', feedback_views.index, name='feedback_index')
+]

@@ -88,7 +88,14 @@
                                 persistChanges: true
                             })
                         },
-                        emailFieldView,
+                        {
+                            view: new AccountSettingsFieldViews.ReadonlyFieldView({
+                                model: userAccountModel,
+                                title: gettext('Email Address'),
+                                valueAttribute: 'email',
+                                helpMessage: 'The email address you use to sign in. Communications from FUNiX and your courses are sent to this address.'
+                            })
+                        },
                         {
                             view: new AccountSettingsFieldViews.PasswordFieldView({
                                 model: userAccountModel,

@@ -1,0 +1,734 @@
+## mako
+<%! from django.utils.translation import ugettext as _ %>
+<%namespace name='static' file='/static_content.html'/>
+<%inherit file="/main.html" />
+<%block name="bodyclass">score is-in-course course</%block>
+<%block name="pagetitle">${_("SCORE")}</%block>
+<%static:css group='style-course'/>
+<%block name="headextra">
+</%block>
+<%include file="/courseware/course_navigation.html" args="active_page='score'" />
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+  /* Override default lms styles */
+  button {
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+  .container>div {
+    display: block !important; 
+    table-layout: fixed;
+    width: auto !important;
+    border: none !important;
+    background: #fff;
+    box-shadow: none !important;
+  }
+  .button:hover {
+    background-color: #4CAF50 !important; /* Green */
+    pointer-events: none !important;
+  }
+  
+  /* Reset some default styles */
+  body,
+  html,
+  ul,
+  li,
+  p {
+      margin: 0;
+      padding: 0;
+  }
+
+  /* Set a default font and background color */
+  body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+  }
+
+  /* Container styles */
+  .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+  }
+
+  /* Card styles */
+  .card {
+      background-color: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+  }
+
+  .card-body {
+      padding: 20px;
+  }
+
+  /* Table styles */
+  .table {
+      width: 100%;
+      border-collapse: collapse;
+  }
+
+  .table th,
+  .table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+  }
+
+  .table th {
+      background-color: #f0f0f0;
+  }
+
+  /* Buttons */
+  .btn {
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+  }
+
+  /* Define button colors */
+  .btn-success {
+      background-color: #28a745;
+      color: #fff;
+  }
+
+  .btn-warning {
+      background-color: #ffc107;
+      color: #fff;
+  }
+
+  .btn-danger {
+      background-color: #dc3545;
+      color: #fff;
+  }
+
+  .btn-info {
+      background-color: #17a2b8;
+      color: #fff;
+  }
+
+  .btn-primary {
+      background-color: #007bff;
+      color: #fff;
+  }
+
+  /* Custom classes */
+  .text-center {
+      text-align: center;
+  }
+
+  .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin-right: -15px;
+      margin-left: -15px;
+  }
+
+  .col-sm-12 {
+      flex: 0 0 100%;
+      max-width: 100%;
+  }
+
+  .mt-4 {
+      margin-top: 1rem;
+  }
+
+  .link-btn {
+      display: inline-block;
+      background: none;
+      border: none;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 16px;
+      color: #007bff;
+      padding: 0;
+      margin: 0;
+  }
+  /* Custom classes */
+  .custom-card {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+  }
+
+  .custom-card-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+  }
+
+  .custom-label {
+      font-weight: bold;
+      margin-right: 10px;
+  }
+
+  .custom-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+  }
+
+  .custom-btn {
+      background-color: #ffc107;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+  }
+
+  /* Form styles */
+  .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+  }
+
+  .form-select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+  }
+
+  /* Custom column styles */
+  .custom-col-label {
+      flex: 0 0 40%;
+      max-width: 40%;
+      font-weight: bold;
+  }
+
+  /* Responsive layout */
+  @media (max-width: 767px) {
+      .equal-width-td {
+          width: auto;
+      }
+  }
+</style>
+
+<!-- Main View -->
+<div class="container" id="main-page">
+  <div class="row">
+      <div class="col-sm-12">
+          <div class="card">
+              <div class="card-body text-center">
+                  <div class="card-title" style="font-weight: bold;">Danh sách bài nộp của môn ${course.display_name_with_default}</div>
+              </div>
+          </div>
+      </div>
+  </div>
+  <div class="row mt-4">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-content">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="1">STT</th>
+                                <th scope="col" colspan="2">Thành phần điểm</th>
+                                <th scope="col" colspan="2">Trạng thái</th>
+                                <th scope="col" colspan="3">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-1-body"></tbody>
+                      </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details View -->
+<div class="container" id="view-page" style="display: none; padding: 0px;">
+  <div class="card">
+    <div class="card-body text-center">
+      <h4 class="card-title">Xem thông tin bài nộp</h4>
+    </div>
+  </div>
+  <div class="container mt-4">
+    <div class="row">
+      <div class="col-sm-6" style="float: left;">
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-6 col-md-5"><b>Thành phần điểm: </b></div>
+              <div class="col-sm-6 col-md-5" id="title"></div>
+            </div>
+            <div class="row mt-2">
+              <div class="col-sm-6 col-md-5"><b>Môn học:</b></div>
+              <div class="col-sm-6 col-md-5" id="course-code"></div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5"><b>Email học viên:</b></div>
+              <div class="col-sm-6 col-md-4" id="student-email">${user.email}</div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5">
+                <b>File nộp của học viên</b>
+              </div>
+              <div class="col-sm-6 col-md-5">
+                <button type="button" class="btn btn-link" id="download-link">Link tải</button>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5">
+                <b>Thời điểm đăng ký review:</b>
+              </div>
+              <div class="col-sm-6 col-md-5" id="date-register"></div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5"><b>Thời điểm review</b></div>
+              <div class="col-sm-6 col-md-5" id="datetime-interview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6" style="float: left;">
+        <div class="card">
+          <div class="card-body">
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5"><b>Lần review:</b></div>
+              <div class="col-sm-6 col-md-5" id="review-times"></div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5"><b>Email Mentor:</b></div>
+              <div class="col-sm-6 col-md-5" id="mentor-email"></div>
+            </div>
+            <div class="row mt-3" id="select-form">
+              <div class="col-sm-6 col-md-5"><b> Option đã chọn:</b></div>
+              <div class="col-sm-6 col-md-5" id="option"></div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5"><b>Điểm:</b></div>
+              <div class="col-sm-6 col-md-5" id="mark"></div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5"><b>Nhận xét:</b></div>
+              <div class="col-sm-6 col-md-5" id="comment"></div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-5"><b>Trạng thái:</b></div>
+              <div class="col-sm-6 col-md-5" id="status-button">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" id="details-view">
+      <div class="col-sm-12">
+        <div class="card col-md-12 mt-4 mb-2">
+          <div class="card-body">
+            <h5 class="card-title text-bg-light">Chi tiết bài chấm</h5>
+            <div class="card-content">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col" colspan="1">STT</th>
+                    <th scope="col" colspan="1">Trọng số</th>
+                    <th scope="col" colspan="3">Mô tả tiêu chí</th>
+                    <th scope="col" colspan="1">Điểm</th>
+                    <th scope="col" colspan="2">Nhận xét</th>
+                    <th scope="col" colspan="1">Tiêu chí bắt buộc?</th>
+                  </tr>
+                </thead>
+                <tbody id="details">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Submit Files View -->
+<div class="container" id="submit-file-page" style="display: none;">
+  <div class="card">
+    <div class="card-body text-center">
+      <h5 class="card-title">Nộp file</h5>
+      <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+    </div>
+  </div>
+  <div class="card mt-4">
+    <div class="card-body">
+        <div class="container mt-4">
+          <div class="row">
+            <div class="col-sm-6 col-md-4"><b>Thành phần điểm: </b></div>
+            <div class="col-sm-6 col-md-4" id="submit-view-title"></div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-sm-6 col-md-4"><b>Email học viên:</b></div>
+            <div class="col-sm-6 col-md-4" id="submit-view-email">${user.email}</div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-sm-6 col-md-4">Option</div>
+            <div class="col-sm-6 col-md-4">
+              <select class="form-select" aria-label="Default select example">
+                <option selected>Chọn option</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-sm-6 col-md-4">File đính kèm</div>
+            <div class="col-sm-6 col-md-4">
+              <input class="form-control" type="file" id="formFile">
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- Booking Interview View -->
+<div class="container" id="book-page" style="display: none;">
+  <div class="card">
+    <div class="card-body text-center">
+      <h5 class="card-title">Đặt một lịch phiên review</h5>
+    </div>
+  </div>
+  <div class="card mt-4">
+      <div class="card-body">
+          <div class="container mt-4">
+            <div class="row">
+              <div class="col-sm-6 col-md-4"><b>Thành phần điểm: </b></div>
+              <div class="col-sm-6 col-md-4" id="booking-view-title"></div>
+            </div>
+            <div class="row mt-2">
+              <div class="col-sm-6 col-md-4"><b>Email học viên:</b></div>
+              <div class="col-sm-6 col-md-4">${user.email}</div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-sm-6 col-md-4">Lần review:</div>
+              <div class="col-sm-6 col-md-4">2/2</div>
+            </div>
+            <div class="row mt-2">
+              <div class="col-sm-6 col-md-4">Thời gian Interview</div>
+              <div class="col-sm-6 col-md-4">
+                  <button type="button" class="btn btn-light">Chọn ngày</button>
+              </div>
+            </div>
+            <div class="row mt-2">
+              <div class="col-sm-6 col-md-4">Thời buổi (Nếu chọn Thứ 7)</div>
+              <div class="col-sm-6 col-md-4">
+                  <button type="button" class="btn btn-light">Chọn buổi</button>
+              </div>
+            </div>
+          </div>
+      </div>
+  </div>
+  <div class="row mt-5">
+      <div class="col-6 col-sm-3">
+          <button type="button" class="btn btn-warning btn-lg mx-2">Đặt lịch</button>
+      </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  fetch('http://139.99.71.52:3000/asmList')
+  .then(res => res.json())
+  .then(data => {
+    const list = data.assessment_element_list;
+    for(let i = 0; i < list.length; i++){
+      const value = list[i];
+      const title = value.asssessment_element_title;
+      const status = value.Status;
+      let status_button;
+      let action_buttons = '';
+      const action_buttons_array = [0,0,0]; //Xem, nop bai, dat lich
+      switch(status){
+        case 1:
+          status_button = 
+          `<p class="card-text text-primary equal-width-td">
+            Open
+          </p>`;
+          if(value.Required_File){
+            action_buttons_array[1] = 1;
+          }
+          if(value.Required_Interview){
+            action_buttons_array[2] = 1;
+          }
+          break;
+        case 2:
+          status_button = 
+          `<p class="card-text text-info equal-width-td">
+            File Submitted
+          </p>`;
+          action_buttons_array[0] = 1;
+          action_buttons_array[2] = 1;
+          break;
+        case 3:
+          status_button = 
+          `<p class="card-text text-success equal-width-td">
+            Submitted
+          </p>`;
+          action_buttons_array[0] = 1;
+          break;
+        case 4:
+          status_button = 
+          `<p class="card-text text-primary equal-width-td">Assigned</p>`;
+          action_buttons_array[0] = 1;
+          break;
+        case 5:
+          status_button = 
+          `<p class="card-text text-success equal-width-td">
+            Passed
+          </p>`;
+          action_buttons_array[0] = 1;
+          break;
+        case 6:
+          status_button = 
+          `<p class="card-text text-danger equal-width-td">
+            Not Passed
+          </p>`;
+          action_buttons_array[0] = 1;
+          if(!value.Required_File&&value.Required_Interview&&value.Review_times&&value.Review_times<value.Review_times_max){
+            action_buttons_array[2] = 1;
+          }
+          if(value.Required_File&&!value.Required_Interview){
+            action_buttons_array[1] = 1;
+          }
+          if(value.asssessment_type_title ==="Assignment" && value.Required_File&&value.Required_Interview){
+            if(value.Mark > 0){
+              action_buttons_array[1] = 1;
+            }
+            if(value.Mark ===0 && value.Review_times && value.Review_times<value.Review_times_max){
+              action_buttons_array[1] = 1;
+              action_buttons_array[2] = 1;
+            }
+          }
+          if(value.asssessment_type_title!=="Assignment"&&value.Required_File&&value.Required_Interview){
+            if(value.Review_times && value.Review_times<value.Review_times_max){
+              action_buttons_array[1] = 1;
+              action_buttons_array[2] = 1;
+            }
+          }
+          break;
+        default:
+          console.log('Error in API');
+      }
+      if(action_buttons_array[0]){
+        if(value.asssessment_type_title==="Assignment"){
+          action_buttons += 
+          `<button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Xem chi tiết" onclick="showViewPageForAsm()">
+            <i class="fa-solid fa-circle-info"></i>
+            Xem
+          </button>
+          `;
+        }else{
+          action_buttons += 
+          `<button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="top" title="Xem chi tiết" onclick="showViewPage()">
+            <i class="fa-solid fa-circle-info"></i>
+            Xem
+          </button>`;
+        }
+      }
+      if(action_buttons_array[1]){
+        action_buttons += 
+        `<button type="button" class="btn btn-outline-primary" id="`+title+`" data-toggle="tooltip" data-placement="top" title="Nộp bài" onclick="showSubmitFilePage(event)">
+          <i class="fa-solid fa-plus"></i>
+          Nộp bài
+        </button>`;
+      }
+      if(action_buttons_array[2]){
+        action_buttons += 
+        `<button type="button" class="btn btn-outline-primary" id="`+title+`" data-toggle="tooltip" data-placement="top" title="Đặt lịch" onclick="showBookPage(event)">
+          <i class="fa-regular fa-calendar-days"></i>
+          Đặt lịch
+        </button>
+        `;
+      }
+      const template = 
+        `<tr>
+          <th scope="row" colspan="1">`+(i+1)+`</th>
+          <td colspan="2">`+title+`</td>
+          <td colspan="2">`+status_button+`</td>
+          <td colspan="3">
+            <div
+              class="btn-group"
+              role="group"
+              aria-label="Basic example"
+            >`+action_buttons+`
+            </div>
+          </td>
+        </tr>`;
+      $('#table-1-body').append(template);
+    }
+  });
+
+  function showViewPageForAsm(){
+    
+    const main_page = document.getElementById("main-page");
+    main_page.style.display = 'none';
+
+    const view_page = document.getElementById("view-page");
+    view_page.style.display = 'block';
+
+    fetch('http://139.99.71.52:3000/view_asm')
+    .then(res => res.json())
+    .then(data => {
+      try{
+        $('#title').append(data.asssessment_element_title);
+        $('#course-code').append(data.course_code);
+        $('#date-register').append(data.date_register+`<span>| `+ data.time_register + `</span>`);
+        $('#datetime-interview').append(data.datetime_interview);
+        $('#review-times').append(data.Review_times+"/"+data.Review_times_max);
+        $('#mentor-email').append(data.Mentor_email);
+        if(data.Option_selected){
+          $('#option').append(data.Option_selected);
+        }else{
+          $('#select-form').hide()
+        }
+        $('#mark').append(data.Mark);
+        $('#comment').append(data.Comment_Mentor);
+        let status_button;
+        switch(data.Status){
+          case 1:
+            status_button = `<p class="card-text text-primary equal-width-td">Open</p>`;
+            break;
+          case 2:
+            status_button = `<p class="card-text text-info equal-width-td">File Submitted</p>`;
+            break;
+          case 3:
+            status_button = `<p class="card-text text-info equal-width-td">Submitted</p>`;
+            break;
+          case 4:
+            status_button = `<p class="card-text text-primary equal-width-td">Assigned</p>`;
+            break;
+          case 5:
+            status_button = `<p class="card-text text-success equal-width-td">Passed</p>`;
+            break;
+          case 6:
+            status_button = `<p class="card-text text-danger equal-width-td">Not Passed</p>`;
+            break;
+          default:
+            console.log('Error in API');
+          }
+          $('#status-button').append(status_button);
+          const details = data.Criteria_detail;
+          let details_template = '';
+          details.forEach(function (value, i) {
+            details_template +=
+            `<tr>
+              <th scope="row" colspan="1">`+i+`</th>
+              <td colspan="1">`+value.Weight+`</td>
+              <td colspan="3">`+value.Criteria_desc+`</td>
+              <td colspan="1">`+value.Criteria_Mark+`</td>
+              <td colspan="2">`+value.Criteria_Comment+`</td>
+              <td colspan="1">`+value.Mandatory+`</td>
+            </tr>`
+          });
+          $('#details').append(details_template);
+      }catch(err){
+        console.log(err);
+      }
+    });
+  }
+
+  function showViewPage(){
+    
+    const main_page = document.getElementById("main-page");
+    main_page.style.display = 'none';
+
+    const view_page = document.getElementById("view-page");
+    view_page.style.display = 'block';
+
+    fetch('http://139.99.71.52:3000/view_asm')
+    .then(res => res.json())
+    .then(data => {
+      try{
+        $('#title').append(data.asssessment_element_title);
+        $('#course-code').append(data.course_code);
+        $('#date-register').append(data.date_register+`<span>| `+ data.time_register + `</span>`);
+        $('#datetime-interview').append(data.datetime_interview);
+        $('#review-times').append(data.Review_times+"/"+data.Review_times_max);
+        $('#mentor-email').append(data.Mentor_email);
+        if(data.Option_selected){
+          $('#option').append(data.Option_selected);
+        }else{
+          $('#select-form').hide()
+        }
+        $('#mark').append(data.Mark);
+        $('#comment').append(data.Comment_Mentor);
+        let status_button;
+        switch(data.Status){
+          case 1:
+            status_button = `<p class="card-text text-primary equal-width-td">Open</p>`;
+            break;
+          case 2:
+            status_button = `<p class="card-text text-info equal-width-td">File Submitted</p>`;
+            break;
+          case 3:
+            status_button = `<p class="card-text text-info equal-width-td">Submitted</p>`;
+            break;
+          case 4:
+            status_button = `<p class="card-text text-primary equal-width-td">Assigned</p>`;
+            break;
+          case 5:
+            status_button = `<p class="card-text text-success equal-width-td">Passed</p>`;
+            break;
+          case 6:
+            status_button = `<p class="card-text text-danger equal-width-td">Not Passed</p>`;
+            break;
+          default:
+            console.log('Error in API');
+          }
+          $('#status-button').append(status_button);
+
+          const details_view = document.getElementById("details-view");
+          details_view.style.display = 'none';
+          
+      }catch(err){
+        console.log(err);
+      }
+    });
+  }
+
+  function showSubmitFilePage(event){
+    const main_page = document.getElementById("main-page");
+    main_page.style.display = 'none';
+
+    const submit_file_page = document.getElementById("submit-file-page");
+    submit_file_page.style.display = 'block';
+
+    const title = event.target.id;
+    $('#submit-view-title').append(title);
+  }
+
+  function showBookPage(event){
+    const main_page = document.getElementById("main-page");
+    main_page.style.display = 'none';
+
+    const book_page = document.getElementById("book-page");
+    book_page.style.display = 'block';
+
+    const title = event.target.id;
+    $('#booking-view-title').append(title);
+  }
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>

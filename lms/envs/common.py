@@ -2238,6 +2238,12 @@ INSTALLED_APPS = (
     'openedx.features.enterprise_support',
 
     'experiments',
+
+    # FUNiX added - 20210520 - Feedback module
+    'lms.djangoapps.feedback',
+
+    # FUNiX added - 20230816 - Score module
+    'lms.djangoapps.fx_score',
 )
 
 ######################### CSRF #########################################
@@ -3118,7 +3124,7 @@ WIKI_REQUEST_CACHE_MIDDLEWARE_CLASS = "request_cache.middleware.RequestCache"
 
 # See https://github.com/edx/edx-django-sites-extensions for more info
 # Default site to use if site matching request headers does not exist
-SITE_ID = 1
+SITE_ID = 2
 
 # dir containing all themes
 COMPREHENSIVE_THEME_DIRS = [REPO_ROOT / "themes"]

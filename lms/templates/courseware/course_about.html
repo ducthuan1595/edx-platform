@@ -15,6 +15,56 @@ from openedx.core.lib.courses import course_image_url
   ## (https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content#tags)
   <meta property="og:title" content="${course.display_name_with_default_escaped}" />
   <meta property="og:description" content="${get_course_about_section(request, course, 'short_description')}" />
+  <style>
+    .course-info .details .inner-wrapper * {
+      font-family: arial, helvetica, sans-serif !important;
+      color: #222222;
+      font-size: 16px;
+
+    }
+    .course-info .details .inner-wrapper .about h2 {
+      font-weight: 700;
+      font-size: 1.2em;
+      line-height: 1.2em;
+      margin-bottom: 10px;
+      text-align: center;
+      margin-top: 0;
+    }
+    .course-info .details .inner-wrapper hr {
+        margin: 1em 0;
+        border-top-color: #ccc;
+    }
+    .course-info .details .inner-wrapper section {
+      margin-bottom: 0;
+    }
+    .course-info .details .inner-wrapper section p {
+      line-height: 1.5;
+      margin: 0px 0px 10px;
+      font-size: 16px;
+    }
+    .course-info .details .inner-wrapper section .course-design-item ul,
+    .course-info .details .inner-wrapper section .course-review-item ul {
+        list-style: disc;
+    }
+    .course-info .details .inner-wrapper section .course-design-item .course-design-image img {
+      width: 180px;
+      height: 180px;
+      object-fit: contain;
+    }
+    .course-info .details .inner-wrapper section ul li,
+    .course-info .details .inner-wrapper section ol li {
+        margin: 0px 0px 10px;
+        line-height: 1.5;
+    }
+    .course-info .details .inner-wrapper a {
+        color: #009fe6;
+        text-decoration: none;
+    }
+    .course-info .course-structure .structure-item p:last-child {
+      padding-left: 40px;
+      margin-bottom: 20px;
+    }
+  </style>
 </%block>
 
 <%block name="js_extra">

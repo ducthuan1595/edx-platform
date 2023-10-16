@@ -4,7 +4,7 @@
 <% if ( context.createAccountOption !== false ) { %>
 <div class="toggle-form">
     <span class="text"><%- gettext("First time here?") %></span>
-    <a href="#login" class="form-toggle" data-type="register"><%- gettext("Create an Account.") %></a>
+    <a href="https://funix.edu.vn/dang-ky/?utm_source=LMS&utm_medium=sign-up-link&utm_campaign=LMS&utm_content=FooterLink" target="_blank"><%- gettext("Create an Account.") %></a>
 </div>
 <% } %>
 
