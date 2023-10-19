@@ -77,6 +77,7 @@ import social_django
 from social_core.exceptions import AuthException
 from social_core.pipeline import partial
 from social_core.pipeline.social_auth import associate_by_email
+from .models import OAuth2ProviderConfig
 
 import student
 from eventtracking import tracker
@@ -147,7 +148,7 @@ _DEFAULT_RANDOM_PASSWORD_LENGTH = 12
 _PASSWORD_CHARSET = string.letters + string.digits
 
 logger = getLogger(__name__)
-
+AUDIT_LOG = getLogger("audit")
 
 class AuthEntryError(AuthException):
     """Raised when auth_entry is missing or invalid on URLs.
@@ -191,6 +192,43 @@ class ProviderUserState(object):
     def get_unlink_form_name(self):
         """Gets the name used in HTML forms that unlink a provider account."""
         return self.provider.provider_id + '_unlink_form'
+
+
+def is_oauth_provider(backend_name, **kwargs):
+    """
+    Verify that the third party provider uses oauth
+    """
+    current_provider = provider.Registry.get_from_pipeline({'backend': backend_name, 'kwargs': kwargs})
+
+    AUDIT_LOG.info("current_provider: %s" % current_provider)
+
+    if current_provider:
+        return current_provider.provider_id.startswith(OAuth2ProviderConfig.prefix)
+
+    return False
+
+
+def get_associated_user_by_email_response(backend, details, user, *args, **kwargs):
+    """
+    Gets the user associated by the `associate_by_email` social auth method
+    """
+    AUDIT_LOG.info("get_associated_user_by_email_response")
+
+    association_response = associate_by_email(backend, details, user, *args, **kwargs)
+
+    if (
+        association_response and
+        association_response.get('user')
+    ):
+        # Only return the user matched by email if their email has been activated.
+        # Otherwise, an illegitimate user can create an account with another user's
+        # email address and the legitimate user would now login to the illegitimate
+        # account.
+        AUDIT_LOG.info("association_response")
+        
+        return (association_response, association_response['user'].is_active)
+
+    return (None, False)
 
 
 def get(request):
@@ -459,10 +497,13 @@ def running(request):
 
 def parse_query_params(strategy, response, *args, **kwargs):
     """Reads whitelisted query params, transforms them into pipeline args."""
+    AUDIT_LOG.info("--------------------------------------------------")
+    AUDIT_LOG.info("parse_query_params")
     auth_entry = strategy.request.session.get(AUTH_ENTRY_KEY)
     if not (auth_entry and auth_entry in _AUTH_ENTRY_CHOICES):
         raise AuthEntryError(strategy.request.backend, 'auth_entry missing or invalid')
-
+    AUDIT_LOG.info("auth_entry %s" % auth_entry)
+    AUDIT_LOG.info("--------------------------------------------------")
     return {'auth_entry': auth_entry}
 
 
@@ -535,6 +576,11 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
     Ensure that we have the necessary information about a user (either an
     existing account or registration data) to proceed with the pipeline.
     """
+
+    AUDIT_LOG.info("--------------------------------------------------")
+    AUDIT_LOG.info("ensure_user_information")
+    AUDIT_LOG.info("user: %s" % user)
+    AUDIT_LOG.info("--------------------------------------------------")
 
     # We're deliberately verbose here to make it clear what the intended
     # dispatch behavior is for the various pipeline entry points, given the
@@ -697,6 +743,10 @@ def associate_by_email_if_login_api(auth_entry, backend, details, user, current_
 
     This association is done ONLY if the user entered the pipeline through a LOGIN API.
     """
+    AUDIT_LOG.info("--------------------------------------------------")
+    AUDIT_LOG.info("associate_by_email_if_login_api")
+    AUDIT_LOG.info("user: %s", user)
+    AUDIT_LOG.info("--------------------------------------------------")
     if auth_entry == AUTH_ENTRY_LOGIN_API:
         association_response = associate_by_email(backend, details, user, *args, **kwargs)
         if (
@@ -709,3 +759,31 @@ def associate_by_email_if_login_api(auth_entry, backend, details, user, current_
             # email address and the legitimate user would now login to the illegitimate
             # account.
             return association_response
+
+
+@partial.partial
+def associate_by_email_if_oauth(auth_entry, backend, details, user, strategy, *args, **kwargs):
+    """
+    This pipeline step associates the current social auth with the user with the
+    same email address in the database.  It defers to the social library's associate_by_email
+    implementation, which verifies that only a single database user is associated with the email.
+
+    This association is done ONLY if the user entered the pipeline belongs to Oauth provider and
+    `ENABLE_REQUIRE_THIRD_PARTY_AUTH` is enabled.
+    """
+
+    AUDIT_LOG.info("--------------------------------------------------")
+    AUDIT_LOG.info("associate_by_email_if_oauth")
+    AUDIT_LOG.info("user: %s", user)
+
+    if is_oauth_provider(backend.name, **kwargs):
+        AUDIT_LOG.info("is oauth provider")
+
+        association_response, user_is_active = get_associated_user_by_email_response(
+            backend, details, user, *args, **kwargs)
+
+        if user_is_active:
+            return association_response
+        
+    AUDIT_LOG.info("--------------------------------------------------")
+    
