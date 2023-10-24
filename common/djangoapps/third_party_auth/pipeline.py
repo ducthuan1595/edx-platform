@@ -200,8 +200,6 @@ def is_oauth_provider(backend_name, **kwargs):
     """
     current_provider = provider.Registry.get_from_pipeline({'backend': backend_name, 'kwargs': kwargs})
 
-    AUDIT_LOG.info("current_provider: %s" % current_provider)
-
     if current_provider:
         return current_provider.provider_id.startswith(OAuth2ProviderConfig.prefix)
 
@@ -212,8 +210,6 @@ def get_associated_user_by_email_response(backend, details, user, *args, **kwarg
     """
     Gets the user associated by the `associate_by_email` social auth method
     """
-    AUDIT_LOG.info("get_associated_user_by_email_response")
-
     association_response = associate_by_email(backend, details, user, *args, **kwargs)
 
     if (
@@ -224,8 +220,6 @@ def get_associated_user_by_email_response(backend, details, user, *args, **kwarg
         # Otherwise, an illegitimate user can create an account with another user's
         # email address and the legitimate user would now login to the illegitimate
         # account.
-        AUDIT_LOG.info("association_response")
-        
         return (association_response, association_response['user'].is_active)
 
     return (None, False)
@@ -497,13 +491,9 @@ def running(request):
 
 def parse_query_params(strategy, response, *args, **kwargs):
     """Reads whitelisted query params, transforms them into pipeline args."""
-    AUDIT_LOG.info("--------------------------------------------------")
-    AUDIT_LOG.info("parse_query_params")
     auth_entry = strategy.request.session.get(AUTH_ENTRY_KEY)
     if not (auth_entry and auth_entry in _AUTH_ENTRY_CHOICES):
         raise AuthEntryError(strategy.request.backend, 'auth_entry missing or invalid')
-    AUDIT_LOG.info("auth_entry %s" % auth_entry)
-    AUDIT_LOG.info("--------------------------------------------------")
     return {'auth_entry': auth_entry}
 
 
@@ -576,12 +566,6 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
     Ensure that we have the necessary information about a user (either an
     existing account or registration data) to proceed with the pipeline.
     """
-
-    AUDIT_LOG.info("--------------------------------------------------")
-    AUDIT_LOG.info("ensure_user_information")
-    AUDIT_LOG.info("user: %s" % user)
-    AUDIT_LOG.info("--------------------------------------------------")
-
     # We're deliberately verbose here to make it clear what the intended
     # dispatch behavior is for the various pipeline entry points, given the
     # current state of the pipeline. Keep in mind the pipeline is re-entrant
@@ -600,6 +584,11 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
     def dispatch_to_register():
         """Redirects to the registration page."""
         return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER])
+    
+    def dispatch_to_wrong_error():
+        """Redirects to the registration page."""
+        wrong_error_redirect = '/wrong-error'
+        return redirect(wrong_error_redirect)
 
     def should_force_account_creation():
         """ For some third party providers, we auto-create user accounts """
@@ -614,12 +603,12 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
             # User has authenticated with the third party provider but we don't know which edX
             # account corresponds to them yet, if any.
             if should_force_account_creation():
-                return dispatch_to_register()
+                return dispatch_to_wrong_error()
             return dispatch_to_login()
         elif auth_entry == AUTH_ENTRY_REGISTER:
             # User has authenticated with the third party provider and now wants to finish
             # creating their edX account.
-            return dispatch_to_register()
+            return dispatch_to_wrong_error()
         elif auth_entry == AUTH_ENTRY_ACCOUNT_SETTINGS:
             raise AuthEntryError(backend, 'auth_entry is wrong. Settings requires a user.')
         elif auth_entry in AUTH_ENTRY_CUSTOM:
@@ -743,10 +732,6 @@ def associate_by_email_if_login_api(auth_entry, backend, details, user, current_
 
     This association is done ONLY if the user entered the pipeline through a LOGIN API.
     """
-    AUDIT_LOG.info("--------------------------------------------------")
-    AUDIT_LOG.info("associate_by_email_if_login_api")
-    AUDIT_LOG.info("user: %s", user)
-    AUDIT_LOG.info("--------------------------------------------------")
     if auth_entry == AUTH_ENTRY_LOGIN_API:
         association_response = associate_by_email(backend, details, user, *args, **kwargs)
         if (
@@ -771,19 +756,9 @@ def associate_by_email_if_oauth(auth_entry, backend, details, user, strategy, *a
     This association is done ONLY if the user entered the pipeline belongs to Oauth provider and
     `ENABLE_REQUIRE_THIRD_PARTY_AUTH` is enabled.
     """
-
-    AUDIT_LOG.info("--------------------------------------------------")
-    AUDIT_LOG.info("associate_by_email_if_oauth")
-    AUDIT_LOG.info("user: %s", user)
-
     if is_oauth_provider(backend.name, **kwargs):
-        AUDIT_LOG.info("is oauth provider")
-
         association_response, user_is_active = get_associated_user_by_email_response(
             backend, details, user, *args, **kwargs)
 
         if user_is_active:
             return association_response
-        
-    AUDIT_LOG.info("--------------------------------------------------")
-    

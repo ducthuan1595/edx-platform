@@ -157,6 +157,29 @@ def login_and_registration_form(request, initial_mode="login"):
     return render_to_response('student_account/login_and_register.html', context)
 
 
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
+def wrong_error(request):
+    """
+    View function that handles the wrong_error page.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        The HTTP response object.
+    """
+    # Determine the URL to redirect to following login/registration/third_party_auth
+    redirect_to = get_next_url_for_login_page(request)
+
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    return render_to_response('student_account/wrong_error.html', { 'hide_signin': True })
+
+
 @require_http_methods(['POST'])
 def password_change_request_handler(request):
     """Handle password change requests originating from the account page.
