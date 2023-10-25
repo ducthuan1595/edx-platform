@@ -75,7 +75,7 @@
         <% } %>
     </div>
 
-    <form id="login-form" class="login-form" style="display: none;" tabindex="-1" method="POST">
+    <form id="loginForm" class="login-form" style="display: none;" tabindex="-1" method="POST">
         <p class="sr">
             <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
                 <%- gettext("Sign in here using your email address and password, or use one of the providers listed below.") %>
