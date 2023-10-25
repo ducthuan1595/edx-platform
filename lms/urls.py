@@ -114,6 +114,9 @@ urlpatterns = (
 
     url(r'^dashboard/', include('learner_dashboard.urls')),
     url(r'^api/experiments/', include('experiments.urls', namespace='api_experiments')),
+
+    # Login redirects if user doesn't exist
+    url(r'^wrong-error$', 'student_account.views.wrong_error', name="wrong_error"),
 )
 
 # TODO: This needs to move to a separate urls.py once the student_account and
