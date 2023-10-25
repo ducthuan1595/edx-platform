@@ -1,62 +1,145 @@
 <div class="js-form-feedback" aria-live="assertive" tabindex="-1">
 </div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
-<% if ( context.createAccountOption !== false ) { %>
-<div class="toggle-form">
-    <span class="text"><%- gettext("First time here?") %></span>
-    <a href="https://funix.edu.vn/dang-ky/?utm_source=LMS&utm_medium=sign-up-link&utm_campaign=LMS&utm_content=FooterLink" target="_blank"><%- gettext("Create an Account.") %></a>
-</div>
-<% } %>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+    }
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        text-align: center;
+    }
+    .button-container {
+        display: flex;
+        justify-content: space-between;
+    }
+    button {
+        flex: 1;
+        padding: 10px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    #loginForm {
+        display: none;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f4f4f4;
+    }
+    #loginForm label, #loginForm input {
+        display: block;
+        margin: 10px 0;
+    }
+    #loginForm input {
+        width: calc(100% - 30px);
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    #loginForm button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #007BFF;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    #loginForm .link-button {
+        text-align: center;
+        margin: 10px 0;
+    }
+    #loginForm .checkbox-container {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+    }
+    #loginForm .checkbox-container input {
+        margin-right: 5px;
+    }
+    .google-button {
+        background-color: #d9534f;
+        color: #fff;
+    }
+    .account-button {
+        background-color: #007BFF;
+        color: #fff;
+    }
+</style>
 
-<h2><%- gettext("Sign In") %></h2>
+<div class="container">
+    <h2><%- gettext("Sign In") %></h2>
 
-<form id="login" class="login-form" tabindex="-1" method="POST">
+    <div class="button-container">
+        <button class="account-button" id="showLoginForm">
+            <i class="fas fa-user"></i> Login bằng tài khoản
+        </button>
 
-    <p class="sr">
         <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
-            <%- gettext("Sign in here using your email address and password, or use one of the providers listed below.") %>
-        <% } else { %>
-            <%- gettext("Sign in here using your email address and password.") %>
-        <% } %>
-        <%- gettext("If you do not yet have an account, use the button below to register.") %>
-    </p>
+            <div class="login-providers">
+                <% _.each( context.providers, function( provider ) {
+                    if ( provider.loginUrl ) { %>
+                        <button type="button" class="google-button button-<%- provider.id %> login-provider login-<%- provider.id %>" data-provider-url="<%- provider.loginUrl %>">
+                            <div class="icon <% if ( provider.iconClass ) { %>fa <%- provider.iconClass %><% } %>" aria-hidden="true">
+                                <% if ( provider.iconImage ) { %>
+                                    <img class="icon-image" src="<%- provider.iconImage %>" alt="<%- provider.name %> icon" />
+                                <% } %>
+                            </div>
+                            <span aria-hidden="true"><%- provider.name %></span>
+                            <span class="sr"><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
+                        </button>
+                    <% }
+                }); %>
 
-    <div id="signin-with-account-form" style="display: none; margin-bottom: 10px;">
-        <!-- Thêm trường đăng nhập và nút "Sign in with account" ở đây -->
+                <% if ( context.hasSecondaryProviders ) { %>
+                    <button type="button" class="button-secondary-login form-toggle" data-type="institution_login">
+                        <%- gettext("Use my institution/campus credentials") %>
+                    </button>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+
+    <form id="loginForm" class="login-form" tabindex="-1" method="POST">
+        <p class="sr">
+            <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
+                <%- gettext("Sign in here using your email address and password, or use one of the providers listed below.") %>
+            <% } else { %>
+                <%- gettext("Sign in here using your email address and password.") %>
+            <% } %>
+            <%- gettext("If you do not yet have an account, use the button below to register.") %>
+        </p>
+
         <%= context.fields %>
         <button type="submit" class="action action-primary action-update js-login login-button"><%- gettext("Sign in") %></button>
-    </div>
+    </form>
+</div>
 
-    <button type="button" id="signin-with-account-button">Sign in with account</button>
 
-    <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
-    <div class="login-providers">
-        <% _.each( context.providers, function( provider ) {
-            if ( provider.loginUrl ) { %>
-                <button type="button" class="button button-primary button-<%- provider.id %> login-provider login-<%- provider.id %>" data-provider-url="<%- provider.loginUrl %>">
-                    <div class="icon <% if ( provider.iconClass ) { %>fa <%- provider.iconClass %><% } %>" aria-hidden="true">
-                        <% if ( provider.iconImage ) { %>
-                            <img class="icon-image" src="<%- provider.iconImage %>" alt="<%- provider.name %> icon" />
-                        <% } %>
-                    </div>
-                    <span aria-hidden="true"><%- provider.name %></span>
-                    <span class="sr"><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
-                </button>
-            <% }
-        }); %>
+ <script>
+    const showLoginFormButton = document.getElementById('showLoginForm');
+    const loginForm = document.getElementById('loginForm');
+    let isLoginFormVisible = false;
 
-        <% if ( context.hasSecondaryProviders ) { %>
-            <button type="button" class="button-secondary-login form-toggle" data-type="institution_login">
-                <%- gettext("Use my institution/campus credentials") %>
-            </button>
-        <% } %>
-    </div>
-    <% } %>
-</form>
-
-<script>
-    document.getElementById('signin-with-account-button').addEventListener('click', function() {
-        this.style.display = 'none';
-        document.getElementById('signin-with-account-form').style.display = 'block';
+    showLoginFormButton.addEventListener('click', function () {
+        if (isLoginFormVisible) {
+            loginForm.style.display = 'none';
+        } else {
+            loginForm.style.display = 'block';
+        }
+        isLoginFormVisible = !isLoginFormVisible;
     });
 </script>
