@@ -7,7 +7,7 @@
 %>
 <%namespace name='static' file='/static_content.html'/>
 
-<!-- <%inherit file="../main.html" /> -->
+<%inherit file="../main.html" />
 
 <%block name="pagetitle">${_("Sign in or Register")}</%block>
 
@@ -39,15 +39,6 @@
     % endfor
 </%block>
 
-<style>
-    .login-register-content {
-        margin: 0;
-        padding: 0;
-        background: url('${static.url("images/welcome-image.jpg")}') no-repeat center center fixed;
-        background-size: cover;
-        font-family: Arial, sans-serif;
-    }
-</style>
 <div class="section-bkg-wrapper">
     <main id="main" aria-label="Content" tabindex="-1">
         <div id="content-container" class="login-register-content">
