@@ -126,10 +126,31 @@ from third_party_auth import provider, pipeline
          $('#login-form').submit();
        }
     })(${pipeline_running})
+
+
+    function showLoginForm() {
+      var loginForm = document.getElementById('login-form');
+      var showLoginFormButton = document.getElementById('show-login-form-button');
+
+      if (loginForm.style.display === 'none' || loginForm.style.display === '') {
+        loginForm.style.display = 'block';
+        showLoginFormButton.textContent = 'Ẩn form đăng nhập';
+      } else {
+        loginForm.style.display = 'none';
+        showLoginFormButton.textContent = 'Đăng nhập bằng tài khoản';
+      }
+    }
   </script>
 </%block>
 
 <%include file="forgot_password_modal.html" />
+
+<style type="text/css">
+  .form-third-party-auth button {
+    width: 100%;
+    margin-top: 10px;
+  }
+</style>
 
 <section class="introduction">
   <header>
@@ -142,7 +163,9 @@ from third_party_auth import provider, pipeline
 
 <section class="login container">
   <section role="main" class="content">
-    <form role="form" id="login-form" method="post" data-remote="true" action="/login_ajax" novalidate>
+    <button id="show-login-form-button" class="action action-primary action-update" onclick="showLoginForm()">Đăng nhập bằng tài khoản</button>
+
+    <form role="form" id="login-form" method="post" data-remote="true" action="/login_ajax" novalidate  style="display: none;">
 
       <!-- status messages -->
       <div role="alert" class="status message">
@@ -210,11 +233,11 @@ from third_party_auth import provider, pipeline
 
     % if third_party_auth.is_enabled():
 
-      <span class="deco-divider">
+      <!-- <span class="deco-divider">
         ## Developers: this is a sentence fragment, which is usually frowned upon.  The design of the pags uses this fragment to provide an "else" clause underneath a number of choices.  It's OK to leave it.
         ## Translators: this is the last choice of a number of choices of how to log in to the site.
         <span class="copy">${_('or')}</span>
-      </span>
+      </span> -->
 
     <div class="form-actions form-third-party-auth">
 
