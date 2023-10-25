@@ -44,7 +44,7 @@
         <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
             <% _.each( context.providers, function( provider ) {
                 if ( provider.loginUrl ) { %>
-                    <button type="button" class="button-custom google-button login-provider " data-provider-url="<%- provider.loginUrl %>">
+                    <button type="button" class="button-custom google-button" data-provider-url="<%- provider.loginUrl %>">
                         <i class="fab fa-google" style="font-size: large;"></i> 
                         <span><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
                     </button>

@@ -23,7 +23,7 @@
             events: {
                 'click .js-login': 'submitForm',
                 'click .forgot-password': 'forgotPassword',
-                'click .login-provider': 'thirdPartyAuth'
+                'click .button-custom': 'thirdPartyAuth'
             },
             formType: 'login',
             requiredStr: '',
