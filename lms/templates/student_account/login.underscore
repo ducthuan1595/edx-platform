@@ -1,10 +1,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<%namespace name='static' file='/static_content.html'/>
 
 <style>
     body {
         margin: 0;
         padding: 0;
-        background: url('https://apc.funix.edu.vn/images/welcome-image.jpg') no-repeat center center fixed;
+        background: url('${static.url("images/welcome-image.jpg")}') no-repeat center center fixed;
         background-size: cover;
         font-family: Arial, sans-serif;
     }
@@ -33,11 +34,11 @@
         cursor: pointer;
     }
     .google-button {
-        background-color: #d9534f;
+        background-color: #d9534f !important;
         color: #fff;
     }
     .account-button {
-        background-color: #007BFF;
+        background-color: #007BFF !important;
         color: #fff;
     }
 </style>
@@ -55,12 +56,8 @@
         <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
             <% _.each( context.providers, function( provider ) {
                 if ( provider.loginUrl ) { %>
-                    <button type="button" class="button-custom button-<%- provider.id %> login-provider login-<%- provider.id %>" data-provider-url="<%- provider.loginUrl %>">
-                        <div class="icon <% if ( provider.iconClass ) { %>fa <%- provider.iconClass %><% } %>" aria-hidden="true">
-                            <% if ( provider.iconImage ) { %>
-                                <img class="icon-image" src="<%- provider.iconImage %>" alt="<%- provider.name %> icon" />
-                            <% } %>
-                        </div>
+                    <button type="button" class="button-custom google-button" data-provider-url="<%- provider.loginUrl %>">
+                        <i class="fab fa-google"></i> 
                         <span aria-hidden="true"><%- provider.name %></span>
                         <span class="sr"><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
                     </button>
