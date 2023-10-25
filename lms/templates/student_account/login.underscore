@@ -23,7 +23,7 @@
         display: flex;
         justify-content: space-between;
     }
-    button {
+    .button-custom {
         flex: 1;
         padding: 10px;
         margin-right: 10px;
@@ -37,6 +37,7 @@
         border: 1px solid #ccc;
         border-radius: 5px;
         background-color: #f4f4f4;
+        margin-top: 10px;
     }
     #loginForm label, #loginForm input {
         display: block;
@@ -50,25 +51,13 @@
     }
     #loginForm button {
         display: block;
-        width: 100%;
+        width: calc(100% - 1vh);
         padding: 10px;
         background-color: #007BFF;
         color: #fff;
         border: none;
         border-radius: 5px;
         cursor: pointer;
-    }
-    #loginForm .link-button {
-        text-align: center;
-        margin: 10px 0;
-    }
-    #loginForm .checkbox-container {
-        display: flex;
-        align-items: center;
-        margin: 10px 0;
-    }
-    #loginForm .checkbox-container input {
-        margin-right: 5px;
     }
     .google-button {
         background-color: #d9534f;
@@ -84,32 +73,25 @@
     <h2><%- gettext("Sign In") %></h2>
 
     <div class="button-container">
-        <button class="account-button" id="showLoginForm">
+        <button class="button-custom account-button" id="showLoginForm">
             <i class="fas fa-user"></i> Login bằng tài khoản
         </button>
 
         <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
-            <div class="login-providers">
-                <% _.each( context.providers, function( provider ) {
-                    if ( provider.loginUrl ) { %>
-                        <button type="button" class="google-button button-<%- provider.id %> login-provider login-<%- provider.id %>" data-provider-url="<%- provider.loginUrl %>">
-                            <div class="icon <% if ( provider.iconClass ) { %>fa <%- provider.iconClass %><% } %>" aria-hidden="true">
-                                <% if ( provider.iconImage ) { %>
-                                    <img class="icon-image" src="<%- provider.iconImage %>" alt="<%- provider.name %> icon" />
-                                <% } %>
-                            </div>
-                            <span aria-hidden="true"><%- provider.name %></span>
-                            <span class="sr"><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
-                        </button>
-                    <% }
-                }); %>
-
-                <% if ( context.hasSecondaryProviders ) { %>
-                    <button type="button" class="button-secondary-login form-toggle" data-type="institution_login">
-                        <%- gettext("Use my institution/campus credentials") %>
+            <% _.each( context.providers, function( provider ) {
+                if ( provider.loginUrl ) { %>
+                    <button class="button-custom google-button" data-provider-url="<%- provider.loginUrl %>">
+                        <i class="fab fa-google"></i> 
+                        <span class="sr"><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
                     </button>
-                <% } %>
-            </div>
+                <% }
+            }); %>
+
+             //<% if ( context.hasSecondaryProviders ) { %>
+             //    <button type="button" class="button-secondary-login form-toggle" data-type="institution_login">
+             //        <%- gettext("Use my institution/campus credentials") %>
+             //    </button>
+             // <% } %>
         <% } %>
     </div>
 
