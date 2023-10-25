@@ -1,14 +1,5 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<%namespace name='static' file='/static_content.html'/>
 
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: url('${static.url("images/welcome-image.jpg")}') no-repeat center center fixed;
-        background-size: cover;
-        font-family: Arial, sans-serif;
-    }
     .container-login {
         width: calc(100% - 50rem);
         position: absolute;
