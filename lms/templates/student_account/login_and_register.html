@@ -6,8 +6,7 @@
     from openedx.core.djangolib.js_utils import dump_js_escaped_json
 %>
 <%namespace name='static' file='/static_content.html'/>
-
-<!-- <%inherit file="../main.html" /> -->
+<%inherit file="../main.html" />
 
 <%block name="pagetitle">${_("Sign in or Register")}</%block>
 
@@ -51,7 +50,7 @@
 <div class="section-bkg-wrapper">
     <main id="main" aria-label="Content" tabindex="-1">
         <div id="content-container" class="login-register-content">
-            <!-- % if enable_enterprise_sidebar:
+            % if False and enable_enterprise_sidebar:
                 <%include file="enterprise_sidebar.html" />
                 <%
                     border_class = 'border-left'
@@ -60,9 +59,10 @@
                 <%
                     border_class = ''
                 %>
-            % endif -->
+            % endif
             <div id="login-and-registration-container" class="login-register ${border_class}"></div>
         </div>
     </main>
 </div>
-<script src="https://site.funix.edu.vn/tracking/js/tracking-user.js"></script>
+
+<!-- <script src="https://site.funix.edu.vn/tracking/js/tracking-user.js"></script> -->
