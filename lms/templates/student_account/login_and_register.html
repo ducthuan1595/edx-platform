@@ -7,7 +7,7 @@
 %>
 <%namespace name='static' file='/static_content.html'/>
 
-<!-- <%inherit file="../main.html" /> -->
+<%inherit file="../main.html" />
 
 <%block name="pagetitle">${_("Sign in or Register")}</%block>
 
@@ -41,7 +41,7 @@
 <div class="section-bkg-wrapper">
     <main id="main" aria-label="Content" tabindex="-1">
         <div id="content-container" class="login-register-content">
-            % if enable_enterprise_sidebar:
+            <!-- % if enable_enterprise_sidebar:
                 <%include file="enterprise_sidebar.html" />
                 <%
                     border_class = 'border-left'
@@ -50,7 +50,7 @@
                 <%
                     border_class = ''
                 %>
-            % endif
+            % endif -->
             <div id="login-and-registration-container" class="login-register ${border_class}"></div>
         </div>
     </main>
