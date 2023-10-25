@@ -34,11 +34,11 @@
         cursor: pointer;
     }
     .google-button {
-        background-color: #d9534f;
+        background-color: #d9534f !important;
         color: #fff;
     }
     .account-button {
-        background-color: #007BFF;
+        background-color: #007BFF !important;
         color: #fff;
     }
 </style>
