@@ -32,26 +32,6 @@
         border-radius: 5px;
         cursor: pointer;
     }
-    #loginForm label, #loginForm input {
-        display: block;
-        margin: 10px 0;
-    }
-    #loginForm input {
-        width: calc(100% - 30px);
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-    #loginForm button {
-        display: block;
-        width: calc(100% - 1vh);
-        padding: 10px;
-        background-color: #007BFF;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
     .google-button {
         background-color: #d9534f;
         color: #fff;
