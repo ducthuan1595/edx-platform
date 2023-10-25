@@ -26,11 +26,11 @@
     }
     .google-button {
         background-color: #d9534f !important;
-        color: #fff;
+        color: #fff !important;
     }
     .account-button {
         background-color: #007BFF !important;
-        color: #fff;
+        color: #fff !important;
     }
 </style>
 
@@ -40,14 +40,14 @@
 <div class="container-login">
     <h2><%- gettext("Sign In") %></h2>
     <div class="button-container">
-        <button class=" button-custom account-button" id="showLoginForm">
+        <button type="button" class=" button-custom account-button" id="showLoginForm">
             <i class="fas fa-user"></i> Sign in with account
         </button>
 
         <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
             <% _.each( context.providers, function( provider ) {
                 if ( provider.loginUrl ) { %>
-                    <button class="google-button button-<%- provider.id %> login-provider login-<%- provider.id %>" data-provider-url="<%- provider.loginUrl %>">
+                    <button type="button" class="button-custom google-button login-provider " data-provider-url="<%- provider.loginUrl %>">
                         <i class="fab fa-google"></i> 
                         <span aria-hidden="true"><%- provider.name %></span>
                         <span class="sr"><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
