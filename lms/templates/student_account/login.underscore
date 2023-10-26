@@ -2,13 +2,31 @@
     .container-login {
         display: flex;
         align-items: center;
+        width: 200vh;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        padding: 20px;
+        border: 1px solid #ccc;
         border-radius: 5px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
     .button-container {
-        margin-left: 20px;
-        text-align: center;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .button-custom {
+        flex: 1;
+        padding: 10px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-image: none;
     }
 
     .left-column {
