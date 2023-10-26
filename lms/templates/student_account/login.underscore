@@ -1,25 +1,21 @@
 
 <style>
-    .container-login {
-        width: calc(100% - 50rem);
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: #fff;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    .left-column {
+        height: 100vh;
     }
-    .button-container {
-        display: flex;
-        justify-content: space-between;
+
+    .left-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
     }
-    .button-custom {
-        flex: 1;
-        margin-right: 10px;
-        background-image: none;
+
+    .right-column {
+        margin: 0 auto;
+    }
+    .content-center {
+        margin-top: 90px;
+        text-align: center;
     }
     .google-button {
         background-color: #d9534f !important;
@@ -34,59 +30,62 @@
 <div class="js-form-feedback" aria-live="assertive" tabindex="-1">
 </div>
 
-<div class="container-login">
-    <h2 style="text-align: center;"><%- gettext("Sign In") %></h2>
-    <div class="button-container">
-        <button type="button" class=" button-custom account-button" id="showLoginForm">
-            <i class="fas fa-user"></i> Sign in with account
-        </button>
-
-        <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
-            <% _.each( context.providers, function( provider ) {
-                if ( provider.loginUrl ) { %>
-                    <button type="button" class="button-custom google-button login-provider " data-provider-url="<%- provider.loginUrl %>">
-                        <i class="fab fa-google" style="font-size: large;"></i> 
-                        <span><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
+<div class="container" style="overflow: hidden;">
+    <div class="card mt-4 p-4" style="margin: 0 auto; max-height: 80vh;">
+        <div class="row">
+            <div class="col-md-6 left-column">
+                <img class="left-image" src="../../static/images/login-vector.jpg" alt="Hình nền">
+            </div>
+            <div class="col-md-6 right-column">
+                <div class="content-center">
+                    <h2 style="text-align: center;"><%- gettext("Sign In") %></h2>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        <i class="fas fa-user"></i>
+                        Signin with account
                     </button>
-                <% }
-            }); %>
+                    <button class="btn btn-danger">
+                        <i class="fab fa-google"></i>
+                        Signin with Google
+                    </button>
 
-            <% if ( context.hasSecondaryProviders ) { %>
-                <button type="button" class="button-secondary-login form-toggle" data-type="institution_login">
-                    <%- gettext("Use my institution/campus credentials") %>
-                </button>
-            <% } %>
-        <% } %>
+                     <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
+                        <% _.each( context.providers, function( provider ) {
+                            if ( provider.loginUrl ) { %>
+                                <button type="button" class="button-custom google-button" data-provider-url="<%- provider.loginUrl %>">
+                                    <i class="fab fa-google" style="font-size: large;"></i> 
+                                    <span><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
+                                </button>
+                            <% }
+                        }); %>
+
+                        <% if ( context.hasSecondaryProviders ) { %>
+                            <button type="button" class="button-secondary-login form-toggle" data-type="institution_login">
+                                <%- gettext("Use my institution/campus credentials") %>
+                            </button>
+                        <% } %>
+                    <% } %>
+                </div>
+                <div class="collapse mt-3" id="collapseExample">
+                    <div class="card card-body">
+                         <form id="loginForm" class="login-form" style="display: none;" tabindex="-1" method="POST">
+                            <p class="sr">
+                                <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
+                                    <%- gettext("Sign in here using your email address and password, or use one of the providers listed below.") %>
+                                <% } else { %>
+                                    <%- gettext("Sign in here using your email address and password.") %>
+                                <% } %>
+                                <%- gettext("If you do not yet have an account, use the button below to register.") %>
+                            </p>
+
+                            <%= context.fields %>
+
+                            <button type="submit" class="action action-primary action-update js-login login-button"><%- gettext("Sign in") %></button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
-
-    <form id="loginForm" class="login-form" style="display: none;" tabindex="-1" method="POST">
-        <p class="sr">
-            <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
-                <%- gettext("Sign in here using your email address and password, or use one of the providers listed below.") %>
-            <% } else { %>
-                <%- gettext("Sign in here using your email address and password.") %>
-            <% } %>
-            <%- gettext("If you do not yet have an account, use the button below to register.") %>
-        </p>
-
-        <%= context.fields %>
-
-        <button type="submit" class="action action-primary action-update js-login login-button"><%- gettext("Sign in") %></button>
-    </form>
- 
 </div>
-
-<script>
-    const showLoginFormButton = document.getElementById('showLoginForm');
-    const loginForm = document.getElementById('loginForm');
-    let isLoginFormVisible = false;
-
-    showLoginFormButton.addEventListener('click', function () {
-        if (isLoginFormVisible) {
-            loginForm.style.display = 'none';
-        } else {
-            loginForm.style.display = 'block';
-        }
-        isLoginFormVisible = !isLoginFormVisible;
-    });
-</script>
