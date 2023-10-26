@@ -10,7 +10,6 @@
     .container-login {
         display: flex;
         align-items: center;
-        border: 1px solid #ccc;
         border-radius: 5px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
@@ -22,7 +21,6 @@
 
     .left-column {
         width: 50%;
-        border-right: 1px solid #ccc;
     }
 
     .left-image {
