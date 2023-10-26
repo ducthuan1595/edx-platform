@@ -585,10 +585,10 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         """Redirects to the registration page."""
         return redirect(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER])
     
-    def dispatch_to_wrong_error():
-        """Redirects to the registration page."""
-        wrong_error_redirect = '/wrong-error'
-        return redirect(wrong_error_redirect)
+    def dispatch_to_login_fail():
+        """Redirects to the login fail page."""
+        login_fail_redirect = '/login-fail'
+        return redirect(login_fail_redirect)
 
     def should_force_account_creation():
         """ For some third party providers, we auto-create user accounts """
@@ -600,15 +600,11 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         if auth_entry in [AUTH_ENTRY_LOGIN_API, AUTH_ENTRY_REGISTER_API]:
             return HttpResponseBadRequest()
         elif auth_entry == AUTH_ENTRY_LOGIN:
-            # User has authenticated with the third party provider but we don't know which edX
-            # account corresponds to them yet, if any.
-            if should_force_account_creation():
-                return dispatch_to_wrong_error()
-            return dispatch_to_login()
+            # redirect to the login fail page if don't have a user
+            return dispatch_to_login_fail()
         elif auth_entry == AUTH_ENTRY_REGISTER:
-            # User has authenticated with the third party provider and now wants to finish
-            # creating their edX account.
-            return dispatch_to_wrong_error()
+            # redirect to the login fail page if don't have a user
+            return dispatch_to_login_fail()
         elif auth_entry == AUTH_ENTRY_ACCOUNT_SETTINGS:
             raise AuthEntryError(backend, 'auth_entry is wrong. Settings requires a user.')
         elif auth_entry in AUTH_ENTRY_CUSTOM:

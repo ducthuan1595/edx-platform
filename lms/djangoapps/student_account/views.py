@@ -8,7 +8,7 @@ from datetime import datetime
 import pytz
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import resolve, reverse
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
@@ -36,6 +36,7 @@ from openedx.core.lib.time_zone_utils import TIME_ZONE_CHOICES
 from openedx.features.enterprise_support.api import enterprise_customer_for_request
 from student.helpers import destroy_oauth_tokens, get_next_url_for_login_page
 from student.models import UserProfile
+from student.cookies import delete_logged_in_cookies
 from student.views import register_user as old_register_view
 from student.views import signin_user as old_login_view
 from third_party_auth import pipeline
@@ -160,9 +161,9 @@ def login_and_registration_form(request, initial_mode="login"):
 @require_http_methods(['GET'])
 @ensure_csrf_cookie
 @xframe_allow_whitelisted
-def wrong_error(request):
+def login_fail(request):
     """
-    View function that handles the wrong_error page.
+    View function that handles the login_fail page.
 
     Args:
         request: The HTTP request object.
@@ -177,7 +178,16 @@ def wrong_error(request):
     if request.user.is_authenticated():
         return redirect(redirect_to)
 
-    return render_to_response('student_account/wrong_error.html', { 'hide_signin': True })
+    # Set the flag to indicate that the request is from logout
+    request.is_from_logout = True
+    # Log out the user
+    logout(request)
+    
+    # Render the login_fail.html template with the 'hide_signin' context variable set to True
+    response = render_to_response('student_account/login_fail.html', { 'hide_signin': True })
+    delete_logged_in_cookies(response)
+    
+    return response
 
 
 @require_http_methods(['POST'])
