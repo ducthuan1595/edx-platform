@@ -116,7 +116,7 @@ urlpatterns = (
     url(r'^api/experiments/', include('experiments.urls', namespace='api_experiments')),
 
     # Login redirects if user doesn't exist
-    url(r'^wrong-error$', 'student_account.views.wrong_error', name="wrong_error"),
+    url(r'^login-fail$', 'student_account.views.login_fail', name="login_fail"),
 )
 
 # TODO: This needs to move to a separate urls.py once the student_account and
