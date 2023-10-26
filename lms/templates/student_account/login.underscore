@@ -1,12 +1,4 @@
 <style>
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
-
     .container-login {
         display: flex;
         align-items: center;
@@ -71,11 +63,14 @@
     .google-button:hover {
         background-color: #aa322b !important;
     }
+
     .login-form {
-        border: 1px solid #ccc; 
+        border: 1px solid #ccc;
+        display: none;
         margin-top: 10px;
+        border-radius: 5px;
         padding: 20px;
-    }
+    }               
 </style>
 
 <div class="js-form-feedback" aria-live="assertive" tabindex="-1">
@@ -110,7 +105,7 @@
             <% } %>
         </div>
 
-        <form id="loginForm" class="login-form" style="display: none; text-align: center;" tabindex="-1">
+        <form id="loginForm" class="login-form" tabindex="-1">
             <p class="sr">
                 <% if ( context.providers.length > 0 && !context.currentProvider || context.hasSecondaryProviders ) { %>
                     <%- gettext("Sign in here using your email address and password, or use one of the providers listed below.") %>
