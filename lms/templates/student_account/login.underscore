@@ -74,8 +74,8 @@
         background-color: #aa322b !important;
     }
     .login-form {
-        border: 1px solid #ccc; /* Thêm viền */
-        margin-top: 10px; /* Khoảng cách từ trên xuống 10px */
+        border: 1px solid #ccc; 
+        margin-top: 10px;
         padding: 20px;
     }
 </style>
