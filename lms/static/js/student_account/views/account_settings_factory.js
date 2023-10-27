@@ -275,7 +275,8 @@
                 el: accountSettingsElement,
                 tabSections: {
                     aboutTabSections: aboutSectionsData,
-                    accountsTabSections: accountsSectionData,
+                    // Hide content of accounts tab
+                    // accountsTabSections: accountsSectionData,
                     ordersTabSections: ordersSectionData
                 },
                 userPreferencesModel: userPreferencesModel
