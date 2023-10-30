@@ -973,13 +973,13 @@ class RegistrationView(APIView):
                     )
 
 
-class RegistrationAndEnrollmentView(RegistrationView):
+class RegistrationCustomView(RegistrationView):
     """HTTP end-points for creating a new user and enrolling in courses."""
 
-    @method_decorator(require_json_params(["username", "name", "country", "email", "password", "honor_code", "terms_of_service", "course_id"]))
+    @method_decorator(require_json_params(["username", "name", "country", "email", "password", "honor_code", "terms_of_service"]))
     @method_decorator(csrf_exempt)
     def post(self, request):
-        """Create the user's account and enroll them in courses.
+        """Create the user's account.
 
         You must send all required form fields with the request.
 
@@ -1036,27 +1036,6 @@ class RegistrationAndEnrollmentView(RegistrationView):
                 user = create_account_with_params(request, data)
                 user.is_active = True
                 user.save()
-
-                course_id = data['course_id']
-                course_id = SlashSeparatedCourseKey.from_deprecated_string(data.get('course_id'))
-                
-                if CourseMode.is_white_label(course_id):
-                    course_mode = CourseMode.DEFAULT_SHOPPINGCART_MODE_SLUG
-                else:
-                    course_mode = None
-
-                # enroll a user if it is not already enrolled.
-                if not CourseEnrollment.is_enrolled(user, course_id):
-                    # Enroll user to the course and add manual enrollment audit trail
-                    create_manual_course_enrollment(
-                        user=user,
-                        course_id=course_id,
-                        mode=course_mode,
-                        enrolled_by=request.user,
-                        reason='Enrolling via Registration And Enrollment API',
-                        state_transition=UNENROLLED_TO_ENROLLED,
-                    )
-                    enroll_email(course_id=course_id, student_email=email, auto_enroll=True, email_students=False)
         except ValidationError as err:
             # Should only get non-field errors from this function
             assert NON_FIELD_ERRORS not in err.message_dict
