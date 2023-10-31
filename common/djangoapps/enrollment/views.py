@@ -4,8 +4,10 @@ consist primarily of authentication, request validation, and serialization.
 
 """
 import logging
+import json
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.utils.decorators import method_decorator
 from edx_rest_framework_extensions.authentication import JwtAuthentication
 from opaque_keys import InvalidKeyError
@@ -31,9 +33,17 @@ from openedx.core.lib.exceptions import CourseNotFoundError
 from openedx.core.lib.log_utils import audit_log
 from openedx.features.enterprise_support.api import EnterpriseApiClient, EnterpriseApiException, enterprise_enabled
 from student.auth import user_has_role
-from student.models import User
+from student.models import (
+    User,
+    UNENROLLED_TO_ENROLLED,
+    CourseEnrollment
+)
 from student.roles import CourseStaffRole, GlobalStaff
 from util.disable_rate_limit import can_disable_rate_limit
+from lms.djangoapps.instructor.views.api import create_manual_course_enrollment
+from lms.djangoapps.instructor.enrollment import (
+    enroll_email
+)
 
 log = logging.getLogger(__name__)
 REQUIRED_ATTRIBUTES = {
@@ -700,3 +710,99 @@ class EnrollmentListView(APIView, ApiKeyPermissionMixIn):
                     actual_activation=current_enrollment['is_active'] if current_enrollment else None,
                     user_id=user.id
                 )
+
+
+class EnrollmentCustomView(APIView):
+    """HTTP endpoint for enrolling users to courses."""
+
+    authentication_classes = (JwtAuthentication, OAuth2AuthenticationAllowInactiveUser,)
+    permission_classes = ApiKeyHeaderPermissionIsAuthenticated,
+
+    def post(self, request):
+        """
+        Handle POST requests for enrolling users to courses.
+
+        Args:
+            request (HttpRequest): The HTTP request object.
+
+        Returns:
+            HttpResponse: 200 on success.
+            HttpResponse: 400 if the request is not valid.
+        """
+        data = json.loads(request.body)
+        
+        email = data.get('email')
+        course_ids = data.get('course_ids')
+
+        if not email:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'message': u'The email address is required.'
+                }
+            )
+        if not course_ids:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'message': u'At least one course ID is required.'
+                }
+            )
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    'message': u'The user {} does not exist.'.format(email)
+                }
+            )
+        
+        # Separate the valid and invalid course IDs
+        invalid_course_ids = []
+        valid_course_ids = []
+
+        for course_id in course_ids:
+            try:
+                # Try to parse the course ID as a CourseKey
+                course_id = CourseKey.from_string(course_id)
+                valid_course_ids.append(course_id)
+            except InvalidKeyError:
+                invalid_course_ids.append(course_id)
+
+        if invalid_course_ids:
+            # If there are invalid course IDs, return a 400 error response
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "message": u"No courses '{}' found for enrollment".format(", ".join(invalid_course_ids))
+                }
+            )
+
+        # Enroll the user to each valid course
+        for course_id in valid_course_ids:
+            if CourseMode.is_white_label(course_id):
+                course_mode = CourseMode.DEFAULT_SHOPPINGCART_MODE_SLUG
+            else:
+                course_mode = None
+
+            if not CourseEnrollment.is_enrolled(user, course_id):
+                with transaction.atomic():
+                    # Enroll user to the course and add manual enrollment audit trail
+                    create_manual_course_enrollment(
+                        user=user,
+                        course_id=course_id,
+                        mode=course_mode,
+                        enrolled_by=request.user,
+                        reason='Enrolling via EnrollmentCustomView API',
+                        state_transition=UNENROLLED_TO_ENROLLED,
+                    )
+                    enroll_email(course_id=course_id, student_email=email, auto_enroll=True, email_students=False)
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data={
+                "success": True
+            }
+        )
