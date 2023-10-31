@@ -13,6 +13,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
 from django_countries import countries
+from edx_rest_framework_extensions.authentication import JwtAuthentication
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx import locator
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
@@ -24,8 +25,11 @@ import third_party_auth
 from django_comment_common.models import Role
 from edxmako.shortcuts import marketing_link
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
-from openedx.core.lib.api.authentication import SessionAuthenticationAllowInactiveUser
-from openedx.core.lib.api.permissions import ApiKeyHeaderPermission
+from openedx.core.lib.api.authentication import (
+    OAuth2AuthenticationAllowInactiveUser,
+    SessionAuthenticationAllowInactiveUser
+)
+from openedx.core.lib.api.permissions import ApiKeyHeaderPermission, ApiKeyHeaderPermissionIsAuthenticated
 from shoppingcart.models import (
     CourseMode,
 )
@@ -194,9 +198,8 @@ class RegistrationView(APIView):
         "terms_of_service",
     ]
 
-    # This end-point is available to anonymous users,
-    # so do not require authentication.
-    authentication_classes = []
+    authentication_classes = (JwtAuthentication, OAuth2AuthenticationAllowInactiveUser, )
+    permission_classes = ApiKeyHeaderPermissionIsAuthenticated,
 
     def _is_field_visible(self, field_name):
         """Check whether a field is visible based on Django settings. """
