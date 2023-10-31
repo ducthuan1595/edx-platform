@@ -36,15 +36,7 @@ from shoppingcart.models import (
 from student.cookies import set_logged_in_cookies
 from student.forms import get_registration_extension_form
 from student.views import create_account_with_params
-from student.models import (
-    UNENROLLED_TO_ENROLLED,
-    CourseEnrollment
-)
 from util.json_request import JsonResponse
-from lms.djangoapps.instructor.views.api import create_manual_course_enrollment
-from lms.djangoapps.instructor.enrollment import (
-    enroll_email
-)
 
 from .accounts import (
     EMAIL_MAX_LENGTH,
@@ -198,8 +190,9 @@ class RegistrationView(APIView):
         "terms_of_service",
     ]
 
-    authentication_classes = (JwtAuthentication, OAuth2AuthenticationAllowInactiveUser, )
-    permission_classes = ApiKeyHeaderPermissionIsAuthenticated,
+    # This end-point is available to anonymous users,
+    # so do not require authentication.
+    authentication_classes = []
 
     def _is_field_visible(self, field_name):
         """Check whether a field is visible based on Django settings. """
@@ -979,6 +972,9 @@ class RegistrationView(APIView):
 class RegistrationCustomView(RegistrationView):
     """HTTP end-points for creating a new user and enrolling in courses."""
 
+    authentication_classes = (JwtAuthentication, OAuth2AuthenticationAllowInactiveUser, )
+    permission_classes = ApiKeyHeaderPermissionIsAuthenticated,
+
     @method_decorator(require_json_params(["username", "name", "country", "email", "password", "honor_code", "terms_of_service"]))
     @method_decorator(csrf_exempt)
     def post(self, request):
@@ -990,7 +986,7 @@ class RegistrationCustomView(RegistrationView):
             request (HTTPRequest)
 
         Returns:
-            HttpResponse: 200 on success
+            HttpResponse: 201 on success
             HttpResponse: 400 if the request is not valid.
             HttpResponse: 409 if an account with the given username or email
                 address already exists
@@ -1057,7 +1053,6 @@ class RegistrationCustomView(RegistrationView):
             return JsonResponse(errors, status=409)
 
         response = JsonResponse({"success": True}, status=201)
-        set_logged_in_cookies(request, response, user)
         return response
     
 
