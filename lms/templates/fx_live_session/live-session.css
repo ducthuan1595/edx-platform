@@ -1,0 +1,444 @@
+ol.left.nav-global.list-inline.authenticated {
+  display: none;
+}
+a.doc-link {
+  display: none;
+}
+.wrapper-live-session {
+  max-width: 63rem;
+}
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+#myTab {
+  min-width: 10rem;
+}
+.nav-tabs .nav-item .nav-link {
+  background-color: transparent;
+  border: none;
+}
+.nav-tabs .nav-item .nav-link.active {
+  border: none;
+  border-bottom: 2px solid #007bff;
+  margin-right: 2px;
+}
+div#myTabContent {
+  border: none;
+  box-shadow: none;
+}
+div#booking {
+  background-color: #f5f5f5;
+  border-radius: 1rem;
+  padding: 1rem 4rem;
+  margin: auto;
+}
+.select-activity {
+  display: flex;
+  background: transparent;
+  border-radius: 0;
+  border: 0;
+  margin-left: 0;
+  flex-direction: row;
+  max-width: 27.72rem;
+  padding: 0 0 0 12px;
+  justify-content: space-between;
+}
+.select-activity .form-check {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.35rem 1rem;
+  background: white;
+  border: 1px solid #000000;
+  border-radius: 0.4rem;
+}
+.select-activity input {
+  margin: 0 !important;
+}
+.select-activity .form-check-label {
+  margin: 0.1rem 0 0 0.5rem;
+}
+
+div.select-course button {
+  border: 1px solid #000000;
+  padding: 0.5rem 1rem;
+  background: white !important;
+  width: 27rem !important;
+}
+div.select-course button:active {
+  box-shadow: inset 0 0 8px 4px #ffffff, inset 0 0 8px 4px #cac2c2 !important;
+}
+div.select-course .dropdown-menu {
+  min-width: 27rem;
+}
+div.select-course .dropdown-menu .bs-searchbox input {
+  width: 24rem;
+}
+
+#datepicker, #datepicker-general {
+  width: 15rem;
+}
+#datepicker .input-group-addon, #datepicker-general .input-group-addon {
+  margin-left: -3rem;
+  margin-top: 0.2rem;
+  z-index: 2;
+}
+#datepicker .input-group-text, #datepicker-general .input-group-text {
+  border: 0;
+  background-color: transparent;
+}
+.datepicker th, .datepicker td {
+  width: 2.5rem;
+  height: 2.5rem;
+  text-align: center;
+  border-radius: 0.25rem;
+}
+.datepicker-days td {
+  padding-top: 0.4rem;
+}
+.datepicker th.prev, .datepicker th.next {
+  width: 2rem;
+}
+#datepicker .select-date, #datepicker-general .select-date {
+  border: 1px solid !important;
+  border-radius: 0.4rem !important;
+  padding: 1.2rem 1rem !important;
+  z-index: 1;
+}
+
+.form-check-input:focus {
+  box-shadow: none;
+}
+.form-check-input:checked {
+  background-color: #474747 !important;
+  border-color: #474747 !important;
+}
+.table-select-mentor-container, .table-select-update-mentor-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 45rem;
+  margin: auto;
+  background-color: white;
+  border: 1px solid;
+  border-radius: 0.3rem;
+}
+.table-select-mentor-container .table-row, .table-select-update-mentor-container .table-row {
+  display: flex;
+  border-bottom: none;
+  padding: 8px;
+}
+.table-select-mentor-container .table-row:hover, .table-select-update-mentor-container .table-row:hover {
+  cursor: pointer;
+}
+.table-select-mentor-container .table-header, .table-select-update-mentor-container .table-header {
+  font-weight: bold; /* Bootstrap table header background color */
+  margin-right: 1rem;
+  border-bottom: 1px dashed;
+}
+.table-select-mentor-container .table-body, .table-select-update-mentor-container .table-body {
+  max-height: 300px; /* Adjust as needed */
+  overflow-y: auto;
+}
+.table-select-mentor-container .table-cell, .table-select-update-mentor-container .table-cell {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+}
+.table-select-mentor-container .select-column, .table-select-update-mentor-container .select-column {
+  flex: 0 0 8rem; /* Fixed width for Select column */
+}
+.table-select-mentor-container .time, .table-select-update-mentor-container .time {
+  flex: 0 0 10rem; /* Fixed width for Select column */
+}
+.table-select-mentor-container .mentor, .table-select-update-mentor-container .mentor {
+  text-align: left;
+  padding-left: 7rem;
+}
+#custom-time-input {
+  border: 1px solid #000000;
+  border-radius: 5px;
+  height: 2.2rem;
+  padding: 0;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  width: 4.5rem;
+  text-align-last: center;
+}
+input[type=time]::-webkit-calendar-picker-indicator {
+  bottom: 0;
+  color: transparent;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%
+}
+textarea#question {
+  width: 39rem;
+  min-height: 8rem;
+  margin: auto;
+}
+#submit, #update {
+  width: 8rem;
+  height: 3rem;
+  background: #207196;
+  color: white;
+  font-size: 1.2rem;
+  font-style: normal;
+  text-shadow: none;
+  font-weight: 400;
+  border: none;
+  border-radius: 0.7rem;
+  margin-right: 10rem;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+#submit:hover, #update:hover {
+  background: #20719691;
+  box-shadow: inset 0 1px 0 0 #fefefe;
+}
+.wrapper-live-session .modal {
+  z-index: 1055 !important;
+}
+.wrapper-live-session .modal-dialog {
+  max-width: 40rem;
+}
+.wrapper-live-session .modal-content {
+  background-color: #fefefe;
+  margin: initial;
+  border: none;
+  width: inherit;
+  display: block;
+}
+.modal-backdrop {
+  display: none !important;
+}
+#close-popup:hover {
+  color: #0075b4;
+}
+
+.history-container {
+  background-color: #f5f5f5;
+  border-radius: 1rem;
+  padding: 1rem 1rem;
+  margin: auto;
+  margin-bottom: 2rem;
+}
+.history-container h3 {
+  font-size: 1.3rem;
+}
+#update {
+  margin-right: 1rem;
+}
+.table-upcoming-session {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+.table-upcoming-session .table-row {
+  display: flex;
+  border-bottom: 1px solid #dee2e6; /* Bootstrap border color */
+  padding: 8px;
+}
+.table-upcoming-session .table-header {
+  font-weight: bold; /* Bootstrap table header background color */
+}
+.table-upcoming-session .table-body {
+  max-height: 300px; /* Adjust as needed */
+  overflow-y: auto;
+}
+.table-upcoming-session .table-cell {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+}
+.table-upcoming-session .table-cell.stt, .table-took-place-session .table-cell.stt {
+  flex: 5%;
+}
+.table-upcoming-session .table-cell.time {
+  flex: 12%; 
+}
+.table-upcoming-session .table-cell.activity {
+  flex: 13%; 
+}
+.table-upcoming-session .table-cell.course {
+  flex: 30%; 
+}
+.table-upcoming-session .table-cell.link, .table-took-place-session .table-cell.note {
+  flex: 20%; 
+}
+.table-upcoming-session .table-cell.button-column {
+  flex: 10%; 
+}
+.table-upcoming-session .table-cell.button-column-edit {
+  flex: 13%; 
+}
+.table-upcoming-session .select-column {
+  flex: 0 0 4rem; 
+}
+.table-upcoming-session .btn-cancel, .btn-edit {
+  width: 4rem;
+  height: 2rem;
+  background: #207196;
+  color: white;
+  font-size: 14px;
+  font-style: normal;
+  text-shadow: none;
+  font-weight: 400;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+.table-upcoming-session .btn-cancel:hover, .table-upcoming-session .btn-edit:hover {
+  background: #207196a1;
+}
+.table-upcoming-session .btn-cancel:active, .table-upcoming-session .btn-cancel:focus, .table-upcoming-session .btn-edit:active, .table-upcoming-session .btn-edit:focus {
+  border: none;
+  box-shadow: none;
+}
+.table-upcoming-session, .table-took-place-session {
+  font-size: 14px;
+}
+.update-course-name {
+  background: white !important;
+  border: 1.9px solid #000000 !important;
+  width: 27rem !important;
+  color: #a3a3a3 !important;
+}
+#update-datepicker {
+  width: 15rem;
+  padding: 0.5rem 0rem 0.4rem 1rem;
+  border: 1px solid #000000;
+  border-radius: 0.4rem;
+  color: #a3a3a3;
+}
+.input-group-text {
+  border: 0;
+  background-color: transparent;
+}
+
+.dimmed-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  z-index: 999;
+}
+.popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  padding: 2rem;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: transform 0.5s ease-in-out 0s;
+  height: auto;
+  border-radius: 1rem;
+  max-height: 90%;
+  overflow-y: auto;
+  min-width: 46rem;
+}
+.popup-content {
+  min-width: 40rem;
+  text-align: center;
+}
+.close {
+  position: absolute;
+  top: -5px;
+  right: 15px;
+  font-size: 35px;
+  cursor: pointer;
+  color: #08509F;
+}
+button#confirm-cancel {
+  width: 8rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 1rem;
+  background: #40A3DF;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+button#confirm-cancel:hover {
+  background: #40a3df94;
+  box-shadow: inset 0 1px 0 0 #fefefe;
+}
+
+.table-took-place-session {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+.table-took-place-session .table-row {
+  display: flex;
+  border-bottom: 1px solid #dee2e6; /* Bootstrap border color */
+  padding: 8px;
+}
+.table-took-place-session .table-header {
+  font-weight: bold; /* Bootstrap table header background color */
+}
+.table-took-place-session .table-body {
+  max-height: 40rem; /* Adjust as needed */
+  overflow-y: auto;
+}
+.table-took-place-session .table-cell {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+}
+.table-took-place-session .table-cell.time {
+  flex: 15%;
+}
+.table-took-place-session .table-cell.activity {
+  flex: 15%;
+}
+.table-took-place-session .table-cell.course {
+  flex: 28%;
+}
+.table-took-place-session .table-cell.session-status {
+  flex: 17%;
+}
+
+@media (min-width: 992px) {
+  #booking .form-container {
+    padding-left: 2rem;
+  }
+  textarea#question {
+      width: 45rem;
+  }
+  .table-upcoming-session, .table-took-place-session {
+    font-size: 16px;
+  }
+  .history-container {
+    padding: 1rem 3rem;
+  }
+  .table-upcoming-session .btn-cancel, .btn-edit {
+    width: 5rem;
+    height: 2.5rem;
+    font-size: 16px;
+    border-radius: 16px;
+  }
+}
+
+
+.required {
+  color: red;
+}

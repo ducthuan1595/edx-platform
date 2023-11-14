@@ -542,7 +542,8 @@ def create_and_enroll_user(email, username, name, country, password, course_id, 
                 'password': password,
                 'platform_name': configuration_helpers.get_value('platform_name', settings.PLATFORM_NAME),
             })
-            send_mail_to_student(email, email_params)
+
+            # send_mail_to_student(email, email_params)
         except Exception as ex:  # pylint: disable=broad-except
             log.exception(
                 "Exception '{exception}' raised while sending email to new user.".format(exception=type(ex).__name__)
@@ -556,7 +557,8 @@ def create_and_enroll_user(email, username, name, country, password, course_id, 
                       "Please contact support for further information.").format(error=type(ex).__name__, email=email),
             })
         else:
-            log.info(u'email sent to new created user at %s', email)
+            pass
+            # log.info(u'email sent to new created user at %s', email)
 
     return errors
 
