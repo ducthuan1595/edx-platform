@@ -22,24 +22,37 @@ def get_live_session_data(user_email):
     student_api_url = u'{base_url}/student'.format(base_url=base_url)
     params = {'student_email': user_email}
 
+    live_session_data = {
+        'live_session': None,
+        'general': None,
+        'mentor': None,
+        'tutor': None
+    }
     try:
         response = requests.get(student_api_url, params=params, timeout=5)
         response.raise_for_status()
     except requests.exceptions.HTTPError as http_err:
         log.error(u'HTTP error occurred: {err}'.format(err=http_err))
-        return None
+        return live_session_data
     except requests.exceptions.Timeout:
         log.error('The request timed out')
-        return None
+        return live_session_data
     except Exception as err:
         log.error(u'Other error occurred: {err}'.format(err=err))
-        return None
+        return live_session_data
 
     data = response.json()
     if data and 'data' in data and 'live_session' in data['data']:
-        return data['data']['live_session']
+        live_session_data['live_session'] = data['data']['live_session']
     else:
-        return None
+        live_session_data['live_session'] = None
+    
+    live_session_data['general'] = data['data']['general']
+    live_session_data['mentor'] = data['data']['mentor']
+    live_session_data['tutor'] = data['data']['tutor']
+    
+    return live_session_data
+    
 
 def get_course_list():
     """

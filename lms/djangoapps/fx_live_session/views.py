@@ -39,12 +39,18 @@ def live_session(request):
 
     """
     user_email = request.user.email
-    live_session = get_live_session_data(user_email)
+    live_session_data = get_live_session_data(user_email)
+    live_session = live_session_data['live_session']
 
     if not live_session:
         return redirect(reverse('dashboard'))
 
-    return render_to_response('fx_live_session/live_session.html', live_session_context(request))
+    context = live_session_context(request)
+    context['general'] = live_session_data['general']
+    context['mentor'] = live_session_data['mentor']
+    context['tutor'] = live_session_data['tutor']
+
+    return render_to_response('fx_live_session/live_session.html', context)
 
 
 def live_session_context(request):

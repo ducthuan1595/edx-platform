@@ -1,5 +1,5 @@
 $(function () {
-    let selected_session_type, selected_course_option, selected_course_id, selected_date, selected_session, selected_general_date;
+    let selected_session_type, selected_course_option, selected_course_id, selected_date, selected_session, selected_from_date, selected_to_date;
     let reload_page = false;
     let current_history_slot_id, loading_popup = false, new_slot_id;
     const base_url = "https://portal.funix.edu.vn/api/v1/live";
@@ -9,7 +9,8 @@ $(function () {
         selected_session_type: "Vui lòng lựa chọn hoạt động!",
         selected_course_id: "Vui lòng lựa chọn môn học!",
         selected_date: "Vui lòng chọn ngày!",
-        selected_general_date: "Vui lòng chọn ngày!",
+        selected_from_date: "Vui lòng chọn ngày!",
+        selected_to_date: "Vui lòng chọn ngày!",
         selected_session: "Vui lòng chọn thời gian phù hợp!",
         custom_time_input: "Vui lòng nhập thời gian phù hợp với bạn!",
         question: "Vui lòng nhập câu hỏi!"
@@ -52,16 +53,64 @@ $(function () {
         }
         return 0;
     });
+    // Define a dictionary where each key is a CSS class and each value is a filtered list of courses
+    let course_lists = {
+        '.selectpickerall': course_list,
+        '.selectpickergeneral': course_list.filter(course => course.general === true),
+        '.selectpickermentor': course_list.filter(course => course.mentor === true),
+        '.selectpickertutor': course_list.filter(course => course.tutor === true)
+    };
 
-    // Append the course list to the select element
-    const $courseSelect = $(".select-course");
-    $.each(course_list, (index, { course_title, course_code, course_id }) => {
-        const optionText = course_title + ' - ' + course_code;
-        $courseSelect.append($('<option>').attr({
-            'data-tokens': course_id,
-            'value': course_id
-        }).text(optionText));
+    // For each CSS class in the dictionary, populate the corresponding select element with the associated list of courses
+    for (let selectClass in course_lists) {
+        populateCourseSelect(course_lists[selectClass], selectClass);
+    }
+
+    // Initialize the select elements with the 'select-course' class using the selectpicker plugin
+    $('.select-course').selectpicker();
+    // Hide the select elements with the 'mentor', 'tutor', and 'general' classes
+    $('.select-course.mentor, .select-course.tutor, .select-course.general').hide();
+
+    // When the selected option of any of the select elements with the 'mentor', 'tutor', 
+    // or 'general' classes changes, update the selected course and fetch the schedule data
+    $(".selectpickermentor, .selectpickertutor, .selectpickergeneral").change(function () {
+        selected_course_option = $(this).find(":selected");
+        selected_course_id = selected_course_option.data("tokens");
+        fetchScheduleData();
     });
+
+    // Function to populate a select element with a given list of courses
+    function populateCourseSelect(course_list, selectClass) {
+        const $courseSelect = $(selectClass);
+        $.each(course_list, (index, { course_title, course_code, course_id }) => {
+            const optionText = course_title + ' - ' + course_code;
+            $courseSelect.append($('<option>').attr({
+                'data-tokens': course_id,
+                'value': course_id
+            }).text(optionText));
+        });
+    }
+
+    // Function to clear the selected course
+    function clearSelectedCourse() {
+        selected_course_option = undefined;
+        selected_course_id = undefined;
+        $('.select-course').selectpicker('val', '');
+    }
+
+    function showSelectedCourse(selected_session_type) {
+        // First, hide all select-course elements
+        $('.select-course.mentor, .select-course.tutor, .select-course.general, .select-course.all').hide();
+
+        // Then, based on the selected_session_type, show the appropriate element
+        if (selected_session_type == "mentor") {
+            $('.select-course.mentor').show();
+        } else if (selected_session_type == "tutor") {
+            $('.select-course.tutor').show();
+        } else if (selected_session_type == "general") {
+            $('.select-course.general').show();
+        }
+    }
 
     // Initialize the datepicker
     const $datepicker = $("#datepicker");
@@ -72,33 +121,51 @@ $(function () {
         altFormat: "yyyy-mm-dd", // Date format for getting the value
         startDate: '+1d' // Set the minimum date to tomorrow
     });
-    $datepicker_general.datepicker({
+
+    $("#datepicker-general .first input").datepicker({
         autoclose: true,
         todayHighlight: true,
         format: "dd/mm/yyyy", // Display format
         altFormat: "yyyy-mm-dd", // Date format for getting the value
         startDate: '0d' // Set the minimum date to tomorrow
+    }).on('changeDate', function (selected) {
+        // When the date of the first datepicker changes, update the startDate of the second datepicker
+        selected_from_date = selected.format('yyyy-mm-dd');
+        const minDate = new Date(selected.date.valueOf());
+        minDate.setDate(minDate.getDate() + 1);
+        $("#datepicker-general .second input").datepicker('setStartDate', minDate);
+
+        $("#datepicker-general .second input").datepicker('setDate', undefined);
+        selected_to_date = undefined;
+    });
+
+    $("#datepicker-general .second input").datepicker({
+        autoclose: true,
+        format: "dd/mm/yyyy", // Display format
+        altFormat: "yyyy-mm-dd", // Date format for getting the value
+        startDate: '0d' // Set the minimum date to tomorrow
+    }).on('changeDate', function (selected) {
+        selected_to_date = selected.format('yyyy-mm-dd');
+        fetchScheduleData();
     });
 
     // Get the selected session type
     $("input[name='activity']").change(function () {
+        clearSelectedCourse();
+        toggleElements(false);
         selected_session_type = $("input[name='activity']:checked").val();
 
         if (selected_session_type == "general") {
             $datepicker.hide();
             $datepicker_general.show();
+            addDateColumn();
         } else {
             $datepicker.show();
             $datepicker_general.hide();
+            removeDateColumn();
         }
 
-        fetchScheduleData();
-    });
-
-    // Get the selected course value
-    $(".select-course").change(function () {
-        selected_course_option = $(this).find(":selected");
-        selected_course_id = selected_course_option.data("tokens");
+        showSelectedCourse(selected_session_type);
         fetchScheduleData();
     });
 
@@ -107,16 +174,12 @@ $(function () {
         selected_date = e.format('yyyy-mm-dd');
         fetchScheduleData();
     });
-    $datepicker_general.on('changeDate', function (e) {
-        selected_general_date = e.format('yyyy-mm-dd');
-        fetchScheduleData();
-    });
 
     // Function to fetch schedule session data
     async function fetchScheduleData() {
         // Check if all require fields are defined
         if (selected_session_type == "general") {
-            if (!selected_course_id || !selected_general_date) {
+            if (!selected_course_id || !selected_from_date || !selected_to_date) {
                 return;
             }
         } else {
@@ -130,16 +193,20 @@ $(function () {
         // Uncheck all input elements with name 'select-session'
         $("input[name='select-session']").prop('checked', false);
         selected_session = undefined;
-        $('#custom-time-input').hide();
+        $('.custom-time-section').hide();
 
         const url = selected_session_type == "general" ? general_session_url : available_schedule_url;
-        const date = selected_session_type == "general" ? selected_general_date : selected_date;
+        const date = selected_session_type == "general" ? selected_from_date : selected_date;
+        let request_url = url + "?course_id=" + selected_course_id + "&session_type=" + selected_session_type + "&start_date=" + date;
+
+        if (selected_session_type == "general") {
+            request_url += "&end_date=" + selected_to_date;
+        }
 
         try {
             displayLoading();
 
             // Send request to API to get schedule data with params
-            const request_url = url + "?course_id=" + selected_course_id + "&session_type=" + selected_session_type + "&start_date=" + date;
             const response = await fetch(request_url, {
                 method: 'GET',
             });
@@ -165,7 +232,12 @@ $(function () {
         $.each(dataArray, function (index, item) {
             // Create a new row element
             const new_row = $('<div class="table-row"></div>');
-            new_row.append('<div class="table-cell time">' + formatDatetime(item.start_datetime) + '</div>');
+
+            if (selected_session_type == "general") {
+                new_row.append('<div class="table-cell date">' + convertToDate(item.start_datetime) + '</div>');
+            }
+
+            new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + '</div>');
             new_row.append('<div class="table-cell mentor">' + item.mentor_name + '</div>');
             new_row.append('<div class="table-cell select-column"><input class="form-check-input" type="radio" name="select-session" value="' + item.slot_id + '"></div>');
             // Append the new row to the table body
@@ -179,27 +251,59 @@ $(function () {
 
             // Select the radio button
             radio.prop('checked', true);
-            $('#custom-time-input').hide();
+            $('.custom-time-section').hide();
             selected_session = $("input[name='select-session']:checked").val();
         });
 
         // Show the table and other elements
-        $('.select-time-container').show();
-        $('.question-container').show();
-        $('.submit-button-container').show();
+        toggleElements(true);
         if (selected_session_type == "general") {
             $('.custom-time-container').hide();
+            $('.table-select-mentor-container .mentor').css("padding-left", "2rem");
         } else {
             $('.custom-time-container').show();
         }
     }
 
+    function addDateColumn() {
+        $('.table-select-mentor-container .table-header').prepend('<div class="table-cell date">Ngày</div>');
+        $('.table-select-mentor-container .mentor').css("padding-left", "2rem");
+    }
+
+    function removeDateColumn() {
+        $('.table-select-mentor-container .table-header .date').remove();
+        $('.table-select-mentor-container .mentor').css("padding-left", "7rem");
+    }
+
+    // Toggles the visibility of the elements with the given class name
+    function toggleElements(shouldShow) {
+        if (shouldShow) {
+            $('.select-time-container').fadeIn();
+            $('.question-container').fadeIn();
+            $('.submit-button-container').fadeIn();
+            $('.custom-time-container').fadeIn();
+        } else {
+            $('.select-time-container').fadeOut();
+            $('.question-container').fadeOut();
+            $('.submit-button-container').fadeOut();
+            $('.custom-time-container').fadeOut();
+        }
+    }
+
     // Function to format datetime
-    function formatDatetime(datetime) {
+    function convertToTime(datetime) {
         const date = new Date(datetime);
         const hours = date.getHours();
         const minutes = date.getMinutes();
         return hours + ':' + (minutes < 10 ? '0' : '') + minutes;
+    }
+
+    function convertToDate(datetime) {
+        const date = new Date(datetime);
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        return day + '/' + month + '/' + year;
     }
 
     // Get the selected session
@@ -208,9 +312,9 @@ $(function () {
 
         // Show or hide custom time input
         if (selected_session == "custom-time") {
-            $('#custom-time-input').show();
+            $('.custom-time-section').show();
         } else {
-            $('#custom-time-input').hide();
+            $('.custom-time-section').hide();
         }
     });
 
@@ -261,8 +365,8 @@ $(function () {
             return require_messages.selected_course_id;
         }
         if (selected_session_type == "general") {
-            if (!selected_general_date) {
-                return require_messages.selected_general_date;
+            if (!selected_from_date || !selected_to_date) {
+                return require_messages.selected_from_date;
             }
         } else {
             if (!selected_date) {
@@ -356,7 +460,7 @@ $(function () {
             } else if (data.code == 500 || data.code == 400) {
                 $(".missing-fields").show();
                 $(".missing-fields").text("Đã có lỗi xảy ra. Vui lòng tải lại trang và thử lại!");
-                reload_page = true;
+                location.reload();
             }
         } catch (error) {
             $("#loading-popup").hide();
@@ -418,7 +522,7 @@ $(function () {
                 const list_session = data.data;
                 const upcoming_session = list_session.filter(item => ((item.session_status == "Chưa diễn ra" || item.session_status == "Chờ xác nhận") && item.student_status == "Đã đăng ký"));
                 const took_place_session = list_session.filter(item => ((item.session_status == "Đã diễn ra" || item.session_status == "Đã hủy" || item.session_status == "Không diễn ra") && item.student_status != "Đã đăng ký"));
-                
+
                 // Sort list session by date
                 const sortedUpcomingSessions = sortSessionsByDate(upcoming_session, true);
                 const sortedTookPlaceSessions = sortSessionsByDate(took_place_session, false);
@@ -487,7 +591,7 @@ $(function () {
             $(".noti-container").text("");  // clear text
             $(".update-warning").hide();
             $(".confirm-cancel-container").hide();
- 
+
             // Show popup with update session form
             $(".update-session-container").show();
             $("#dimmedBackground").fadeIn();
@@ -546,7 +650,7 @@ $(function () {
         }
         return '<button type="button" class="btn-edit btn btn-primary">Sửa</button>';
     }
-    
+
     function setValueForUpdateActivity(activity) {
         switch (activity) {
             case "Mentor":
@@ -607,7 +711,7 @@ $(function () {
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
-            
+
             // Update UI
             $("#loading-popup-history").hide();
             $(".noti-container").show();
@@ -685,7 +789,7 @@ $(function () {
         $.each(dataArray, function (index, item) {
             // Create a new row element
             const new_row = $('<div class="table-row"></div>');
-            new_row.append('<div class="table-cell time">' + formatDatetime(item.start_datetime) + '</div>');
+            new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + '</div>');
             new_row.append('<div class="table-cell mentor">' + item.mentor_name + '</div>');
             new_row.append('<div class="table-cell select-column"><input class="form-check-input" type="radio" name="select-update-session" value="' + item.slot_id + '"></div>');
             // Append the new row to the table body
@@ -699,7 +803,7 @@ $(function () {
 
             // Select the radio button
             radio.prop('checked', true);
-            $('#custom-time-input').hide();
+            $('.custom-time-section').hide();
             new_slot_id = $("input[name='select-update-session']:checked").val();
         });
     }

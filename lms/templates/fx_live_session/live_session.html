@@ -31,6 +31,35 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
 <script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
 
 <link rel="stylesheet" href="${static.url('css/live-session.css')}">
+<style>
+% if not general or not mentor or not tutor:
+    .select-activity {
+        justify-content: flex-start;
+    }
+    .select-activity .form-check {
+        margin-right: 2rem;
+    }
+% endif
+input[type=radio] {
+    border-color: #5f5f5f;
+}
+#datepicker-general {
+    width: 27rem;
+    justify-content: space-around;
+    align-items: center;
+}
+#datepicker-general .input-group-addon {
+    margin-left: -3.5rem;
+    margin-top: 0.2rem;
+    z-index: 2;
+}
+#datepicker-general .first, #datepicker-general .second {
+    width: 10rem;
+}
+.table-select-mentor-container .date {
+    flex: 0 0 7rem;
+}
+</style>
 
 <div id="loading-api" class="overlay text-center mt-5 mb-4">
     <div class="spinner-border" role="status">
@@ -60,18 +89,24 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
                             <label for="activity" class="form-label">Lựa chọn hoạt động: <span class="required">(*)</span></label>
                         </div>
                         <div class="select-activity col-md-8">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="activity" id="mentor" value="mentor">
-                                <label class="form-check-label" for="mentor">Mentor</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="activity" id="tutor" value="tutor">
-                                <label class="form-check-label" for="tutor">Tutor</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="activity" id="other" value="general">
-                                <label class="form-check-label" for="other">Hỏi đáp chung</label>
-                            </div>
+                            % if mentor:
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="activity" id="mentor" value="mentor">
+                                    <label class="form-check-label" for="mentor">Mentor</label>
+                                </div>
+                            % endif
+                            % if tutor:
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="activity" id="tutor" value="tutor">
+                                    <label class="form-check-label" for="tutor">Tutor</label>
+                                </div>
+                            % endif
+                            %if general:
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="activity" id="other" value="general">
+                                    <label class="form-check-label" for="other">Hỏi đáp chung</label>
+                                </div>
+                            % endif
                         </div>
                     </div>
                     <div class="row mb-4">
@@ -79,8 +114,20 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
                             <label for="email" class="form-label">Lựa chọn môn học: <span class="required">(*)</span></label>
                         </div>
                         <div class="col-md-8">
-                            <select class="select-course selectpicker" data-live-search="true" data-size="5" title="- Chọn môn học -">
+                            <select class="select-course selectpickerall" data-live-search="true" data-size="5" title="- Chọn môn học -">
                             </select>
+                            % if mentor:
+                                <select class="select-course selectpickermentor" data-live-search="true" data-size="5" title="- Chọn môn học -" style="display: none">
+                                </select>
+                            % endif
+                            % if tutor:
+                                <select class="select-course selectpickertutor" data-live-search="true" data-size="5" title="- Chọn môn học -" style="display: none">
+                                </select>
+                            % endif
+                            % if general:
+                                <select class="select-course selectpickergeneral" data-live-search="true" data-size="5" title="- Chọn môn học -" style="display: none">
+                                </select>
+                            % endif
                         </div>
                     </div>
                     <div class="row mb-4">
@@ -95,10 +142,19 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
                                 </span>
                             </div>
                             <div id="datepicker-general" class="input-group date" data-date-format="dd-mm-yyyy" style="display: none">
-                                <input class="select-date form-control" type="text" readonly placeholder="Select a date" value=""/>
-                                <span class="input-group-addon">
-                                    <span class="input-group-text" id="basic-addon"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
-                                </span>
+                                <div class="first row flex-nowrap">
+                                    <input class="select-date form-control" type="text" readonly placeholder="Select a date" value=""/>
+                                    <span class="input-group-addon">
+                                        <span class="input-group-text" id="basic-addon"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                    </span>
+                                </div>
+                                <div class="" style="margin: 0 2rem;">đến</div> 
+                                <div class="second row flex-nowrap">
+                                    <input class="select-date form-control" type="text" readonly placeholder="Select a date" value=""/>
+                                    <span class="input-group-addon">
+                                        <span class="input-group-text" id="basic-addon"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                    </span>
+                                </div>                         
                             </div>
                         </div>
                     </div>
@@ -126,8 +182,9 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
                                 <i>Vui lòng nhập thời gian mong muốn</i>
                             </label>
                         </div>
-                        <div class="col-md-4">
+                        <div class="row col-md-4 flex-nowrap align-items-center fw-semibold custom-time-section">
                             <input id="custom-time-input">
+                            <p style="margin: 0px;">UTC+07:00</p>
                         </div>
                     </div>
                     <div class="row mb-4 justify-content-center question-container" style="display: none">
@@ -226,18 +283,24 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
                                             <label for="update-activity" class="form-label">Lựa chọn hoạt động: <span class="required">(*)</span></label>
                                         </div>
                                         <div class="select-activity col-md-8">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="update-activity" id="update-mentor" value="update-mentor">
-                                                <label class="form-check-label" for="update-mentor">Mentor</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="update-activity" id="update-tutor" value="update-tutor">
-                                                <label class="form-check-label" for="update-tutor">Tutor</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="update-activity" id="update-other" value="update-general">
-                                                <label class="form-check-label" for="update-other">Hỏi đáp chung</label>
-                                            </div>
+                                            % if mentor:
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="update-activity" id="update-mentor" value="update-mentor">
+                                                    <label class="form-check-label" for="update-mentor">Mentor</label>
+                                                </div>
+                                            % endif
+                                            % if tutor:
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="update-activity" id="update-tutor" value="update-tutor">
+                                                    <label class="form-check-label" for="update-tutor">Tutor</label>
+                                                </div>
+                                            % endif
+                                            %if general:
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="update-activity" id="update-other" value="update-general">
+                                                    <label class="form-check-label" for="update-other">Hỏi đáp chung</label>
+                                                </div>
+                                            % endif
                                         </div>
                                     </div>
                                     <div class="row mb-4">
