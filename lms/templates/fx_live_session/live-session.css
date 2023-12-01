@@ -1,3 +1,6 @@
+input[type=radio] {
+  border-color: #5f5f5f;
+}
 ol.left.nav-global.list-inline.authenticated {
   display: none;
 }
@@ -84,11 +87,16 @@ div.select-course .dropdown-menu .bs-searchbox input {
   width: 24rem;
 }
 
-#datepicker, #datepicker-general {
+#datepicker {
   width: 15rem;
 }
-#datepicker .input-group-addon, #datepicker-general .input-group-addon {
+#datepicker .input-group-addon {
   margin-left: -3rem;
+  margin-top: 0.2rem;
+  z-index: 2;
+}
+#datepicker-general .input-group-addon {
+  margin-left: -3.5rem;
   margin-top: 0.2rem;
   z-index: 2;
 }
@@ -113,6 +121,14 @@ div.select-course .dropdown-menu .bs-searchbox input {
   border-radius: 0.4rem !important;
   padding: 1.2rem 1rem !important;
   z-index: 1;
+}
+#datepicker-general {
+  width: 27rem;
+  justify-content: space-around;
+  align-items: center;
+}
+#datepicker-general .first, #datepicker-general .second {
+  width: 10rem;
 }
 
 .form-check-input:focus {
@@ -162,6 +178,9 @@ div.select-course .dropdown-menu .bs-searchbox input {
 .table-select-mentor-container .mentor, .table-select-update-mentor-container .mentor {
   text-align: left;
   padding-left: 7rem;
+}
+.table-select-mentor-container .date {
+  flex: 0 0 7rem;
 }
 #custom-time-input {
   border: 1px solid #000000;
@@ -337,7 +356,7 @@ textarea#question {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   display: none;
-  z-index: 999;
+  z-index: 8;
 }
 .popup {
   display: none;
@@ -349,7 +368,7 @@ textarea#question {
   background-color: #fff;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 9;
   transition: transform 0.5s ease-in-out 0s;
   height: auto;
   border-radius: 1rem;
@@ -441,4 +460,101 @@ button#confirm-cancel:hover {
 
 .required {
   color: red;
+}
+
+/* Filter session */ 
+.filter-schedule-section {
+  position: relative;
+  font-family: "Open Sans",Verdana,Geneva,sans-serif,sans-serif;
+}
+.filter-schedule-section .filter-button {
+  cursor: pointer;
+  max-width: 5.5rem;
+  background: #dae0e4;
+  padding: 0.2rem 0.3rem 0.2rem 0.3rem;
+  border-radius: 0.3rem;
+  margin-left: -1rem;
+  text-align-last: center;
+}
+.filter-schedule-section .filter-icon svg {
+  width: 1rem;
+  margin: 0;
+}
+.filter-schedule-section .filter-panel {
+  display: none;
+  position: absolute;
+  top: 0rem;
+  left: 5rem;
+  width: 24rem;
+  background-color: #FFFDFD;
+  border: 1px solid #000;
+  padding: 1rem 10px;
+  border-radius: 0.4rem;
+  z-index: 10;
+}
+.filter-mentor label {
+  padding-left: 0.75rem;
+}
+div.select-filter-mentor button {
+  border: 1px solid #000000;
+  padding: 0.2rem 1rem;
+  background: white !important;
+  width: 13.2rem !important;
+}
+div.select-filter-mentor button:active {
+  box-shadow: inset 0 0 8px 4px #ffffff, inset 0 0 8px 4px #cac2c2 !important;
+}
+div.select-filter-mentor .dropdown-menu {
+  min-width: 11rem;
+}
+div.select-filter-mentor .dropdown-menu .bs-searchbox input {
+  width: 9rem;
+}
+.filter-schedule-section .label-to, .filter-schedule-section #filter-time-from, .filter-schedule-section #filter-time-to, .filter-schedule-section #update-filter-time-from, .filter-schedule-section #update-filter-time-to {
+  flex: 0 0 auto;
+  width: 18%;
+}
+.filter-schedule-section .label-from {
+  flex: 0 0 auto;
+  width: 37%;
+  padding-left: 1.5rem;
+  padding-right: 0;
+  padding-top: 0.3rem;
+}
+.filter-schedule-section .label-to {
+  padding-left: 1.3rem;
+  padding-top: 0.3rem;
+}
+.filter-schedule-section #filter-time-from, .filter-schedule-section #filter-time-to, .filter-schedule-section #update-filter-time-from, .filter-schedule-section #update-filter-time-to {
+  border: 1px solid #000000;
+  border-radius: 0.3rem;
+}
+#btn-filter, #btn-filter-update {
+  width: 4.5rem;
+  height: 2rem;
+  background: #BBB8B8;
+  color: white;
+  font-style: normal;
+  text-shadow: none;
+  font-weight: 400;
+  border: none;
+  border-radius: 0.3rem;
+  margin-right: 2.1rem;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+#btn-filter:hover, #btn-filter-update:hover {
+  background: #bbb8b88a;
+  box-shadow: inset 0 1px 0 0 #fefefe;
+}
+.update-select-time-container label.form-label {
+  flex: 0 0 auto;
+  width: 22rem;
+}
+.update-select-time-container .filter-schedule-section .filter-panel {
+  top: 2.5rem;
+  left: -10rem;
+}
+.update-select-time-container .select-mentor-section {
+  padding-left: 0px;
+  margin-left: -3px;
 }

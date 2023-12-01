@@ -215,6 +215,7 @@ $(function () {
 
             if (code == 200) {
                 appendSchedule(schedule);
+                appendListMentor(schedule);
             }
         } catch (error) {
             hideLoading();
@@ -237,7 +238,7 @@ $(function () {
                 new_row.append('<div class="table-cell date">' + convertToDate(item.start_datetime) + '</div>');
             }
 
-            new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + '</div>');
+            new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + ' - ' + convertToTime(item.end_datetime) + '</div>');
             new_row.append('<div class="table-cell mentor">' + item.mentor_name + '</div>');
             new_row.append('<div class="table-cell select-column"><input class="form-check-input" type="radio" name="select-session" value="' + item.slot_id + '"></div>');
             // Append the new row to the table body
@@ -306,6 +307,192 @@ $(function () {
         return day + '/' + month + '/' + year;
     }
 
+    // FILTER SESSIONS
+    const $filterButton = $('.select-time-container .filter-button');
+    const $filterPanel = $('.select-time-container .filter-panel');
+    const $selectMentorSection = $('.select-time-container .select-mentor-section');
+    const $btnFilter = $('.select-time-container #btn-filter');
+
+    $filterButton.click(function (event) {
+        event.stopPropagation();
+        if ($filterPanel.is(":visible")) {
+            $filterPanel.fadeOut();
+        } else {
+            $filterPanel.fadeIn();
+        }
+    });
+
+    $filterPanel.click(function (event) {
+        event.stopPropagation();
+    });
+
+    function appendListMentor(data) {
+        $selectMentorSection.empty();
+        // Create a new select element
+        const $newSelect = $('<select>', {
+            class: 'select-filter-mentor selectpickerfiltermentor',
+            'data-live-search': 'true',
+            'data-size': '5',
+            title: '- Chọn mentor -'
+        });
+
+        // Append the new select element to the selectMentorSection
+        $selectMentorSection.append($newSelect);
+
+        // Append the default option to the new select element
+        $('.selectpickerfiltermentor').append($('<option>').attr({
+            'data-tokens': 'all',
+            'value': 'all'
+        }).text('Tất cả'));
+
+        let seen = new Set();
+        $.each(data, (index, { mentor_name }) => {
+            if (!seen.has(mentor_name)) {
+                $('.selectpickerfiltermentor').append($('<option>').attr({
+                    'data-tokens': mentor_name,
+                    'value': mentor_name
+                }).text(mentor_name));
+                seen.add(mentor_name);
+            }
+        });
+
+        // Initialize the selectpicker
+        $('.selectpickerfiltermentor').selectpicker();
+
+        // Hide dropdown menu after selecting an option
+        $('.select-time-container .select-mentor-section button').click(function () {
+            $('.select-time-container .select-mentor-section ul.dropdown-menu a').off('click');    // Remove any existing click event handlers from the 'a' elements within the 'ul.dropdown-menu'
+            $('.select-time-container .select-mentor-section ul.dropdown-menu a').click(function () {
+                $('.select-time-container .select-mentor-section div.dropdown-menu').removeClass('show');
+            });
+        });
+    }
+
+    // Initialize the timepicker
+    $('#filter-time-from').timepicker({
+        timeFormat: 'HH:mm',
+        minTime: new Date(0, 0, 0, 0, 0, 0),
+        maxTime: new Date(0, 0, 0, 23, 59, 59),
+        startHour: 0,
+        interval: 30
+    });
+    $('#filter-time-to').timepicker({
+        timeFormat: 'HH:mm',
+        minTime: new Date(0, 0, 0, 0, 0, 0),
+        maxTime: new Date(0, 0, 0, 23, 59, 59),
+        startHour: 0,
+        interval: 30
+    });
+
+    function updateTime() {
+        const time = $(this).val().split(':');
+        const hours = parseInt(time[0]);
+        let minutes = parseInt(time[1]);
+
+        // Round minutes to the nearest 30 (down)
+        minutes = Math.floor(minutes / 30) * 30;
+
+        // If minutes is NaN (not a number), set it to 0
+        if (isNaN(minutes)) {
+            $(this).val(undefined);
+        } else {
+            // Update the time in the input field
+            $(this).val(('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2));
+        }
+    }
+
+    // Add change handler to time inputs
+    $('#filter-time-from, #filter-time-to, #update-filter-time-from, #update-filter-time-to').on('change', updateTime);
+
+    $btnFilter.click(function () {
+        const $sessions = $('.table-select-mentor-container .table-body .table-row');
+        clearSelectedSession();
+        filterSession('.selectpickerfiltermentor', '#filter-time-from', '#filter-time-to', $sessions);
+        $filterPanel.fadeOut();     // Hide filter panel
+    });
+
+    function filterSession(mentorSelector, timeFromSelector, timeToSelector, $sessions) {
+        const mentor = $(mentorSelector).val();
+        const timeFrom = $(timeFromSelector).val();
+        const timeTo = $(timeToSelector).val();
+
+        // Display all sessions before applying filters
+        displayAllSession($sessions);
+
+        // Apply filters
+        if (mentor && mentor !== 'all') {
+            hideSessionByMentor(mentor, $sessions);
+        }
+        if (timeFrom && timeTo) {
+            hideSessionByTime(timeFrom, timeTo, $sessions);
+        }
+    }
+
+    function hideSessionByMentor(mentor_name, $sessions) {
+        $sessions.each(function () {
+            const rowMentorName = $(this).find('div.mentor').text();
+            if (rowMentorName !== mentor_name) {
+                $(this).hide();
+            }
+        });
+    }
+
+    function displayAllSession($sessions) {
+        $sessions.show();
+    }
+
+    function hideSessionByTime(timeFrom, timeTo, $sessions) {
+        $sessions.each(function () {
+            let rowTime = $(this).find('div.time').text();
+            let rowTimeFrom = rowTime.split('-')[0].trim();
+            let rowTimeTo = rowTime.split('-')[1].trim();
+
+            // Convert times to 24-hour format
+            rowTimeFrom = convertTo24Hour(rowTimeFrom);
+            rowTimeTo = convertTo24Hour(rowTimeTo);
+            timeFrom = convertTo24Hour(timeFrom);
+            timeTo = convertTo24Hour(timeTo);
+
+            // Convert midnight to 24:00
+            rowTimeTo = convertMidnightTo24(rowTimeTo);
+            timeTo = convertMidnightTo24(timeTo);
+
+            if (rowTimeFrom < timeFrom || rowTimeTo > timeTo) {
+                $(this).hide();
+            }
+        });
+    }
+
+    function convertTo24Hour(time) {
+        const [hours, minutes] = time.split(':');
+        return ('0' + hours).slice(-2) + ':' + minutes;
+    }
+
+    function convertMidnightTo24(time) {
+        return time === '00:00' ? '24:00' : time;
+    }
+
+    function clearSelectedSession() {
+        $('input[name="select-session"]').prop('checked', false);
+        selected_session = undefined;
+    }
+
+    $(document).mouseup(function (e) {
+        const $uiTimepicker = $('.ui-timepicker-container');
+
+        const isTargetUiTimepicker = $uiTimepicker.is(e.target) || $uiTimepicker.has(e.target).length !== 0;
+        const isTargetFilterPanel = $filterPanel.is(e.target) || $filterPanel.has(e.target).length !== 0;
+        const isTargetUpdateFilterPanel = $updateFilterPanel.is(e.target) || $updateFilterPanel.has(e.target).length !== 0;
+
+        // if the target of the click isn't the container nor a descendant of the container
+        if (!isTargetUiTimepicker && !isTargetFilterPanel) {
+            $filterPanel.fadeOut();
+        }
+        if (!isTargetUiTimepicker && !isTargetUpdateFilterPanel) {
+            $updateFilterPanel.fadeOut();
+        }
+    });
+
     // Get the selected session
     $("input[name='select-session']").change(function () {
         selected_session = $("input[name='select-session']:checked").val();
@@ -328,22 +515,7 @@ $(function () {
     });
 
     // Add change handler to custom time input
-    $('input#custom-time-input').on('change', function () {
-        const time = $(this).val().split(':');
-        const hours = parseInt(time[0]);
-        let minutes = parseInt(time[1]);
-
-        // Round minutes to the nearest 30 (down)
-        minutes = Math.floor(minutes / 30) * 30;
-
-        // If minutes is NaN (not a number), set it to 0
-        if (isNaN(minutes)) {
-            $(this).val(undefined);
-        } else {
-            // Update the time in the input field
-            $(this).val(('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2));
-        }
-    });
+    $('input#custom-time-input').on('change', updateTime);
 
     // Add click handler to submit button
     $("#submit").click(function () {
@@ -777,6 +949,7 @@ $(function () {
 
             if (code == 200) {
                 appendScheduleUpdate(schedule);
+                appendListMentorUpdate(schedule);
             }
         } catch (error) {
             hideLoading();
@@ -789,7 +962,7 @@ $(function () {
         $.each(dataArray, function (index, item) {
             // Create a new row element
             const new_row = $('<div class="table-row"></div>');
-            new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + '</div>');
+            new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + ' - ' + convertToTime(item.end_datetime) + '</div>');
             new_row.append('<div class="table-cell mentor">' + item.mentor_name + '</div>');
             new_row.append('<div class="table-cell select-column"><input class="form-check-input" type="radio" name="select-update-session" value="' + item.slot_id + '"></div>');
             // Append the new row to the table body
@@ -806,6 +979,92 @@ $(function () {
             $('.custom-time-section').hide();
             new_slot_id = $("input[name='select-update-session']:checked").val();
         });
+    }
+
+    // FILTER SESSIONS IN UPDATE SESSION POPUP
+    const $updateFilterButton = $('.update-select-time-container .filter-button');
+    const $updateFilterPanel = $('.update-select-time-container .filter-panel');
+    const $updateSelectMentorSection = $('.update-select-time-container .select-mentor-section');
+    const $updateBtnFilter = $('.update-select-time-container #btn-filter-update');
+
+    $updateFilterButton.click(function (event) {
+        event.stopPropagation();
+        if ($updateFilterPanel.is(":visible")) {
+            $updateFilterPanel.fadeOut();
+        } else {
+            $updateFilterPanel.fadeIn();
+        }
+    });
+
+    function appendListMentorUpdate(data) {
+        $updateSelectMentorSection.empty();
+        // Create a new select element
+        const $newSelect = $('<select>', {
+            class: 'select-filter-mentor selectpickerupdate',
+            'data-live-search': 'true',
+            'data-size': '5',
+            title: '- Chọn mentor -'
+        });
+
+        // Append the new select element to the selectMentorSection
+        $updateSelectMentorSection.append($newSelect);
+
+        // Append the default option to the new select element
+        $('.selectpickerupdate').append($('<option>').attr({
+            'data-tokens': 'all',
+            'value': 'all'
+        }).text('Tất cả'));
+
+        // Append the mentors to the new select element
+        let seen = new Set();
+        $.each(data, (index, { mentor_name }) => {
+            if (!seen.has(mentor_name)) {
+                $('.selectpickerupdate').append($('<option>').attr({
+                    'data-tokens': mentor_name,
+                    'value': mentor_name
+                }).text(mentor_name));
+                seen.add(mentor_name);
+            }
+        });
+
+        // Initialize the selectpicker
+        $('.selectpickerupdate').selectpicker();
+
+        // Hide dropdown menu after selecting an option
+        $('.update-select-time-container .select-mentor-section button').click(function () {
+            $('.update-select-time-container .select-mentor-section ul.dropdown-menu a').off('click');    // Remove any existing click event handlers from the 'a' elements within the 'ul.dropdown-menu'
+            $('.update-select-time-container .select-mentor-section ul.dropdown-menu a').click(function () {
+                $('.update-select-time-container .select-mentor-section div.dropdown-menu').removeClass('show');
+            });
+        });
+    }
+
+    // Initialize the timepicker
+    $('#update-filter-time-from').timepicker({
+        timeFormat: 'HH:mm',
+        minTime: new Date(0, 0, 0, 0, 0, 0),
+        maxTime: new Date(0, 0, 0, 23, 59, 59),
+        startHour: 0,
+        interval: 30
+    });
+    $('#update-filter-time-to').timepicker({
+        timeFormat: 'HH:mm',
+        minTime: new Date(0, 0, 0, 0, 0, 0),
+        maxTime: new Date(0, 0, 0, 23, 59, 59),
+        startHour: 0,
+        interval: 30
+    });
+
+    $updateBtnFilter.click(function () {
+        const $sessions = $('.table-select-update-mentor-container .table-body .table-row');
+        clearSelectedUpdateSession();
+        filterSession('.selectpickerupdate', '#update-filter-time-from', '#update-filter-time-to', $sessions);
+        $updateFilterPanel.fadeOut();       // Hide filter panel
+    });
+
+    function clearSelectedUpdateSession() {
+        $('input[name="select-update-session"]').prop('checked', false);
+        new_slot_id = undefined;
     }
 
     // Get the selected session
@@ -876,4 +1135,6 @@ $(function () {
             $('.popup').css('transform', 'translate(-50%, -50%) scale(1)');
         }, 300);
     });
-});
+
+
+})
