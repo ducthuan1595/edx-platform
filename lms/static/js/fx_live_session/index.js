@@ -693,7 +693,7 @@ $(function () {
                 // Filter list session by status
                 const list_session = data.data;
                 const upcoming_session = list_session.filter(item => ((item.session_status == "Chưa diễn ra" || item.session_status == "Chờ xác nhận") && item.student_status == "Đã đăng ký"));
-                const took_place_session = list_session.filter(item => ((item.session_status == "Đã diễn ra" || item.session_status == "Đã hủy" || item.session_status == "Không diễn ra") && item.student_status != "Đã đăng ký"));
+                const took_place_session = list_session.filter(item => !upcoming_session.includes(item));   // took_place_session = list_session - upcoming_session
 
                 // Sort list session by date
                 const sortedUpcomingSessions = sortSessionsByDate(upcoming_session, true);
@@ -844,6 +844,7 @@ $(function () {
     function appendListTookPlaceSession(list_session) {
         // Loop through the array and create rows
         $.each(list_session, function (index, item) {
+            const cancel_reason = item.cancel_reason ? item.cancel_reason : "";
             // Create a new row element
             const new_row = $('<div class="table-row align-items-center"></div>');
             new_row.append('<div class="table-cell stt">' + (index + 1) + '</div>');
@@ -851,7 +852,7 @@ $(function () {
             new_row.append('<div class="table-cell activity">' + item.session_type + '</div>');
             new_row.append('<div class="table-cell course">' + item.course_id + '</div>');
             new_row.append('<div class="table-cell session-status">' + item.session_status + '</div>');
-            new_row.append('<div class="table-cell note">Học viên ' + item.student_status.toLowerCase() + '</div>');
+            new_row.append('<div class="table-cell note">' + cancel_reason + '</div>');
             // Append the new row to the table body
             $('.table-took-place-session .table-body').append(new_row);
         });
@@ -1135,6 +1136,4 @@ $(function () {
             $('.popup').css('transform', 'translate(-50%, -50%) scale(1)');
         }, 300);
     });
-
-
 })

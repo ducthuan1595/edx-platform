@@ -295,7 +295,7 @@ textarea#question {
 .table-upcoming-session .table-cell.course {
   flex: 30%; 
 }
-.table-upcoming-session .table-cell.link, .table-took-place-session .table-cell.note {
+.table-upcoming-session .table-cell.link {
   flex: 20%; 
 }
 .table-upcoming-session .table-cell.button-column {
@@ -434,6 +434,9 @@ button#confirm-cancel:hover {
 }
 .table-took-place-session .table-cell.session-status {
   flex: 17%;
+}
+.table-took-place-session .table-cell.note {
+  flex: 23%; 
 }
 
 @media (min-width: 992px) {
