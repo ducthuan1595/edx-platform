@@ -392,6 +392,9 @@ FEATURES = {
     # Whether to check the "Notify users by email" checkbox in the batch enrollment form
     # in the instructor dashboard.
     'BATCH_ENROLLMENT_NOTIFY_USERS_DEFAULT': True,
+
+    # Whether to show the "Notify users by email" checkbox in the batch enrollment form
+    'SKIP_EMAIL_VALIDATION': True,
 }
 
 # Settings for the course reviews tool template and identification key, set either to None to disable course reviews
@@ -566,7 +569,10 @@ TEMPLATES = [
 
                 # Online contextual help
                 'help_tokens.context_processor',
-                'openedx.core.djangoapps.site_configuration.context_processors.configuration_context'
+                'openedx.core.djangoapps.site_configuration.context_processors.configuration_context',
+
+                # Live session context processor (detects if request.user has a live session on portal)
+                'fx_live_session.context_processor.get_role_in_live_session'
             ],
             # Change 'debug' in your environment settings files - not here.
             'debug': False
@@ -2244,6 +2250,9 @@ INSTALLED_APPS = (
 
     # FUNiX added - 20230816 - Score module
     'lms.djangoapps.fx_score',
+
+    # FUNiX added - 20231108 - Live Session module
+    'lms.djangoapps.fx_live_session',
 )
 
 ######################### CSRF #########################################

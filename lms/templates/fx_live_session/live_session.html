@@ -1,0 +1,431 @@
+<%page expression_filter="h"/>
+
+<%!
+import json
+
+from django.core.urlresolvers import reverse
+from django.conf import settings
+from django.utils.translation import ugettext as _
+
+from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_string
+%>
+
+<!--<%namespace name='static' file='/static_content.html'/>-->
+
+<%inherit file="/main.html" />
+
+<%namespace name='static' file='/static_content.html'/>
+
+<%block name="pagetitle">${_("Live Session")}</%block>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap Select -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+<!-- Bootstrap Datepicker -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+<!-- Jquery Timepicker -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+
+<link rel="stylesheet" href="${static.url('css/live-session.css')}">
+<style>
+% if not general or not mentor or not tutor:
+    .select-activity {
+        justify-content: flex-start;
+    }
+    .select-activity .form-check {
+        margin-right: 2rem;
+    }
+% endif
+</style>
+
+<div id="loading-api" class="overlay text-center mt-5 mb-4">
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+<div class="container mt-3 wrapper-live-session">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="booking-tab" data-bs-toggle="tab" href="#booking" role="tab" aria-controls="booking" aria-selected="true">Booking</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="history-tab" data-bs-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="false">History</a>
+        </li>
+    </ul>
+    <div class="tab-content mt-4" id="myTabContent">
+        <div id="loading" class="text-center mt-5 mb-4" style="display: none">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="tab-pane fade show active mb-4" id="booking" style="display: none;" role="tabpanel" aria-labelledby="booking-tab">
+            <div class="form-container mt-5">
+                <form>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="activity" class="form-label">Lựa chọn hoạt động: <span class="required">(*)</span></label>
+                        </div>
+                        <div class="select-activity col-md-8">
+                            % if mentor:
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="activity" id="mentor" value="mentor">
+                                    <label class="form-check-label" for="mentor">Mentor</label>
+                                </div>
+                            % endif
+                            % if tutor:
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="activity" id="tutor" value="tutor">
+                                    <label class="form-check-label" for="tutor">Tutor</label>
+                                </div>
+                            % endif
+                            %if general:
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="activity" id="other" value="general">
+                                    <label class="form-check-label" for="other">Hỏi đáp chung</label>
+                                </div>
+                            % endif
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="email" class="form-label">Lựa chọn môn học: <span class="required">(*)</span></label>
+                        </div>
+                        <div class="col-md-8">
+                            <select class="select-course selectpickerall" data-live-search="true" data-size="5" title="- Chọn môn học -">
+                            </select>
+                            % if mentor:
+                                <select class="select-course selectpickermentor" data-live-search="true" data-size="5" title="- Chọn môn học -" style="display: none">
+                                </select>
+                            % endif
+                            % if tutor:
+                                <select class="select-course selectpickertutor" data-live-search="true" data-size="5" title="- Chọn môn học -" style="display: none">
+                                </select>
+                            % endif
+                            % if general:
+                                <select class="select-course selectpickergeneral" data-live-search="true" data-size="5" title="- Chọn môn học -" style="display: none">
+                                </select>
+                            % endif
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="email" class="form-label">Chọn ngày: <span class="required">(*)</span></label>
+                            <p style="font-size: 0.7rem; width: 11rem; margin-top: -0.3rem; line-height: normal;"><i>Đối với hoạt động Mentor/ Tutor vui lòng đăng ký trước 1 ngày</i></p>
+                        </div>
+                        <div class="col-md-8">
+                            <div id="datepicker" class="input-group date" data-date-format="dd-mm-yyyy">
+                                <input class="select-date form-control" type="text" readonly placeholder="Select a date" value=""/>
+                                <span class="input-group-addon">
+                                    <span class="input-group-text" id="basic-addon2"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                </span>
+                            </div>
+                            <div id="datepicker-general" class="input-group date" data-date-format="dd-mm-yyyy" style="display: none">
+                                <div class="first row flex-nowrap">
+                                    <input class="select-date form-control" type="text" readonly placeholder="Select a date" value=""/>
+                                    <span class="input-group-addon">
+                                        <span class="input-group-text" id="basic-addon"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                    </span>
+                                </div>
+                                <div class="" style="margin: 0 2rem;">đến</div> 
+                                <div class="second row flex-nowrap">
+                                    <input class="select-date form-control" type="text" readonly placeholder="Select a date" value=""/>
+                                    <span class="input-group-addon">
+                                        <span class="input-group-text" id="basic-addon"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                    </span>
+                                </div>                         
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4 select-time-container" style="display: none">
+                        <div class="row col-md-12 mb-3 align-items-center">
+                            <label for="email" class="form-label col-md-5 mb-0">Chọn thời gian phù hợp với bạn (GMT+7):</label>
+                            <div class="col-md-2 filter-schedule-section ps-0">
+                                <div class="filter-button">
+                                    <span class="filter-icon pe-1">
+                                        <?xml version="1.0" ?><svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M504.6 84.19L320 306.8v149.2c0 19.52-21.97 30.7-37.75 19.66l-80-55.98C195.8 415.2 192 407.8 192 400V306.8L7.375 84.19C-9.965 63.28 5.213 32 32.7 32h446.6C506.8 32 521.1 63.28 504.6 84.19z"/></svg>
+                                    </span>
+                                    <span>Bộ lọc</span>
+                                </div>
+                                <div class="filter-panel">
+                                    <div class="row filter-mentor align-items-center mb-2">
+                                        <div class="col-sm-4">
+                                            <label for="" class="">Mentor:</label>
+                                        </div>
+                                        <div class="select-mentor-section col-sm-8">
+                                            <select class="select-filter-mentor selectpickerfiltermentor" data-live-search="true" data-size="5" title="- Chọn mentor -">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row filter-time align-items-center mb-2">
+                                        <label for="" class="label-from">Thời gian từ</label>
+                                        <input id="filter-time-from">
+                                        <label for="" class="label-to ">đến</label>
+                                        <input id="filter-time-to">
+                                    </div>
+                                    <div class="row filter-submit justify-content-end">
+                                        <button type="button" id="btn-filter">LỌC</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-select-mentor-container">
+                            <!-- Header Row -->
+                            <div class="table-row table-header">
+                                <div class="table-cell time">Thời gian</div>
+                                <div class="table-cell mentor">Mentor phụ trách</div>
+                                <div class="table-cell select-column">Select</div>
+                            </div>
+                            <div class="table-body col-md-12">
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4 align-items-center custom-time-container" style="display: none">
+                        <div class="col-md-6">
+                            <input class="form-check-input me-2" type="radio" name="select-session" id="none" value="custom-time">
+                            <label class="form-check-label" style="display: inline" for="none">Không tìm thấy thời gian phù hợp?</label>
+                            <label class="form-check-label" style="margin-left: 1.7rem; font-size: 15px; margin-top: -0.4rem;" for="none">
+                                <i>Vui lòng nhập thời gian mong muốn</i>
+                            </label>
+                        </div>
+                        <div class="row col-md-4 flex-nowrap align-items-center fw-semibold custom-time-section">
+                            <input id="custom-time-input">
+                        </div>
+                    </div>
+                    <div class="row mb-4 justify-content-center question-container" style="display: none">
+                        <div class="col-md-12">
+                            <label for="question" class="form-label">Vui lòng nhập câu hỏi hoặc vấn đề bạn cần trao đổi: <span class="required">(*)</span></label>
+                        </div>
+                        <div class="col-md-12">
+                            <textarea class="form-control" id="question" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-4 justify-content-end submit-button-container" style="display: none">
+                        <button type="button" class="btn btn-primary" id="submit" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Đặt lịch</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="booking-success" style="display: none;">
+                            <h2>Bạn đã đặt lịch thành công! </h2>
+                            <br/>
+                            <p>Vui lòng kiểm tra email <b>${user.email}</b> để nhận đường link Zoom. </p>
+                            <i>Lưu ý: Trường hợp nếu bạn không sắp xếp tham dự được theo lịch đã đăng ký, vui lòng phản hồi qua email trong vòng 24 tiếng trước thời gian đã đăng ký để bảo lưu phiên hỏi đáp.</i>
+                        </div>
+                        <div class="order-custom-session-success" style="display: none;">
+                            <h2>Hệ thống đã ghi nhận thời gian của bạn!</h2>
+                            <br/>
+                            <p>Nếu có phiên phù hợp với thời gian bạn đã chọn, xác nhận sẽ được gửi qua email <b>${user.email}</b></p>
+                        </div>
+                        <div class="session-not-available" style="display: none;">
+                            <h2 style="color: #FF0303">Rất tiếc, lịch bạn chọn không còn trống!</h2>
+                            <br/>
+                            <p>Vui lòng chọn lại thời gian khác.</p>
+                            <i>Trường hợp không tìm thấy lịch phù hợp, vui lòng chọn mục Không tìm thấy thời gian phù hợp? và nhập thời gian của bạn.</i>
+                        </div>
+                        <div class="time-up" style="display: none;">
+                            <h2 style="color: #FF0303">Rất tiếc, bạn đã hết thời lượng cho hoạt động này!</h2>
+                            <br/>
+                            <p>Vui lòng chọn hoạt động khác.</p>
+                        </div>
+                        <div class="missing-fields" style="display: none;">
+                        </div>
+                        <div id="loading-popup" class="text-center mt-5 mb-4" style="display: none">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="close-popup" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+            <div class="history-container upcoming">
+                <h3>Phiên sắp diễn ra</h3>
+                <div class="row mb-4 justify-content-center">
+                    <div class="table-upcoming-session">
+                        <!-- Header Row -->
+                        <div class="table-row table-header">
+                            <div class="table-cell stt">STT</div>
+                            <div class="table-cell time">Thời gian</div>
+                            <div class="table-cell activity">Hoạt động</div>
+                            <div class="table-cell course">Môn học</div>
+                            <div class="table-cell link">Link Zoom</div>
+                            <div class="table-cell button-column-edit"></div>
+                            <div class="table-cell button-column"></div>
+                        </div>
+                        <div class="table-body col-md-12">
+                        
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dimmed-background" id="dimmedBackground"></div>
+                <div class="popup" id="popup">
+                    <div class="popup-content">
+                        <span class="close" id="closePopup">&times;</span>
+                        <div class="confirm-cancel-container" style="display: none">
+                            <h3>Bạn có chắc chắn muốn hủy lịch?</h3>
+                            <p>Đối với hoạt động Mentor, bạn sẽ không được bảo lưu thời lượng trong tuần này nếu huỷ lịch sau 24 tiếng trước thời gian diễn ra phiên.</p>
+                            <button type="button" class="btn btn-primary" id="confirm-cancel">HỦY LỊCH</button>
+                        </div>
+                        <div class="success-cancel-container noti-container" style="display: none">
+                            <p>Bạn đã huỷ lịch thành công</p>
+                        </div>
+                        <div class="update-session-container" style="display: none">
+                            <div class="form-container mt-5">
+                                <form>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="update-activity" class="form-label">Lựa chọn hoạt động: <span class="required">(*)</span></label>
+                                        </div>
+                                        <div class="select-activity col-md-8">
+                                            % if mentor:
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="update-activity" id="update-mentor" value="update-mentor">
+                                                    <label class="form-check-label" for="update-mentor">Mentor</label>
+                                                </div>
+                                            % endif
+                                            % if tutor:
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="update-activity" id="update-tutor" value="update-tutor">
+                                                    <label class="form-check-label" for="update-tutor">Tutor</label>
+                                                </div>
+                                            % endif
+                                            %if general:
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="update-activity" id="update-other" value="update-general">
+                                                    <label class="form-check-label" for="update-other">Hỏi đáp chung</label>
+                                                </div>
+                                            % endif
+                                        </div>
+                                    </div>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="update-email" class="form-label">Lựa chọn môn học: <span class="required">(*)</span></label>
+                                        </div>
+                                        <div class="col-md-8" style="display: flex">
+                                            <div class="dropdown bootstrap-select dropup">
+                                                <button type="button" tabindex="-1"
+                                                    class="update-course-name btn dropdown-toggle btn-light">
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="email" class="form-label">Chọn ngày: <span class="required">(*)</span></label>
+                                            <p style="font-size: 0.7rem; width: 11rem; margin-top: -0.3rem; line-height: normal;"><i>Đối với hoạt động Mentor/ Tutor vui lòng đăng ký trước 1 ngày</i></p>
+                                        </div>
+                                        <div class="col-md-8" style="display: flex; align-items: center">
+                                            <div id="update-datepicker" class="input-group date" data-date-format="dd-mm-yyyy">
+                                                
+                                            </div>
+                                            <span class="input-group-addon" style="margin-left: -3rem;">
+                                                <span class="input-group-text" id="basic-addon2"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-4 update-select-time-container">
+                                        <div class="row col-md-12 mb-3 align-items-center">
+                                            <label for="email" class="form-label col-md-5 mb-0">Chọn thời gian phù hợp với bạn (GMT+7):</label>
+                                            <div class="col-md-2 filter-schedule-section ps-0">
+                                                <div class="filter-button">
+                                                    <span class="filter-icon pe-1">
+                                                        <?xml version="1.0" ?><svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M504.6 84.19L320 306.8v149.2c0 19.52-21.97 30.7-37.75 19.66l-80-55.98C195.8 415.2 192 407.8 192 400V306.8L7.375 84.19C-9.965 63.28 5.213 32 32.7 32h446.6C506.8 32 521.1 63.28 504.6 84.19z"/></svg>
+                                                    </span>
+                                                    <span>Bộ lọc</span>
+                                                </div>
+                                                <div class="filter-panel">
+                                                    <div class="row filter-mentor align-items-center mb-2">
+                                                        <div class="col-sm-4">
+                                                            <label for="" class="">Mentor:</label>
+                                                        </div>
+                                                        <div class="select-mentor-section col-sm-8">
+                                                            <select class="select-filter-mentor selectpickerupdate" data-live-search="true" data-size="5" title="- Chọn mentor -">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row filter-time align-items-center mb-2">
+                                                        <label for="" class="label-from">Thời gian từ</label>
+                                                        <input id="update-filter-time-from">
+                                                        <label for="" class="label-to ">đến</label>
+                                                        <input id="update-filter-time-to">
+                                                    </div>
+                                                    <div class="row filter-submit justify-content-end">
+                                                        <button type="button" id="btn-filter-update">LỌC</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="table-select-update-mentor-container">
+                                            <!-- Header Row -->
+                                            <div class="table-row table-header">
+                                                <div class="table-cell time">Thời gian</div>
+                                                <div class="table-cell mentor">Mentor phụ trách</div>
+                                                <div class="table-cell select-column">Select</div>
+                                            </div>
+                                            <div class="table-body col-md-12">
+                                                
+                                            </div>
+                                        </div>
+                                        <p class="update-warning" style="display: none; margin-top: 0.5rem; color: red">* Vui lòng chọn thời gian phù hợp với bạn!</p>
+                                    </div>
+                                    <div class="row mb-4 justify-content-end submit-button-container">
+                                        <button type="button" class="btn btn-primary" id="update">Lưu</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div id="loading-popup-history" class="text-center mt-5 mb-4" style="display: none">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="history-container took-place">
+                <h3>Phiên đã diễn ra/ đã huỷ</h3>
+                <div class="row mb-4 justify-content-center">
+                    <div class="table-took-place-session">
+                        <!-- Header Row -->
+                        <div class="table-row table-header">
+                            <div class="table-cell stt">STT</div>
+                            <div class="table-cell time">Thời gian</div>
+                            <div class="table-cell activity">Hoạt động</div>
+                            <div class="table-cell course">Môn học</div>
+                            <div class="table-cell session-status">Trạng thái phiên</div>
+                            <div class="table-cell note">Ghi chú</div>
+                        </div>
+                        <div class="table-body col-md-12">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%block name="headextra">
+    <%static:css group='style-course'/>
+</%block>
+
+<script>
+    var user_email = ${ user.email | n, dump_js_escaped_json };
+    var course_list = ${ course_list | n, dump_js_escaped_json };
+</script>
+<script src="${static.url('js/fx_live_session/index.js')}"></script>

@@ -5,6 +5,7 @@ Student Views
 import datetime
 import json
 import logging
+import requests
 import uuid
 import warnings
 from collections import defaultdict, namedtuple
@@ -628,6 +629,38 @@ def dashboard(request):
 
     """
     user = request.user
+
+    # API endpoint for live session data
+    api_url = 'https://portal.funix.edu.vn/api/v1/live/student'
+    params = {'student_email': user.email}
+
+    # Send API request to get live session data
+    response = None
+    try:
+        response = requests.get(api_url, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as http_err:
+        log.error(u'HTTP error occurred: {err}'.format(err=http_err))
+    except requests.exceptions.Timeout:
+        log.error('The request timed out')
+    except Exception as err:
+        log.error(u'Other error occurred: {err}'.format(err=err))
+
+    # Parse the response data
+    data = {}
+    if response:
+        data = response.json()
+
+    # Check if there is a live session for the user
+    if data and data['data'] and data['data']['live_session']:
+        live_session = data['data']['live_session']
+    else:
+        live_session = False
+
+    # Redirect to live session page if the live session is Udemy
+    if live_session == "Udemy":
+        return redirect(reverse('live_session'))
+
     if not UserProfile.objects.filter(user=user).exists():
         return redirect(reverse('account_settings'))
 

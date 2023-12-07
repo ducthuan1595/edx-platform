@@ -624,6 +624,12 @@ urlpatterns += (
         name='learner_profile',
     ),
 
+    # FX Live Session
+    url(
+        r'^live-session/',
+        include('fx_live_session.urls')
+    ),
+
     # Student Notes
     url(
         r'^courses/{}/edxnotes'.format(
