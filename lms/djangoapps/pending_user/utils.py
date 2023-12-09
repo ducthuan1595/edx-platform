@@ -3,6 +3,9 @@ import json
 import requests
 import logging
 
+from jwkest.jwk import SYMKey
+from jwkest.jws import JWS
+
 AUDIT_LOG = logging.getLogger("audit")
 
 
@@ -60,3 +63,18 @@ def get_token():
         return None
 
     return response.json()['access_token']
+
+
+class JwtManager:
+    def __init__(self, secret):
+        self.key = SYMKey(key=secret, alg="HS256")
+
+    def encode(self, payload):
+        jws = JWS(payload, alg="HS256")
+        jwt_token = jws.sign_compact(keys=[self.key])
+        return jwt_token
+
+    def decode(self, jwt_token):
+        jws = JWS()
+        payload = jws.verify_compact(jwt_token, keys=[self.key])
+        return payload

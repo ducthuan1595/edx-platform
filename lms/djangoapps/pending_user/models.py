@@ -6,6 +6,7 @@ from django.utils import timezone
 
 class PendingUser(models.Model):
     phone =  models.CharField(max_length=20)
+    password = models.CharField(max_length=128, blank=True, null=True)      # FX TODO: encrypt password/hide password in admin
     verification_code = models.CharField(max_length=8, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
