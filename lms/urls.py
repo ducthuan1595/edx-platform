@@ -117,6 +117,15 @@ urlpatterns = (
 
     # Login redirects if user doesn't exist
     url(r'^login-fail$', 'student_account.views.login_fail', name="login_fail"),
+
+    # Login page for phone number verification
+    url(r'^login_phone$', 'student_account.views.login_with_phone_number', name="login_with_phone_number"),
+
+    # Verify phone number with OTP
+    url(r'^verify-phone$', 'student_account.views.verify_otp', name="verify_otp"),
+
+    # Validate OTP
+    url(r'^api-pending-user/', include('pending_user.urls')),
 )
 
 # TODO: This needs to move to a separate urls.py once the student_account and
@@ -466,7 +475,7 @@ urlpatterns += (
     ),
     # For FUNiX Score Module
     url(
-        r'^courses/{}/score$'.format(
+        r'^courses/{}/submission$'.format(
             settings.COURSE_ID_PATTERN,
         ),
         'lms.djangoapps.fx_score.views.score_dashboard',

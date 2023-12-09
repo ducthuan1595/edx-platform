@@ -2253,6 +2253,8 @@ INSTALLED_APPS = (
 
     # FUNiX added - 20231108 - Live Session module
     'lms.djangoapps.fx_live_session',
+
+    'lms.djangoapps.pending_user',
 )
 
 ######################### CSRF #########################################

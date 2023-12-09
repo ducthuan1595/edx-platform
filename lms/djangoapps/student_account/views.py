@@ -13,6 +13,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import resolve, reverse
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect
+from django.utils import timezone
+from django.utils.http import urlsafe_base64_decode
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
@@ -29,7 +31,7 @@ from openedx.core.djangoapps.lang_pref.api import all_languages, released_langua
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.theming.helpers import is_request_in_themed_site
-from openedx.core.djangoapps.user_api.accounts.api import request_password_change
+from openedx.core.djangoapps.user_api.accounts.api import request_password_change, check_account_exists
 from openedx.core.djangoapps.user_api.errors import UserNotFound
 from openedx.core.lib.edx_api_utils import get_edx_api_data
 from openedx.core.lib.time_zone_utils import TIME_ZONE_CHOICES
@@ -43,6 +45,9 @@ from third_party_auth import pipeline
 from third_party_auth.decorators import xframe_allow_whitelisted
 from util.bad_request_rate_limiter import BadRequestRateLimiter
 from util.date_utils import strftime_localized
+
+from lms.djangoapps.pending_user.models import PendingUser, generate_otp, clean_phone
+from pending_user.utils import send_sms
 
 AUDIT_LOG = logging.getLogger("audit")
 log = logging.getLogger(__name__)
@@ -156,6 +161,88 @@ def login_and_registration_form(request, initial_mode="login"):
     context = update_context_for_enterprise(request, context)
 
     return render_to_response('student_account/login_and_register.html', context)
+
+
+# FX TODO: move to views.py of pending_user app
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
+def login_with_phone_number(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    base64_phone_number = request.GET.get('p', None)
+    phone_number = urlsafe_base64_decode(base64_phone_number)
+    cleaned_phone_number = clean_phone(phone_number)
+
+    AUDIT_LOG.info("---------------------------------------------")
+    if cleaned_phone_number:
+        AUDIT_LOG.info("login_with_phone_number: %s", cleaned_phone_number)
+
+        username = cleaned_phone_number
+
+        AUDIT_LOG.info("login_with_phone_number: %s", username)
+
+        account_exists = check_account_exists(username)
+        if account_exists:
+            AUDIT_LOG.info("login_with_phone_number: account_exists")
+            return redirect('/login?next=/dashboard')
+        else:
+            AUDIT_LOG.info("login_with_phone_number: account_not_exists")
+
+            pending_user = PendingUser.objects.filter(phone=username).first()
+            if not pending_user:
+                AUDIT_LOG.info("login_with_phone_number: not_pending_user")
+                # create pending user
+                pending_user = PendingUser()
+                pending_user.phone = username
+            
+            pending_user.verification_code = generate_otp()
+            pending_user.created_at = timezone.now()
+            pending_user.save()
+            AUDIT_LOG.info("login_with_phone_number: %s", pending_user.verification_code)
+            AUDIT_LOG.info("login_with_phone_number: %s", pending_user.created_at)
+            AUDIT_LOG.info("login_with_phone_number: Sending OTP")
+
+            message = "Ma OTP cua ban la: " + str(pending_user.verification_code)
+            # FX TODO: uncomment this line when can send sms success
+            # response = send_sms(message, pending_user.phone)
+            response = {}
+            
+            AUDIT_LOG.info("login_with_phone_number: %s", response)
+            # if response have property 'error' then send sms fail
+            if 'error' not in response:
+                AUDIT_LOG.info("login_with_phone_number: Send OTP success")
+                return redirect('/verify-phone')
+            # FX TODO: remove this line when can send sms success
+            return redirect('/verify-phone')
+    else:
+        AUDIT_LOG.info("login_with_phone_number: invalid phone_number")
+    AUDIT_LOG.info("---------------------------------------------")
+
+    return render_to_response('student_account/login_with_phone_number.html', {})
+
+
+# FX TODO: move to views.py of pending_user app
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
+def verify_otp(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    base64_phone_number = request.GET.get('p', None)
+    phone_number = urlsafe_base64_decode(base64_phone_number)
+    cleaned_phone_number = clean_phone(phone_number)
+
+    if cleaned_phone_number:
+        AUDIT_LOG.info("sms otp: %s", phone_number)
+
+    return render_to_response('student_account/verify_otp.html', {})
 
 
 @require_http_methods(['GET'])
