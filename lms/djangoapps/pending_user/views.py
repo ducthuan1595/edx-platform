@@ -2,11 +2,14 @@ import logging
 
 from django.utils.decorators import method_decorator
 from django.utils.http import urlsafe_base64_decode
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods
 
+from edxmako.shortcuts import render_to_response
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from third_party_auth.decorators import xframe_allow_whitelisted
 
 from lms.djangoapps.pending_user.models import PendingUser, clean_phone
 
@@ -50,3 +53,10 @@ class ValidateOTP(APIView):
                 {"error": True, "error_description": "OTP is incorrect"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
+def create_password(request):
+    return render_to_response('pending_user/create_password.html', {})

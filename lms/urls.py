@@ -126,6 +126,9 @@ urlpatterns = (
 
     # Validate OTP
     url(r'^api-pending-user/', include('pending_user.urls')),
+
+    # Create password
+    url(r'^create-password$', 'pending_user.views.create_password', name="create_password"),
 )
 
 # TODO: This needs to move to a separate urls.py once the student_account and
