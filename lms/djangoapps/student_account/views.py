@@ -186,38 +186,12 @@ def login_with_phone_number(request):
         AUDIT_LOG.info("login_with_phone_number: %s", username)
 
         account_exists = check_account_exists(username)
+        # FX TODO: optimize this if else block
         if account_exists:
             AUDIT_LOG.info("login_with_phone_number: account_exists")
-            return redirect('/login?next=/dashboard')
         else:
             AUDIT_LOG.info("login_with_phone_number: account_not_exists")
-
-            pending_user = PendingUser.objects.filter(phone=username).first()
-            if not pending_user:
-                AUDIT_LOG.info("login_with_phone_number: not_pending_user")
-                # create pending user
-                pending_user = PendingUser()
-                pending_user.phone = username
-            
-            pending_user.verification_code = generate_otp()
-            pending_user.created_at = timezone.now()
-            pending_user.save()
-            AUDIT_LOG.info("login_with_phone_number: %s", pending_user.verification_code)
-            AUDIT_LOG.info("login_with_phone_number: %s", pending_user.created_at)
-            AUDIT_LOG.info("login_with_phone_number: Sending OTP")
-
-            message = "Ma OTP cua ban la: " + str(pending_user.verification_code)
-            # FX TODO: uncomment this line when can send sms success
-            # response = send_sms(message, pending_user.phone)
-            response = {}
-            
-            AUDIT_LOG.info("login_with_phone_number: %s", response)
-            # if response have property 'error' then send sms fail
-            if 'error' not in response:
-                AUDIT_LOG.info("login_with_phone_number: Send OTP success")
-                return redirect('/verify-phone')
-            # FX TODO: remove this line when can send sms success
-            return redirect('/verify-phone')
+            return redirect('/register-phone')
     else:
         AUDIT_LOG.info("login_with_phone_number: invalid phone_number")
     AUDIT_LOG.info("---------------------------------------------")

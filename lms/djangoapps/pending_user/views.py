@@ -1,5 +1,7 @@
 import logging
 
+from django.shortcuts import redirect
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -11,14 +13,47 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from student.cookies import set_logged_in_cookies
+from student.helpers import get_next_url_for_login_page
 from student.views import create_account_with_params
 from third_party_auth.decorators import xframe_allow_whitelisted
 from util.json_request import JsonResponse
 
-from lms.djangoapps.pending_user.models import PendingUser, clean_phone
+from lms.djangoapps.pending_user.models import PendingUser, clean_phone, generate_otp
 from .utils import JwtManager, validate_password
 
 AUDIT_LOG = logging.getLogger("audit")
+
+
+class SendOTP(APIView):
+    """
+    Send OTP to a phone number
+    """
+    def post(self, request, *args, **kwargs):
+        phone_number = request.data.get("phone")
+        cleaned_phone = clean_phone(phone_number)
+        if not cleaned_phone:
+            return Response(
+                {"error": True, "error_description": "Invalid phone number"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        pending_user, created = PendingUser.objects.get_or_create(phone=cleaned_phone)
+        
+        pending_user.verification_code = generate_otp()
+        pending_user.created_at = timezone.now()
+        pending_user.save()
+
+        message = "Ma OTP cua ban la: " + str(pending_user.verification_code)
+        # FX TODO: uncomment this line when can send sms success
+        # response = send_sms(message, pending_user.phone)
+        response = {}
+        if 'error' in response:
+            return Response(
+                {"error": True, "error_description": "Send OTP fail"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        AUDIT_LOG.info("OTP sent to phone number: %s" % cleaned_phone)
+        return Response({"success": True}, status=status.HTTP_200_OK)
 
 
 class ValidateOTP(APIView):
@@ -70,7 +105,7 @@ class ValidateOTP(APIView):
 
 class CreatePasswordAPI(APIView):
     """
-    Create password for a pending user
+    Get password and create new user
     """
 
     def post(self, request, *args, **kwargs):
@@ -103,6 +138,7 @@ class CreatePasswordAPI(APIView):
         
         username = cleaned_phone
         email = cleaned_phone + "@funix.edu.vn"
+        # FX TODO: need modify to update password for existing user
         conflicts = check_account_exists(username, email)
         if conflicts:
             return Response(
@@ -136,5 +172,22 @@ class CreatePasswordAPI(APIView):
 @require_http_methods(['GET'])
 @ensure_csrf_cookie
 @xframe_allow_whitelisted
+def register_with_phone_number(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    return render_to_response('pending_user/register_with_phone_number.html', {})
+
+
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
 def create_password(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
     return render_to_response('pending_user/create_password.html', {})

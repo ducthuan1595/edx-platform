@@ -119,9 +119,12 @@ urlpatterns = (
     url(r'^login-fail$', 'student_account.views.login_fail', name="login_fail"),
 
     # Login page for phone number verification
-    url(r'^login_phone$', 'student_account.views.login_with_phone_number', name="login_with_phone_number"),
+    url(r'^login-phone$', 'student_account.views.login_with_phone_number', name="login_with_phone_number"),
 
-    # Verify phone number with OTP
+    # Register with phone number
+    url(r'^register-phone$', 'pending_user.views.register_with_phone_number', name="register_with_phone_number"),
+
+    # Input OTP for phone number verification
     url(r'^verify-phone$', 'student_account.views.verify_otp', name="verify_otp"),
 
     # Validate OTP
