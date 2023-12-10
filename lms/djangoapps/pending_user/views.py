@@ -19,7 +19,7 @@ from third_party_auth.decorators import xframe_allow_whitelisted
 from util.json_request import JsonResponse
 
 from lms.djangoapps.pending_user.models import PendingUser, clean_phone, generate_otp
-from .utils import JwtManager, validate_password
+from .utils import JwtManager, validate_password, send_sms
 
 AUDIT_LOG = logging.getLogger("audit")
 
@@ -44,8 +44,7 @@ class SendOTP(APIView):
 
         message = "Ma OTP cua ban la: " + str(pending_user.verification_code)
         # FX TODO: uncomment this line when can send sms success
-        # response = send_sms(message, pending_user.phone)
-        response = {}
+        response = send_sms(message, pending_user.phone)
         if 'error' in response:
             return Response(
                 {"error": True, "error_description": "Send OTP fail"},

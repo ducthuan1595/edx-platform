@@ -32,13 +32,13 @@
                 </div>
                 <div class="text-center text-2xl font-bold mb-8">HỌC THỬ MIỄN PHÍ KHÔNG GIỚI HẠN!</div>
                 <div class="mb-4">
-                    <input type="text" placeholder="Số điện thoại" class="w-full p-4 border border-gray-300 rounded mb-2">
-                    <input type="password" placeholder="Mật khẩu" class="w-full p-4 border border-gray-300 rounded">
+                    <input id="phone" type="text" placeholder="Số điện thoại" class="w-full p-4 border border-gray-300 rounded mb-2">
+                    <input id="password" type="password" placeholder="Mật khẩu" class="w-full p-4 border border-gray-300 rounded">
                 </div>
                 <div class="text-right mb-8">
                     <a href="#" class="text-orange-500">Quên mật khẩu?</a>
                 </div>
-                <button class="w-full bg-orange-500 text-white p-4 rounded mb-4">Đăng nhập</button>
+                <button id="login" class="w-full bg-orange-500 text-white p-4 rounded mb-4">Đăng nhập</button>
                 <div class="text-center">
                     Bạn chưa có tài khoản? <a href="#" class="text-orange-500">Đăng ký ngay</a>
                 </div>
@@ -49,5 +49,56 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // /login_ajax
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginButton = document.querySelector('#login');
+            const phoneInput = document.querySelector('#phone');
+            const passwordInput = document.querySelector('#password');
+
+            loginButton.addEventListener('click', function() {
+                const phone = phoneInput.value;
+                const password = passwordInput.value;
+                const email = convertPhoneToEmail(phone);
+
+                const apiUrl = 'https://' + window.location.hostname + '/user_api/v1/account/login_session/';
+                let csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
+                let formData = new FormData();
+                formData.append('email', email);
+                formData.append('password', password);
+                formData.append('remember', 'true');
+                formData.append('csrfmiddlewaretoken', csrfToken);
+                // Send the POST request
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(formData).toString(),
+                })
+                    .then(response => response.text())  // Convert the response to text
+                    .then(data => {
+                        if (data) {
+                            alert(data);
+                        } else {
+                            // Redirect to the home page
+                            window.location.href = ''
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            });
+
+            // function to convert phone to email. if phone starts with 0, remove it and add 84 instead
+            function convertPhoneToEmail(phone) {
+                if (phone.startsWith('0')) {
+                    return '84' + phone.substring(1) + '@funix.edu.vn';
+                }
+                return phone + '@funix.edu.vn';
+            }
+        });
+    </script>
 </body>
 </html>

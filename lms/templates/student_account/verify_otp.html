@@ -1,93 +1,98 @@
-<!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>My Simple HTML Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn with Mentors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css?family=Raleway:200');
-        body,
-        html {
-            height: 100%;
-            margin: 0;
-            font-family: 'Raleway', sans-serif;
-            font-weight: 200;
-        }
         body {
-            background-color: #0f0f1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        .digit-group input {
-            width: 30px;
-            height: 50px;
-            background-color: #18182a;
-            border: none;
-            line-height: 50px;
-            text-align: center;
-            font-size: 24px;
-            font-family: 'Raleway', sans-serif;
-            font-weight: 200;
-            color: white;
-            margin: 0 2px;
-        }
-        .digit-group .splitter {
-            padding: 0 5px;
-            color: white;
-            font-size: 24px;
-        }
-        .prompt {
-            margin-bottom: 20px;
-            font-size: 20px;
-            color: white;
+            font-family: 'Open Sans', sans-serif;
         }
     </style>
 </head>
-
 <body>
-    <div class="prompt">
-        Enter the code generated on your mobile device below to log in!
+    <div class="flex flex-col md:flex-row h-screen">
+        <!-- Left side with image -->
+        <div class="hidden md:block md:w-1/2 md:h-full">
+            <img src="https://placehold.co/600x800" alt="A smiling child wearing headphones, sitting at a desk with a laptop, in a room with a lamp and a plant in the background." class="w-full h-full object-cover">
+        </div>
+
+        <!-- Right side with form -->
+        <div class="w-full md:w-1/2 h-full bg-white flex flex-col justify-center items-center px-8 md:px-24">
+            <div class="mb-10">
+                <img src="https://placehold.co/300x100" alt="FUNiX logo with the text 'Learn with Mentors' next to a stylized letter 'i' with an orange dot above it." class="max-w-full h-auto">
+            </div>
+            <div class="text-center mb-10">
+                <h1 class="text-2xl md:text-3xl font-bold mb-2">HỌC THỬ MIỄN PHÍ KHÔNG GIỚI HẠN!</h1>
+                <p class="text-md md:text-lg">Vui lòng nhập mã xác thực vừa được gửi tới số điện thoại của bạn</p>
+            </div>
+            <div class="w-full mb-4">
+                <input id="otp" type="text" placeholder=" " class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="w-full mb-4">
+                <button id="verify-otp" class="w-full bg-orange-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-orange-600 transition-colors">Đăng ký</button>
+            </div>
+            <div class="w-full mb-10">
+                <button class="w-full text-orange-500 font-bold hover:underline">Gửi lại mã xác thực</button>
+            </div>
+            <div class="text-center">
+                <p class="text-sm">Hotline: 078.2313.602 (Zalo/Viber)</p>
+                <p class="text-sm">Email: info@funix.edu.vn</p>
+            </div>
+        </div>
     </div>
 
-    <form method="get" class="digit-group" data-group-name="digits" data-autosubmit="false" autocomplete="off">
-        <input type="text" id="digit-1" name="digit-1" data-next="digit-2" />
-        <input type="text" id="digit-2" name="digit-2" data-next="digit-3" data-previous="digit-1" />
-        <input type="text" id="digit-3" name="digit-3" data-next="digit-4" data-previous="digit-2" />
-        <span class="splitter">&ndash;</span>
-        <input type="text" id="digit-4" name="digit-4" data-next="digit-5" data-previous="digit-3" />
-        <input type="text" id="digit-5" name="digit-5" data-next="digit-6" data-previous="digit-4" />
-        <input type="text" id="digit-6" name="digit-6" data-previous="digit-5" />
-    </form>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script>
-        $('.digit-group').find('input').each(function () {
-            $(this).attr('maxlength', 1);
-            $(this).on('keyup', function (e) {
-                var parent = $($(this).parent());
+        document.addEventListener('DOMContentLoaded', function() {
+            const verifyOtpButton = document.querySelector('#verify-otp');
+            const otpInput = document.querySelector('#otp');
+            const urlParams = new URLSearchParams(window.location.search);
+            const phone = urlParams.get('p');
 
-                if (e.keyCode === 8 || e.keyCode === 37) {
-                    var prev = parent.find('input#' + $(this).data('previous'));
-
-                    if (prev.length) {
-                        $(prev).select();
-                    }
-                } else if ((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 65 && e.keyCode <= 90) || (e.keyCode >= 96 && e.keyCode <= 105) || e.keyCode === 39) {
-                    var next = parent.find('input#' + $(this).data('next'));
-
-                    if (next.length) {
-                        $(next).select();
-                    } else {
-                        if (parent.data('autosubmit')) {
-                            parent.submit();
-                        }
-                    }
+            verifyOtpButton.addEventListener('click', function() {
+                if (!phone) {
+                    window.location.href = 'register-phone';
+                    return;
                 }
+                
+                const otp = otpInput.value;
+
+                // Validate the OTP
+                const otpRegex = /^\d{6}$/;
+                if (!otpRegex.test(otp)) {
+                    alert('Invalid OTP. It must be a 6-digit number.');
+                    return;
+                }
+
+                // Send the POST request
+                // FX TODO: Get current URL and replace the domain name with the API domain name
+                fetch('https://lmsclone.funix.edu.vn/api-pending-user/validate-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        otp: otp,
+                        phone: phone,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // save jwt to local storage
+                        localStorage.setItem('jtc', data.jwt);
+                        // Redirect to create-password
+                        window.location.href = 'create-password';
+                    } else {
+                        alert('Failed to verify OTP. Please try again.');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
             });
         });
     </script>
 </body>
-
 </html>
