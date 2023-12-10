@@ -6,13 +6,17 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
 from edxmako.shortcuts import render_to_response
+from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from student.cookies import set_logged_in_cookies
+from student.views import create_account_with_params
 from third_party_auth.decorators import xframe_allow_whitelisted
+from util.json_request import JsonResponse
 
 from lms.djangoapps.pending_user.models import PendingUser, clean_phone
-from .utils import JwtManager
+from .utils import JwtManager, validate_password
 
 AUDIT_LOG = logging.getLogger("audit")
 
@@ -70,14 +74,18 @@ class CreatePasswordAPI(APIView):
     """
 
     def post(self, request, *args, **kwargs):
-        # FX TODO: validate password
         password = request.data.get("password")
-
         jwt_token = request.data.get("jwt")
+
+        if not validate_password(password):
+            return Response(
+                {"error": True, "error_description": "Invalid password"},
+                status=status.HTTP_400_BAD_REQUEST,
+        )
+
         # FX TODO: change secret key
         jwt_manager = JwtManager('thisismysecretkey')
         payload = jwt_manager.decode(jwt_token)
-
         phone_number = payload.get("phone")
         cleaned_phone = clean_phone(phone_number)
         if not cleaned_phone:
@@ -93,10 +101,36 @@ class CreatePasswordAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
-        pending_user.password = password
-        pending_user.save()
+        username = cleaned_phone
+        email = cleaned_phone + "@funix.edu.vn"
+        conflicts = check_account_exists(username, email)
+        if conflicts:
+            return Response(
+                {"error": True, "error_description": "User already exists"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        data = {
+            "username": username,
+            "name": cleaned_phone,
+            "country": "VN",
+            "email": email,
+            "password": password,
+            "honor_code": 'True',
+            "terms_of_service": 'True',
+        }
+        try:
+            new_user = create_account_with_params(request, data)
+        except Exception as e:
+            return Response(
+                {"error": True, "error_description": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        return Response({"success": True}, status=status.HTTP_200_OK)
+        AUDIT_LOG.info("New user created: %s", new_user.username)
+        response = JsonResponse({"success": True}, status=status.HTTP_200_OK)
+        set_logged_in_cookies(request, response, new_user)
+        return response
 
 
 @require_http_methods(['GET'])

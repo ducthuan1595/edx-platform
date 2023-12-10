@@ -65,6 +65,15 @@ def get_token():
     return response.json()['access_token']
 
 
+def validate_password(password):
+    """Validate password."""
+    if len(password) < 4:
+        return False
+
+    return True
+
+
+# FX TODO: add docstring
 class JwtManager:
     def __init__(self, secret):
         self.key = SYMKey(key=secret, alg="HS256")
