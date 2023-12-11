@@ -9,36 +9,47 @@
         body {
             font-family: 'Open Sans', sans-serif;
         }
+
+        @media (max-width: 770px) {
+            .bg-image {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="flex flex-col md:flex-row h-screen">
+    <div class="min-h-screen flex flex-wrap">
         <!-- Left side with image -->
-        <div class="hidden md:block md:w-1/2 md:h-full">
-            <img src="https://placehold.co/600x800" alt="A smiling child wearing headphones, sitting at a desk with a laptop, in a room with a lamp and a plant in the background." class="w-full h-full object-cover">
+        <div class="bg-image w-full md:w-1/2 bg-cover bg-no-repeat"
+            style="background-image: url('https://cdn.discordapp.com/attachments/943013580134051920/1183560427356049549/mother-helping-daughter-study_1.png?ex=6588c78b&is=6576528b&hm=bca366f5aa3b39d14b2d0dd0c2dfe7ba23898a56d09ce2adc21bbce3932ed02e&');">
         </div>
 
         <!-- Right side with form -->
-        <div class="w-full md:w-1/2 h-full bg-white flex flex-col justify-center items-center px-8 md:px-24">
-            <div class="mb-10">
-                <img src="https://placehold.co/300x100" alt="FUNiX logo with the text 'Learn with Mentors' next to a stylized letter 'i' with an orange dot above it." class="max-w-full h-auto">
-            </div>
-            <div class="text-center mb-10">
-                <h1 class="text-2xl md:text-3xl font-bold mb-2">HỌC THỬ MIỄN PHÍ KHÔNG GIỚI HẠN!</h1>
-                <p class="text-md md:text-lg">Vui lòng nhập mã xác thực vừa được gửi tới số điện thoại của bạn</p>
-            </div>
-            <div class="w-full mb-4">
-                <input id="otp" type="text" placeholder=" " class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
-            </div>
-            <div class="w-full mb-4">
-                <button id="verify-otp" class="w-full bg-orange-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-orange-600 transition-colors">Đăng ký</button>
-            </div>
-            <div class="w-full mb-10">
-                <button class="w-full text-orange-500 font-bold hover:underline">Gửi lại mã xác thực</button>
-            </div>
-            <div class="text-center">
-                <p class="text-sm">Hotline: 078.2313.602 (Zalo/Viber)</p>
-                <p class="text-sm">Email: info@funix.edu.vn</p>
+        <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12">
+            <div class="w-full max-w-md">
+                <div class="mb-10">
+                    <img src="https://cdn.discordapp.com/attachments/943013580134051920/1183560426928226354/FUNiX-full-logo-original_1.png?ex=6588c78b&is=6576528b&hm=91e82f11c4599b2d95fe453762a5c45e6a4aa53e4491cb8f099021c2c96639d0&" 
+                        alt="FUNiX logo with the text 'Learn with Mentors'">
+                </div>
+                <div class="mb-6 text-center">
+                    <h2 class="text-2xl font-semibold">HỌC THỬ MIỄN PHÍ KHÔNG GIỚI HẠN!</h2>
+                </div>
+                <div class="space-y-6">
+                    <p class="text-center text-md md:text-lg">Vui lòng nhập mã xác thực vừa được gửi tới số điện thoại của bạn</p>
+                    <div class="w-full mb-4">
+                        <input id="otp" type="text" placeholder=" " class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
+                    </div>
+                    <div class="w-full mb-4">
+                        <button id="verify-otp" class="w-full bg-orange-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-orange-600 transition-colors">Đăng ký</button>
+                    </div>
+                    <div class="w-full mb-10">
+                        <button class="w-full text-blue-500 font-bold hover:underline">Gửi lại mã xác thực</button>
+                    </div>
+                </div>
+                <div class="text-center mt-6">
+                    <p>Hotline: 079.233.622 (Zalo/Viber)</p>
+                    <p>Email: info@funix.edu.vn</p>
+                </div>
             </div>
         </div>
     </div>
