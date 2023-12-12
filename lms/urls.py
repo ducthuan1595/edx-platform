@@ -120,18 +120,17 @@ urlpatterns = (
 
     # Login page for phone number verification
     url(r'^login-phone$', 'student_account.views.login_with_phone_number', name="login_with_phone_number"),
-
     # Register with phone number
     url(r'^register-phone$', 'pending_user.views.register_with_phone_number', name="register_with_phone_number"),
-
     # Input OTP for phone number verification
     url(r'^verify-phone$', 'student_account.views.verify_otp', name="verify_otp"),
-
     # Validate OTP
     url(r'^api-pending-user/', include('pending_user.urls')),
-
     # Create password
     url(r'^create-password$', 'pending_user.views.create_password', name="create_password"),
+    
+    # Book giasu page
+    url(r'^book-giasu$', 'fx_live_session.views.book_giasu', name="book_giasu"),
 )
 
 # TODO: This needs to move to a separate urls.py once the student_account and

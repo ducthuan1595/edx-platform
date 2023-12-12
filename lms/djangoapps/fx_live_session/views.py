@@ -76,3 +76,31 @@ def live_session_context(request):
         'course_list': course_list,
     }
     return context
+
+
+@login_required
+@require_http_methods(['GET'])
+def book_giasu(request):
+    """Render the book giasu page.
+
+    Args:
+        request (HttpRequest)
+
+    Returns:
+        HttpResponse: 200 if the page was sent successfully
+        HttpResponse: 302 if not logged in (redirect to login page)
+        HttpResponse: 405 if using an unsupported HTTP method
+
+    Example usage:
+
+        GET /book-giasu
+
+    """
+
+    # FX TODO: change to use book_giasu_context when portal API is ready
+    context = live_session_context(request)
+    context['general'] = True
+    context['mentor'] = True
+    context['tutor'] = True
+
+    return render_to_response('fx_live_session/book_giasu.html', context)
