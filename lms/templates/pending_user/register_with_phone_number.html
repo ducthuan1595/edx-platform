@@ -37,9 +37,13 @@
       right: 0;
       z-index: 999999;
       background-color: rgba(0, 0, 0, 0.5);
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
     }
     .form-hidden {
       display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
     }
     .form-register {
       position: relative;
@@ -355,7 +359,7 @@
                     alert('Vui lòng nhập số điện thoại hợp lệ.');
                     return;
                 }
-                const format84Phone = convertPhoneToBase64(phone);
+                const format84Phone = convertPhoneToFormat84(phone);
                 const encodedPhone = btoa(phone);
 
                 try {
@@ -370,7 +374,6 @@
                         if (isExistenceStudent) {
                             // FX TODO: Need test this case
                             displayNotiStudentExist();
-                            alert('Bạn đã là học viên của FUNiX. Vui lòng đăng nhập để tiếp tục.');
                             return;
                         }
 
@@ -388,7 +391,7 @@
             });
         });
 
-        const convertPhoneToBase64 = (phone) => {
+        const convertPhoneToFormat84 = (phone) => {
             const format84Phone = phone.replace(/^0/, '84');
             return format84Phone;
         }
@@ -504,7 +507,7 @@
         const res = await fetch('https://portal-staging.funix.edu.vn/api/v1/private_teacher/trial_course');
         const data = await res.json();
         if(data.code == 200) {
-          const options = data.data.map(mentor => `<div onClick="onSelect('` + mentor.id +`', '` + mentor.title + `')" class="option">`+ mentor.title + `</div>`).join("");
+          const options = data.data.filter(item => item.is_trial_course).map(mentor => `<div onClick="onSelect('` + mentor.id +`', '` + mentor.title + `')" class="option">`+ mentor.title + `</div>`).join("");
           optionsValue += options;
         }
         };
@@ -556,6 +559,8 @@
               
             </div>
             `;
+
+            document.querySelector('#phone').value = document.querySelector('#input-phone').value;
         };
       
         const onSelect = (id, title) => {
@@ -570,11 +575,17 @@
           const note = document.querySelector('#note').value;
           const errEl = document.querySelector('.form-register__error-message');
           const redirectPage = 'https://lmsclone.funix.edu.vn/login-phone';
-      
+          
+          const phoneRegex = /^(84|0)\d{9}$/;
+          if(!phoneRegex.test(phone)) {
+            errEl.innerText = 'Số điện thoại không hợp lệ vui lòng thử lại!';
+            return;
+          }
+          const format84Phone = phone.replace(/^0/, '84');
           const inputValue = {
             fullname: name,
             course_id: Number(selectValue),
-            phone: phone,
+            phone: format84Phone,
             email: email,
             register_note: note
           }
@@ -589,24 +600,26 @@
             });
             const data = await res.json();
             if(data.error === '') {
-              // Handle when create lead success
               const leadId = data.data[0][0];
-              const format84Phone = convertPhoneToBase64(phone);
+              const format84Phone = convertPhoneToFormat84(phone);
               const encodedPhone = btoa(format84Phone);
 
+              // Check existence student after create lead success
               const isExistenceStudent = await checkExistenceStudent(format84Phone);
               if (isExistenceStudent) {
                 // FX TODO: Need test this case
+                loadingPage.classList.add('loading--hidden');
                 displayNotiStudentExist();
                 return;
               }
               clearForm(errEl);
-              // Send OTP to phone
               try {
+                // Send OTP to phone
                 const data = await sendOtp(format84Phone);
                 // Redirect to verify-phone
                 window.location.href = 'verify-phone?p=' + encodedPhone;
               } catch (error) {
+                loadingPage.classList.add('loading--hidden');
                 alert(error.message);
               }
             }else {
@@ -633,10 +646,6 @@
       
         const validation = (data) => {
           let isInvalid = false;
-          if(data.phone.trim().length < 10) {
-            isInvalid = true;
-            errMessage = 'Số điện thoại không đúng vui lòng thử lại!';
-          }
           if(!data.course_id) {
             isInvalid = true;
             errMessage = 'Vui lòng chọn khóa học bạn muốn học!';
