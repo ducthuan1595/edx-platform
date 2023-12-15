@@ -117,7 +117,7 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
                         <div class="col-md-4">
                             <label for="email" class="form-label">Chọn gia sư: </label>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-8 select-giasu-container">
                             <select class="select-giasu selectpickergiasu" data-live-search="true" data-size="5" title="- Chọn gia sư -">
                             </select>
                         </div>
@@ -415,30 +415,14 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
 <script>
     var user_email = ${ user.email | n, dump_js_escaped_json };
     var course_list = ${ course_list | n, dump_js_escaped_json };
-    var giasu_list = [
-        {
-            "giasu_id": "1",
-            "giasu_title": "Nguyễn Văn A",
-            "giasu_code": "GV001"
-        }, 
-        {
-            "giasu_id": "2",
-            "giasu_title": "Nguyễn Văn B",
-            "giasu_code": "GV002"
-        }, 
-        {
-            "giasu_id": "3",
-            "giasu_title": "Nguyễn Văn C",
-            "giasu_code": "GV003"
-        }
-    ];
+    var giasu_list = [];
 </script>
 <script>
 $(function () {
     let selected_course_option, selected_course_id, selected_giasu_option, selected_giasu_id, selected_session, selected_from_date, selected_to_date;
     let reload_page = false;
     let current_history_slot_id, loading_popup = false, new_slot_id;
-    const base_url = "https://portal.funix.edu.vn/api/v1/live";
+    const base_url = "https://portal-staging.funix.edu.vn/api/v1/private_teacher";
     const available_schedule_url = base_url + "/available_schedule";
     const general_session_url = base_url + "/general_session";
     const require_messages = {
@@ -498,17 +482,20 @@ $(function () {
         populateCourseSelect(course_lists[selectClass], selectClass);
     }
 
-    // Initialize the select elements with the 'select-course' class using the selectpicker plugin
+    // Set value for select course and select giasu element
     if (course_list.length > 0) {
         $('.select-course').val(course_list[0].class_id).selectpicker('render');
+        selected_course_id = course_list[0].class_id;
+        fetchListGiaSu(course_list[0].class_id);
     } else {
         $('.select-course').val('').selectpicker('render');
     }
-
+    
     // Add change handler to all select elements with class 'selectpickerall'
     $(".selectpickerall").change(function () {
         selected_course_option = $(this).find(":selected");
         selected_course_id = selected_course_option.data("tokens");
+        fetchListGiaSu(selected_course_id);
     });
 
     // Function to populate a select element with a given list of courses
@@ -523,27 +510,56 @@ $(function () {
         });
     }
 
-    populateGiaSuSelect(giasu_list, '.select-giasu');
+    // Init select gia su with empty list
+    populateGiaSuSelect([], 'select.select-giasu');
+    $('select.select-giasu').selectpicker();
 
-    // Initialize the select elements with the 'select-giasu' class using the selectpicker plugin
-    $('.select-giasu').selectpicker();
+    // Fetch list giasu when select course change
+    async function fetchListGiaSu(classId) {
+        // FX TODO: Update url to get list giasu
+        const url = base_url + "/teacher_list?class_id=" + classId;
+        let request_url = url;
 
-    // Add change handler to all select elements with class 'selectpickergiasu'
-    $(".selectpickergiasu").change(function () {
-        selected_giasu_option = $(this).find(":selected");
-        selected_giasu_id = selected_giasu_option.data("tokens");
-    });
+        try {
+            displayLoading();
+
+            // Send request to API to get list giasu
+            const response = await fetch(request_url, {
+                method: 'GET',
+            });
+            const { code, data: giasu_list } = await response.json();
+            hideLoading();
+
+            if (code == 200) {
+                populateGiaSuSelect(giasu_list, 'select.select-giasu');
+                $('select.select-giasu').selectpicker();
+            }
+        } catch (error) {
+            hideLoading();
+            console.error('Error:', error);
+        }
+    }
 
     // Function to populate a select element with a given list of courses
     function populateGiaSuSelect(giasu_list, selectClass) {
+        // empty select-giasu-container
+        $('.select-giasu-container').empty();
+        $('.select-giasu-container').append('<select class="select-giasu selectpickergiasu" data-live-search="true" data-size="5" title="- Chọn mentor -"></select>');
+
         const $giasuSelect = $(selectClass);
         // FX TODO: Update property in giasu_list to match with API
-        $.each(giasu_list, (index, { giasu_title, giasu_code, giasu_id }) => {
-            const optionText = giasu_title + ' - ' + giasu_code;
+        $.each(giasu_list, (index, { mentor_name, mentor_id }) => {
+            const optionText = mentor_name;
             $giasuSelect.append($('<option>').attr({
-                'data-tokens': giasu_id,
-                'value': giasu_id
+                'data-tokens': mentor_id,
+                'value': mentor_id
             }).text(optionText));
+        });
+
+        // Add change handler to all select elements with class 'selectpickergiasu'
+        $(".selectpickergiasu").change(function () {
+            selected_giasu_option = $(this).find(":selected");
+            selected_giasu_id = selected_giasu_option.data("tokens");
         });
     }
 
@@ -599,17 +615,29 @@ $(function () {
         // Uncheck all input elements with name 'select-session'
         $("input[name='select-session']").prop('checked', false);
         selected_session = undefined;
-        $('.custom-time-section').hide();
 
         // FX TO: Update url to get schedule data
-        const url = available_schedule_url;
-        let request_url = url;
+        let queryParams = [];
+        let availableSlotUrl = base_url + "/available_slot?class_id=" + selected_course_id;
 
+        if (selected_giasu_id) {
+            queryParams.push("mentor_id=" + selected_giasu_id);
+        }
+        if (selected_from_date) {
+            queryParams.push("from_date=" + selected_from_date);
+        }
+        if (selected_from_date && selected_to_date) {
+            queryParams.push("to_date=" + selected_to_date);
+        }
+
+        if (queryParams.length > 0) {
+            availableSlotUrl += '&' + queryParams.join('&');
+        }
         try {
             displayLoading();
 
             // Send request to API to get schedule data with params
-            const response = await fetch(request_url, {
+            const response = await fetch(availableSlotUrl, {
                 method: 'GET',
             });
             const { code, data: schedule } = await response.json();
@@ -651,7 +679,6 @@ $(function () {
 
             // Select the radio button
             radio.prop('checked', true);
-            $('.custom-time-section').hide();
             selected_session = $("input[name='select-session']:checked").val();
         });
 
@@ -878,13 +905,6 @@ $(function () {
     // Get the selected session
     $("input[name='select-session']").change(function () {
         selected_session = $("input[name='select-session']:checked").val();
-
-        // Show or hide custom time input
-        if (selected_session == "custom-time") {
-            $('.custom-time-section').show();
-        } else {
-            $('.custom-time-section').hide();
-        }
     });
 
     // Add click handler to submit button
@@ -1304,7 +1324,6 @@ $(function () {
 
             // Select the radio button
             radio.prop('checked', true);
-            $('.custom-time-section').hide();
             new_slot_id = $("input[name='select-update-session']:checked").val();
         });
     }
