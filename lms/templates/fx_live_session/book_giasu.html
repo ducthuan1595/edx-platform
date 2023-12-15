@@ -499,7 +499,11 @@ $(function () {
     }
 
     // Initialize the select elements with the 'select-course' class using the selectpicker plugin
-    $('.select-course').selectpicker();
+    if (course_list.length > 0) {
+        $('.select-course').val(course_list[0].class_id).selectpicker('render');
+    } else {
+        $('.select-course').val('').selectpicker('render');
+    }
 
     // Add change handler to all select elements with class 'selectpickerall'
     $(".selectpickerall").change(function () {
@@ -510,11 +514,11 @@ $(function () {
     // Function to populate a select element with a given list of courses
     function populateCourseSelect(course_list, selectClass) {
         const $courseSelect = $(selectClass);
-        $.each(course_list, (index, { course_title, course_code, course_id }) => {
-            const optionText = course_title + ' - ' + course_code;
+        $.each(course_list, (index, { class_title, class_id }) => {
+            const optionText = class_title;
             $courseSelect.append($('<option>').attr({
-                'data-tokens': course_id,
-                'value': course_id
+                'data-tokens': class_id,
+                'value': class_id
             }).text(optionText));
         });
     }

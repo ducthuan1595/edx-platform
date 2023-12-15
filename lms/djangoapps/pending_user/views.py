@@ -1,4 +1,5 @@
 import logging
+import requests
 
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -43,8 +44,11 @@ class SendOTP(APIView):
         pending_user.save()
 
         message = "Ma OTP cua ban la: " + str(pending_user.verification_code)
-        # FX TODO: uncomment this line when can send sms success
-        response = send_sms(message, pending_user.phone)
+        # response = send_sms(message, pending_user.phone)
+        # FX TODO: remove this line after testing
+        response = {}
+        AUDIT_LOG.info("Ma OTP cua ban la: %s" % pending_user.verification_code)
+        AUDIT_LOG.info(response)
         if 'error' in response:
             return Response(
                 {"error": True, "error_description": "Send OTP fail"},
@@ -110,6 +114,8 @@ class CreatePasswordAPI(APIView):
     def post(self, request, *args, **kwargs):
         password = request.data.get("password")
         jwt_token = request.data.get("jwt")
+        course_id = request.data.get("course_id")
+        lead_id = request.data.get("lead_id")
 
         if not validate_password(password):
             return Response(
@@ -161,6 +167,30 @@ class CreatePasswordAPI(APIView):
                 {"error": True, "error_description": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        if course_id and lead_id:
+            # send post request to API to enroll trial
+            enroll_trial_url = 'https://portal-staging.funix.edu.vn/api/v1/private_teacher/enroll_trial'
+            enroll_trial_data = {
+                'lead_id': lead_id,
+                'course_id': course_id,
+            }
+            try:
+                response = requests.post(enroll_trial_url, json=enroll_trial_data, timeout=30)
+                response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
+            except requests.exceptions.HTTPError as err:
+                return Response(
+                    {"error": True, "error_description": str(err)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if response:
+                data = response.json()
+                if data['code'] != 201:
+                    return Response(
+                        {"error": True, "error_description": 'Enroll trial fail'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
         AUDIT_LOG.info("New user created: %s", new_user.username)
         response = JsonResponse({"success": True}, status=status.HTTP_200_OK)

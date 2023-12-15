@@ -174,6 +174,7 @@ def login_with_phone_number(request):
         return redirect(redirect_to)
 
     base64_phone_number = request.GET.get('p', None)
+    course_id = request.GET.get('ci', '')
     phone_number = urlsafe_base64_decode(base64_phone_number)
     cleaned_phone_number = clean_phone(phone_number)
 
@@ -191,7 +192,7 @@ def login_with_phone_number(request):
             AUDIT_LOG.info("login_with_phone_number: account_exists")
         else:
             AUDIT_LOG.info("login_with_phone_number: account_not_exists")
-            return redirect('/register-phone')
+            return redirect('/register-phone?p=' + base64_phone_number + '&ci=' + course_id)
     else:
         AUDIT_LOG.info("login_with_phone_number: invalid phone_number")
     AUDIT_LOG.info("---------------------------------------------")

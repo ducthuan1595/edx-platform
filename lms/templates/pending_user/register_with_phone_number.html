@@ -308,6 +308,7 @@
                     <h2 class="text-2xl font-semibold">HỌC THỬ MIỄN PHÍ KHÔNG GIỚI HẠN!</h2>
                 </div>
                 <div class="space-y-6">
+                    <div class="text-center text-sky-700 text-base font-normal leading-tight">FUNiX cung cấp công cụ cho phép học viên thao tác <br/>đặt lịch trực tiếp với gia sư.<br/>Hãy bắt đầu với bước tạo tài khoản để học thử miễn phí!</div>
                     <div class="text-center text-xl mb-4">Vui lòng nhập số điện thoại/ Zalo</div>
                     <div class="mb-4">
                         <input id="input-phone" type="text" placeholder="Số điện thoại" class="w-full p-4 border border-gray-300 rounded mb-2">
@@ -334,6 +335,19 @@
             const sendOtpButton = document.querySelector('#send-otp');
             const phoneInput = document.querySelector('#input-phone');
 
+            // get query params from url
+            const urlParams = new URLSearchParams(window.location.search);
+            const phone = urlParams.get('p');
+            const courseId = urlParams.get('ci');
+
+            if (phone) {
+                phoneInput.value = atob(phone);
+            }
+            if (courseId) {
+                // save courseId to localStorage
+                localStorage.setItem('ci', courseId);
+            }
+
             sendOtpButton.addEventListener('click', async function() {
                 const phone = phoneInput.value;
                 const phoneRegex = /^(84|0)\d{9}$/;
@@ -348,6 +362,9 @@
                     const leadId = await checkLeadExist(format84Phone);
 
                     if (leadId) {
+                        // Save leadId to localStorage
+                        localStorage.setItem('li', leadId);
+
                         const isExistenceStudent = await checkExistenceStudent(format84Phone);
                         
                         if (isExistenceStudent) {
@@ -466,7 +483,8 @@
             id: 'f2',
             title: 'ĐĂNG KÝ HỌC THỬ',
             desc1: "FUNiX cung cấp chính sách học thử miễn phí không giới hạn.",
-            desc2: 'Vui lòng hoàn thiện form thông tin bên dưới để bắt đầu.',
+            desc2: 'Bạn chưa có tài khoản?',
+            desc3: 'Vui lòng hoàn thiện form thông tin bên dưới để bắt đầu học thử.',
             button: 'HOÀN THÀNH'
           },
         ];
@@ -503,7 +521,8 @@
                 <div onClick=onClose() class="form-register__close">x</div>
                 <div class="form-register__title">`+ value.title + `</div>
                 <div id="title-1" class="form-register__desc">` + value.desc1 + `</div>
-                <div id="title-2" class="form-register__desc">` + value.desc2 + `</div>
+                <div id="title-3" class="form-register__desc">` + value.desc2 + `</div>
+                <div id="title-2" class="form-register__desc">` + value.desc3 + `</div>
                 <div class="form-register__inputs">
                   <div class="form-register__input">
                     <input type="text" id="name" placeholder="Họ và Tên (*)" name='name'>

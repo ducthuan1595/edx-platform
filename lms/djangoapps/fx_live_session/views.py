@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 from edxmako.shortcuts import render_to_response
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 
-from .utils import get_live_session_data, get_course_list
+from .utils import get_live_session_data, get_course_list, get_private_teacher_course
 
 AUDIT_LOG = logging.getLogger("audit")
 log = logging.getLogger(__name__)
@@ -97,10 +97,12 @@ def book_giasu(request):
 
     """
 
-    # FX TODO: change to use book_giasu_context when portal API is ready
-    context = live_session_context(request)
-    context['general'] = True
-    context['mentor'] = True
-    context['tutor'] = True
+    user_email = request.user.email
+    private_teacher_course = get_private_teacher_course(user_email)
+
+    context = {
+        'user_email': user_email,
+        'course_list': private_teacher_course,
+    }
 
     return render_to_response('fx_live_session/book_giasu.html', context)
