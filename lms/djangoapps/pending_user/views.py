@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.http import urlsafe_base64_decode
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.views.decorators.http import require_http_methods
 
 from edxmako.shortcuts import render_to_response
@@ -18,6 +18,7 @@ from student.helpers import get_next_url_for_login_page
 from student.views import create_account_with_params
 from third_party_auth.decorators import xframe_allow_whitelisted
 from util.json_request import JsonResponse
+from util.bad_request_rate_limiter import BadRequestRateLimiter
 
 from lms.djangoapps.pending_user.models import PendingUser, clean_phone, generate_otp
 from .utils import JwtManager, validate_password, send_sms
@@ -29,7 +30,18 @@ class SendOTP(APIView):
     """
     Send OTP to a phone number
     """
+    @method_decorator(csrf_protect)
     def post(self, request, *args, **kwargs):
+        # Apply rate limiting for bad requests and return an error response if the limit is exceeded
+        limiter = BadRequestRateLimiter()
+        limiter.tick_bad_request_counter(request)
+        if limiter.is_rate_limit_exceeded(request):
+            AUDIT_LOG.warning("Rate limit exceeded in password_reset")
+            return Response(
+                {"error": True, "error_description": "Rate limit exceeded"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         phone_number = request.data.get("phone")
         cleaned_phone = clean_phone(phone_number)
         if not cleaned_phone:
@@ -66,6 +78,7 @@ class ValidateOTP(APIView):
     # @method_decorator(csrf_exempt)
     def post(self, request, *args, **kwargs):
         base64_phone = request.data.get("phone")
+        otp = request.data.get("otp")
         phone_number = urlsafe_base64_decode(base64_phone)
         cleaned_phone = clean_phone(phone_number)
         if not cleaned_phone:
@@ -73,7 +86,6 @@ class ValidateOTP(APIView):
                 {"error": True, "error_description": "Invalid phone number"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        otp = request.data.get("otp")
 
         # FX TODO: change to find pending user by phone number and otp
         pending_user = PendingUser.objects.filter(phone=cleaned_phone).first()
