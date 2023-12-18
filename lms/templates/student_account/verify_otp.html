@@ -38,12 +38,13 @@
                     <p class="text-center text-md md:text-lg">Vui lòng nhập mã xác thực vừa được gửi tới số điện thoại của bạn</p>
                     <div class="w-full mb-4">
                         <input id="otp" type="text" placeholder=" " class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
+                        <p id="countdown" class="text-center text-gray-500 mt-2"></p>
                     </div>
                     <div class="w-full mb-4">
                         <button id="verify-otp" class="w-full bg-orange-500 text-white px-4 py-3 rounded-lg font-bold hover:bg-orange-600 transition-colors">Đăng ký</button>
                     </div>
                     <div class="w-full mb-10">
-                        <button class="w-full text-blue-500 font-bold hover:underline" style="display: none">Gửi lại mã xác thực</button>
+                        <button id="resend-otp" class="w-full text-blue-500 font-bold hover:underline" style="display: none">Gửi lại mã xác thực</button>
                     </div>
                 </div>
                 <div class="text-center mt-6">
@@ -56,10 +57,104 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const countdownTimer = document.querySelector('#countdown');
+            const resendOtpMessage = document.querySelector('#resend-otp');
             const verifyOtpButton = document.querySelector('#verify-otp');
             const otpInput = document.querySelector('#otp');
             const urlParams = new URLSearchParams(window.location.search);
             const phone = urlParams.get('p');
+            let initialTime = 120;
+            let time = initialTime;
+
+            // Start the countdown
+            let countdown = startCountdown();
+            
+            // Create a function to start the countdown
+            function startCountdown() {
+                // Update the countdown every second
+                let countdown = setInterval(function() {
+                    // Calculate the minutes and seconds from time
+                    let minutes = Math.floor(time / 60);
+                    let seconds = time % 60;
+
+                    countdownTimer.textContent = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+                    // Decrease time
+                    time--;
+
+                    // If the countdown has finished
+                    if (time < 0) {
+                        // Stop the countdown
+                        clearInterval(countdown);
+                        countdownTimer.style.display = 'none';
+                        countdownTimer.textContent = '2:00';
+                        resendOtpMessage.style.display = 'block';
+                    }
+                }, 1000);
+
+                return countdown;
+            }
+
+            // Add an event listener to the resend OTP message
+            resendOtpMessage.addEventListener('click', async function() {
+                // Hide the resend OTP message and show the countdown timer
+                this.style.display = 'none';
+                countdownTimer.style.display = 'block';
+                // Reset the countdown time and stop the old countdown
+                time = initialTime;
+                clearInterval(countdown);
+                // Convert the phone number to the 84 format
+                let phoneFormat84 = convertPhoneToFormat84(atob(phone));
+                
+                // Redirect to 'register-phone' if the phone number is not valid
+                const phoneRegex = /^(84|0)\d{9}$/;
+                if (!phoneRegex.test(phoneFormat84)) {
+                    window.location.href = 'register-phone';
+                    return;
+                }
+
+                try {
+                    await sendOtp(phoneFormat84);
+                    // Start a new countdown
+                    countdown = startCountdown();
+                } catch (error) {
+                    console.error(error);
+                    alert(error.message);
+                    window.location.href = 'register-phone';
+                }
+            });
+
+            const convertPhoneToFormat84 = (phone) => {
+                const format84Phone = phone.replace(/^0/, '84');
+                return format84Phone;
+            }
+
+            const sendOtp = async (format84Phone) => {
+                try {
+                    let csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
+                    const response = await fetch('https://lmsclone.funix.edu.vn/api-pending-user/send-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: JSON.stringify({ 
+                          phone: format84Phone,
+                        }),
+                    });
+            
+                    const data = await response.json();
+            
+                    if (data.success) {
+                        return data;
+                    } else {
+                        throw new Error('Gửi mã OTP không thành công. Xin vui lòng thử lại.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    throw error;
+                }
+            }
 
             verifyOtpButton.addEventListener('click', function() {
                 if (!phone) {
@@ -97,6 +192,7 @@
                         window.location.href = 'create-password';
                     } else {
                         alert('Failed to verify OTP. Please try again.');
+                        window.location.href = 'register-phone';
                     }
                 })
                 .catch((error) => {
