@@ -40,6 +40,13 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
         margin-right: 2rem;
     }
 % endif
+.wrapper-live-session {
+    max-width: 70rem;
+}
+
+div#booking {
+    max-width: 63rem;
+}
 
 .table-select-mentor-container .mentor {
     padding-left: 2rem;
@@ -78,6 +85,29 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
 #search:hover {
     background: #20719691;
     box-shadow: inset 0 1px 0 0 #fefefe;
+}
+
+.table-upcoming-session .table-cell.stt, .table-took-place-session .table-cell.stt {
+    flex: 4%;
+}
+.table-upcoming-session .table-cell.time {
+    flex: 12%;
+}
+.table-upcoming-session .table-cell.mentor {
+    flex: 20%;
+}
+.table-upcoming-session .table-cell.course {
+    flex: 22%;
+}
+.table-upcoming-session .table-cell.activity {
+    flex: 13%;
+}
+.table-upcoming-session .table-cell.link, .table-took-place-session .table-cell.note {
+    flex: 15%;
+}
+
+.table-took-place-session .table-cell.mentor {
+    flex: 20%;
 }
 </style>
 
@@ -213,8 +243,7 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
                         <div class="booking-success" style="display: none;">
                             <h2>Bạn đã đặt lịch thành công! </h2>
                             <br/>
-                            <p>Vui lòng kiểm tra email <b>${user.email}</b> để nhận đường link Zoom. </p>
-                            <i>Lưu ý: Trường hợp nếu bạn không sắp xếp tham dự được theo lịch đã đăng ký, vui lòng phản hồi qua email trong vòng 24 tiếng trước thời gian đã đăng ký để bảo lưu phiên hỏi đáp.</i>
+                            <p>Vui lòng kiểm tra tab <b>Lịch sử </b>để nhận đường link Zoom tham gia buổi học.</p>
                         </div>
                         <div class="order-custom-session-success" style="display: none;">
                             <h2>Hệ thống đã ghi nhận thời gian của bạn!</h2>
@@ -274,8 +303,9 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
                         <div class="table-row table-header">
                             <div class="table-cell stt">STT</div>
                             <div class="table-cell time">Thời gian</div>
-                            <div class="table-cell activity">Hoạt động</div>
+                            <div class="table-cell mentor">Gia sư</div>
                             <div class="table-cell course">Môn học</div>
+                            <div class="table-cell activity">Hình thức</div>
                             <div class="table-cell link">Link Zoom</div>
                             <div class="table-cell button-column-edit"></div>
                             <div class="table-cell button-column"></div>
@@ -292,8 +322,7 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
                         <span class="close" id="closePopup">&times;</span>
                         <div class="confirm-cancel-container" style="display: none">
                             <h3>Bạn có chắc chắn muốn hủy lịch?</h3>
-                            <p>Đối với hoạt động Mentor, bạn sẽ không được bảo lưu thời lượng trong tuần này nếu huỷ lịch sau 24 tiếng trước thời gian diễn ra phiên.</p>
-                            <button type="button" class="btn btn-primary" id="confirm-cancel">HỦY LỊCH</button>
+                            <button type="button" class="btn btn-primary mt-3" id="confirm-cancel">HỦY LỊCH</button>
                         </div>
                         <div class="success-cancel-container noti-container" style="display: none">
                             <p>Bạn đã huỷ lịch thành công</p>
@@ -393,10 +422,10 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
                         <div class="table-row table-header">
                             <div class="table-cell stt">STT</div>
                             <div class="table-cell time">Thời gian</div>
-                            <div class="table-cell activity">Hoạt động</div>
+                            <div class="table-cell mentor">Gia sư</div>
                             <div class="table-cell course">Môn học</div>
-                            <div class="table-cell session-status">Trạng thái phiên</div>
-                            <div class="table-cell note">Ghi chú</div>
+                            <div class="table-cell activity">Hình thức</div>
+                            <div class="table-cell session-status">Trạng thái</div>
                         </div>
                         <div class="table-body col-md-12">
                             
@@ -435,7 +464,7 @@ $(function () {
         question: "Vui lòng nhập câu hỏi!"
     };
 
-    if (getCurrentPageUrl().endsWith("/#history")) {
+    if (getCurrentPageUrl().endsWith("#history")) {
         // handle click on history tab when reload page
         $("#loading").hide();
         clickButtonById("history-tab");
@@ -545,9 +574,10 @@ $(function () {
         // empty select-giasu-container
         $('.select-giasu-container').empty();
         $('.select-giasu-container').append('<select class="select-giasu selectpickergiasu" data-live-search="true" data-size="5" title="- Chọn mentor -"></select>');
+        // Add default option
+        giasu_list.unshift({ mentor_name: "Tất cả", mentor_id: "" });
 
         const $giasuSelect = $(selectClass);
-        // FX TODO: Update property in giasu_list to match with API
         $.each(giasu_list, (index, { mentor_name, mentor_id }) => {
             const optionText = mentor_name;
             $giasuSelect.append($('<option>').attr({
@@ -605,11 +635,6 @@ $(function () {
             return;
         }
 
-        console.log("selected_course_id: " + selected_course_id);
-        console.log("selected_giasu_id: " + selected_giasu_id);
-        console.log("selected_from_date: " + selected_from_date);
-        console.log("selected_to_date: " + selected_to_date);
-
         // Remove all table-row children from table-body
         $('.table-select-mentor-container .table-body').empty();
         // Uncheck all input elements with name 'select-session'
@@ -624,10 +649,10 @@ $(function () {
             queryParams.push("mentor_id=" + selected_giasu_id);
         }
         if (selected_from_date) {
-            queryParams.push("from_date=" + selected_from_date);
+            queryParams.push("start_date=" + selected_from_date);
         }
         if (selected_from_date && selected_to_date) {
-            queryParams.push("to_date=" + selected_to_date);
+            queryParams.push("end_date=" + selected_to_date);
         }
 
         if (queryParams.length > 0) {
@@ -661,13 +686,14 @@ $(function () {
     function appendSchedule(dataArray) {
         // Loop through the array and create rows
         $.each(dataArray, function (index, item) {
+            const session_value = item.mentor_id + '/' + item.start_datetime + '/' + item.end_datetime;
+
             // Create a new row element
             const new_row = $('<div class="table-row"></div>');
-            
             new_row.append('<div class="table-cell date">' + convertToDate(item.start_datetime) + '</div>');
             new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + ' - ' + convertToTime(item.end_datetime) + '</div>');
             new_row.append('<div class="table-cell mentor">' + item.mentor_name + '</div>');
-            new_row.append('<div class="table-cell select-column"><input class="form-check-input" type="radio" name="select-session" value="' + item.slot_id + '"></div>');
+            new_row.append('<div class="table-cell select-column"><input class="form-check-input" type="radio" name="select-session" value="' + session_value + '"></div>');
             // Append the new row to the table body
             $('.table-select-mentor-container .table-body').append(new_row);
         });
@@ -935,10 +961,14 @@ $(function () {
         let url, payload;
 
         // Define payload data and url based on session type and selected session
-        url = base_url + "/book_session";
+        url = base_url + "/create_session";
 
+        const session_data = selected_session.split('/');
         payload = {
-            // FX TODO: Update payload
+            class_id: selected_course_id,
+            mentor_id: session_data[0],
+            start_datetime: session_data[1],
+            end_datetime: session_data[2],
         };
 
         // send POST request to url with body data is payload
@@ -1004,7 +1034,7 @@ $(function () {
     });
 
     function redirectToHistoryTab() {
-        if (!getCurrentPageUrl().endsWith("/#history")) {
+        if (!getCurrentPageUrl().endsWith("#history")) {
             window.location.href = getCurrentPageUrl() + "#history";
         }
         location.reload();
@@ -1027,7 +1057,7 @@ $(function () {
 
     // Fetch list session data from API and append to table
     async function getListSession() {
-        let url = base_url + "/sessions?student_email=" + user_email;
+        let url = base_url + "/session_list?email=" + user_email;
         try {
             displayLoading();
             const response = await fetch(url, {
@@ -1039,7 +1069,7 @@ $(function () {
             if (data.code == 200) {
                 // Filter list session by status
                 const list_session = data.data;
-                const upcoming_session = list_session.filter(item => ((item.session_status == "Chưa diễn ra" || item.session_status == "Chờ xác nhận") && item.student_status == "Đã đăng ký"));
+                const upcoming_session = list_session.filter(item => ((item.status == "Đã lên lịch")));
                 const took_place_session = list_session.filter(item => !upcoming_session.includes(item));   // took_place_session = list_session - upcoming_session
 
                 // Sort list session by date
@@ -1070,21 +1100,19 @@ $(function () {
         $.each(list_session, function (index, item) {
             // Create a new row element
             const new_row = $('<div class="table-row align-items-center"></div>');
+            const mentor_name_html = item.mentor_name.split(' - ').reverse().join('<br>');
+
             new_row.append('<div class="table-cell stt">' + (index + 1) + '</div>');
             new_row.append('<div class="table-cell time">' + new Date(item.start_datetime).toLocaleString('vi-VN', { hour: 'numeric', minute: 'numeric' }) + '<br>' + ('0' + new Date(item.start_datetime).getDate()).slice(-2) + '/' + ('0' + (new Date(item.start_datetime).getMonth() + 1)).slice(-2) + '/' + new Date(item.start_datetime).getFullYear() + '</div>');
-            new_row.append('<div class="table-cell activity">' + item.session_type + '</div>');
-            new_row.append('<div class="table-cell course">' + item.course_id + '</div>');
-            new_row.append(renderLinkZoomElement(item.zoom_link));
-            new_row.append('<div class="table-cell button-column-edit">' + renderEditButton(item.zoom_link)) + '</div>';
+            new_row.append('<div class="table-cell mentor">' + mentor_name_html + '</div>');
+            new_row.append('<div class="table-cell course">' + '' + '</div>');
+            new_row.append('<div class="table-cell activity">' + '' + '</div>');
+            new_row.append(renderLinkZoomElement(item.zoom_url));
             new_row.append('<div class="table-cell button-column"><button type="button" class="btn-cancel btn btn-primary">Hủy</button></div>');
-            new_row.append('<p class="slot-id" style="display: none">' + item.slot_id + '</p>');
+            new_row.append('<p class="slot-id" style="display: none">' + item.session_id + '</p>');
             new_row.append('<p class="course-id" style="display: none">' + item.course_id_id + '</p>');
             // Append the new row to the table body
             $('.table-upcoming-session .table-body').append(new_row);
-
-            if (!item.zoom_link) {
-                has_session_can_update = true;
-            }
         });
 
         $('.btn-cancel').click(function () {
@@ -1192,14 +1220,16 @@ $(function () {
         // Loop through the array and create rows
         $.each(list_session, function (index, item) {
             const cancel_reason = item.cancel_reason ? item.cancel_reason : "";
+            const mentor_name_html = item.mentor_name.split(' - ').reverse().join('<br>');
+
             // Create a new row element
             const new_row = $('<div class="table-row align-items-center"></div>');
             new_row.append('<div class="table-cell stt">' + (index + 1) + '</div>');
             new_row.append('<div class="table-cell time">' + new Date(item.start_datetime).toLocaleString('vi-VN', { hour: 'numeric', minute: 'numeric' }) + '<br>' + ('0' + new Date(item.start_datetime).getDate()).slice(-2) + '/' + ('0' + (new Date(item.start_datetime).getMonth() + 1)).slice(-2) + '/' + new Date(item.start_datetime).getFullYear() + '</div>');
-            new_row.append('<div class="table-cell activity">' + item.session_type + '</div>');
-            new_row.append('<div class="table-cell course">' + item.course_id + '</div>');
-            new_row.append('<div class="table-cell session-status">' + item.session_status + '</div>');
-            new_row.append('<div class="table-cell note">' + cancel_reason + '</div>');
+            new_row.append('<div class="table-cell mentor">' + mentor_name_html + '</div>');
+            new_row.append('<div class="table-cell course">' + '' + '</div>');
+            new_row.append('<div class="table-cell activity">' + '' + '</div>');
+            new_row.append('<div class="table-cell session-status">' + item.status + '</div>');
             // Append the new row to the table body
             $('.table-took-place-session .table-body').append(new_row);
         });
@@ -1214,8 +1244,7 @@ $(function () {
     async function cancelSession() {
         let url = base_url + "/cancel_session";
         let payload = {
-            "slot_id": current_history_slot_id,
-            "student_email": user_email
+            "session_id": current_history_slot_id
         };
         try {
             // Hide popup and show loading
