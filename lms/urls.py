@@ -124,6 +124,8 @@ urlpatterns = (
     url(r'^register-phone$', 'pending_user.views.register_with_phone_number', name="register_with_phone_number"),
     # Forgot password
     url(r'^forgot-password$', 'pending_user.views.forgot_password', name="forgot_password"),
+    # Verify OTP to change password
+    url(r'^verify-to-change-pass$', 'pending_user.views.verify_otp_to_change_pass', name="verify_otp_to_change_pass"),
     # Input OTP for phone number verification
     url(r'^verify-phone$', 'student_account.views.verify_otp', name="verify_otp"),
     # Validate OTP

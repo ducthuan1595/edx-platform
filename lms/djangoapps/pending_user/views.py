@@ -238,6 +238,18 @@ def forgot_password(request):
 @require_http_methods(['GET'])
 @ensure_csrf_cookie
 @xframe_allow_whitelisted
+def verify_otp_to_change_pass(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    return render_to_response('pending_user/verify_otp_to_change_pass.html', {})
+
+
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
 def create_password(request):
     redirect_to = get_next_url_for_login_page(request)
     # If we're already logged in, redirect to the dashboard
