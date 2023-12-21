@@ -3,6 +3,11 @@ import json
 import requests
 import logging
 
+from django.utils import timezone
+from rest_framework.response import Response
+from rest_framework import status
+from lms.djangoapps.pending_user.models import PendingUser, clean_phone, generate_otp
+
 from jwkest.jwk import SYMKey
 from jwkest.jws import JWS
 
@@ -87,3 +92,32 @@ class JwtManager:
         jws = JWS()
         payload = jws.verify_compact(jwt_token, keys=[self.key])
         return payload
+
+
+def send_otp_to_phone(phone_number):
+    cleaned_phone = clean_phone(phone_number)
+    if not cleaned_phone:
+        return Response(
+            {"error": True, "error_description": "Invalid phone number"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    pending_user, created = PendingUser.objects.get_or_create(phone=cleaned_phone)
+    
+    pending_user.verification_code = generate_otp()
+    pending_user.created_at = timezone.now()
+    pending_user.save()
+
+    message = "Ma OTP cua ban la: " + str(pending_user.verification_code)
+    # response = send_sms(message, pending_user.phone)
+    # FX TODO: remove this line after testing
+    response = {}
+    AUDIT_LOG.info("Ma OTP cua ban la: %s" % pending_user.verification_code)
+    AUDIT_LOG.info(response)
+    if 'error' in response:
+        return Response(
+            {"error": True, "error_description": "Send OTP fail"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    AUDIT_LOG.info("OTP sent to phone number: %s" % cleaned_phone)
+    return Response({"success": True}, status=status.HTTP_200_OK)

@@ -21,7 +21,7 @@ from util.json_request import JsonResponse
 from util.bad_request_rate_limiter import BadRequestRateLimiter
 
 from lms.djangoapps.pending_user.models import PendingUser, clean_phone, generate_otp
-from .utils import JwtManager, validate_password, send_sms
+from .utils import JwtManager, validate_password, send_sms, send_otp_to_phone
 
 AUDIT_LOG = logging.getLogger("audit")
 
@@ -43,33 +43,34 @@ class SendOTP(APIView):
             )
 
         phone_number = request.data.get("phone")
+        response = send_otp_to_phone(phone_number)
+        return response
+
+
+class VerifyToChangePass(APIView):
+    """
+    Verify phone number to change password
+    """
+    @method_decorator(csrf_protect)
+    def post(self, request, *args, **kwargs):
+        phone_number = request.data.get("phone")
+
         cleaned_phone = clean_phone(phone_number)
         if not cleaned_phone:
             return Response(
                 {"error": True, "error_description": "Invalid phone number"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        pending_user, created = PendingUser.objects.get_or_create(phone=cleaned_phone)
-        
-        pending_user.verification_code = generate_otp()
-        pending_user.created_at = timezone.now()
-        pending_user.save()
 
-        message = "Ma OTP cua ban la: " + str(pending_user.verification_code)
-        # response = send_sms(message, pending_user.phone)
-        # FX TODO: remove this line after testing
-        response = {}
-        AUDIT_LOG.info("Ma OTP cua ban la: %s" % pending_user.verification_code)
-        AUDIT_LOG.info(response)
-        if 'error' in response:
+        conflicts = check_account_exists(cleaned_phone)
+        if not conflicts:
             return Response(
-                {"error": True, "error_description": "Send OTP fail"},
+                {"error": 'user_not_found', "error_description": "User not found"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        AUDIT_LOG.info("OTP sent to phone number: %s" % cleaned_phone)
-        return Response({"success": True}, status=status.HTTP_200_OK)
-
+        response = send_otp_to_phone(cleaned_phone)
+        return response
 
 class ValidateOTP(APIView):
     """
@@ -220,6 +221,18 @@ def register_with_phone_number(request):
         return redirect(redirect_to)
 
     return render_to_response('pending_user/register_with_phone_number.html', {})
+
+
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
+def forgot_password(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    return render_to_response('pending_user/forgot_password.html', {})
 
 
 @require_http_methods(['GET'])
