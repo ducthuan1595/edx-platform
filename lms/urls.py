@@ -132,7 +132,9 @@ urlpatterns = (
     url(r'^api-pending-user/', include('pending_user.urls')),
     # Create password
     url(r'^create-password$', 'pending_user.views.create_password', name="create_password"),
-    
+    # Change password
+    url(r'^change-password$', 'pending_user.views.change_password', name="change_password"),
+
     # Book giasu page
     url(r'^book-giasu$', 'fx_live_session.views.book_giasu', name="book_giasu"),
 )

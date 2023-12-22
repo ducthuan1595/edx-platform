@@ -2,7 +2,9 @@ import base64
 import json
 import requests
 import logging
+import time
 
+from datetime import datetime, timedelta
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework import status
@@ -84,6 +86,9 @@ class JwtManager:
         self.key = SYMKey(key=secret, alg="HS256")
 
     def encode(self, payload):
+        # Add an 'exp' claim that expires 5 minutes from now
+        payload['exp'] = int(time.mktime((datetime.now() + timedelta(minutes=5)).timetuple()))
+        
         jws = JWS(payload, alg="HS256")
         jwt_token = jws.sign_compact(keys=[self.key])
         return jwt_token

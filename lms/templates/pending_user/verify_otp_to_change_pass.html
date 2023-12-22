@@ -188,9 +188,8 @@
                     if (data.success) {
                         // save jwt to local storage
                         localStorage.setItem('jtc', data.jwt);
-                        // Redirect to create-password
-                        alert('Xác thực thành công. Vui lòng đặt lại mật khẩu.');
-                        // window.location.href = 'create-password';
+                        // Redirect to change-password
+                        window.location.href = 'change-password';
                     } else {
                         alert('Mã xác thực không hợp lệ. Xin vui lòng thử lại.');
                         window.location.href = 'forgot-password';

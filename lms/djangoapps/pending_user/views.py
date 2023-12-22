@@ -1,6 +1,9 @@
 import logging
 import requests
+import time
 
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -24,7 +27,7 @@ from lms.djangoapps.pending_user.models import PendingUser, clean_phone, generat
 from .utils import JwtManager, validate_password, send_sms, send_otp_to_phone
 
 AUDIT_LOG = logging.getLogger("audit")
-
+SECRET_KEY = 'thisismysecretkey'
 
 class SendOTP(APIView):
     """
@@ -105,7 +108,7 @@ class ValidateOTP(APIView):
 
             payload = {"phone": cleaned_phone}
             # FX TODO: change secret key
-            jwt_manager = JwtManager('thisismysecretkey')
+            jwt_manager = JwtManager(SECRET_KEY)
             jwt_token = jwt_manager.encode(payload)
 
             return Response(
@@ -123,7 +126,7 @@ class CreatePasswordAPI(APIView):
     """
     Get password and create new user
     """
-
+    @method_decorator(csrf_protect)
     def post(self, request, *args, **kwargs):
         password = request.data.get("password")
         jwt_token = request.data.get("jwt")
@@ -137,9 +140,19 @@ class CreatePasswordAPI(APIView):
         )
 
         # FX TODO: change secret key
-        jwt_manager = JwtManager('thisismysecretkey')
+        jwt_manager = JwtManager(SECRET_KEY)
         payload = jwt_manager.decode(jwt_token)
+        exp = payload.get('exp')
         phone_number = payload.get("phone")
+
+        if exp is not None:
+            current_time = time.time()
+            if current_time > exp:
+                return Response(
+                    {"error": 'token_expired', "error_description": "JWT token has expired"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         cleaned_phone = clean_phone(phone_number)
         if not cleaned_phone:
             return Response(
@@ -211,6 +224,64 @@ class CreatePasswordAPI(APIView):
         return response
 
 
+class ChangePasswordAPI(APIView):
+    """
+    Change password for existing user
+    """
+    @method_decorator(csrf_protect)
+    def post(self, request, *args, **kwargs):
+        password = request.data.get("password")
+        jwt_token = request.data.get("jwt")
+
+        if not validate_password(password):
+            return Response(
+                {"error": True, "error_description": "Invalid password"},
+                status=status.HTTP_400_BAD_REQUEST,
+        )
+
+        # FX TODO: change secret key
+        jwt_manager = JwtManager(SECRET_KEY)
+        payload = jwt_manager.decode(jwt_token)
+        exp = payload.get('exp')
+        phone_number = payload.get("phone")
+
+        if exp is not None:
+            current_time = time.time()
+            if current_time > exp:
+                return Response(
+                    {"error": 'token_expired', "error_description": "JWT token has expired"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        cleaned_phone = clean_phone(phone_number)
+        if not cleaned_phone:
+            return Response(
+                {"error": 'invalid_token', "error_description": "Invalid JWT"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        conflicts = check_account_exists(cleaned_phone)
+        if not conflicts:
+            return Response(
+                {"error": 'user_not_found', "error_description": "User not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        #  Set password for existing user
+        user = User.objects.get(username=cleaned_phone)
+        user.set_password(password)
+        user.save()
+
+        # Authenticate user
+        user = authenticate(username=cleaned_phone, password=password)
+        login(request, user)
+        request.session.set_expiry(0)
+
+        response = JsonResponse({"success": True}, status=status.HTTP_200_OK)
+        set_logged_in_cookies(request, response, user)
+        return response
+
+
 @require_http_methods(['GET'])
 @ensure_csrf_cookie
 @xframe_allow_whitelisted
@@ -257,3 +328,15 @@ def create_password(request):
         return redirect(redirect_to)
 
     return render_to_response('pending_user/create_password.html', {})
+
+
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
+def change_password(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    return render_to_response('pending_user/change_password.html', {})
