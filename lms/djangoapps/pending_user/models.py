@@ -28,7 +28,7 @@ class PendingUser(models.Model):
 def generate_otp():
     """Generate 6 digit OTP"""
     otp = random.randint(100000, 999999)
-    
+    otp = 123456    # FX TODO: remove this line after testing
     return otp
 
 
