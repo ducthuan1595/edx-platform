@@ -202,7 +202,7 @@ class CreatePasswordAPI(APIView):
                 'course_id': course_id,
             }
             try:
-                response = requests.post(enroll_trial_url, json=enroll_trial_data, timeout=30)
+                response = requests.post(enroll_trial_url, json=enroll_trial_data, timeout=180)
                 response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
             except requests.exceptions.HTTPError as err:
                 return Response(
