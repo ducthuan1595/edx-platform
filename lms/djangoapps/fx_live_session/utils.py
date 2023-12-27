@@ -47,9 +47,12 @@ def get_live_session_data(user_email):
     else:
         live_session_data['live_session'] = None
     
-    live_session_data['general'] = data['data']['general']
-    live_session_data['mentor'] = data['data']['mentor']
-    live_session_data['tutor'] = data['data']['tutor']
+        if 'general' in data['data']:
+            live_session_data['general'] = data['data']['general']
+        if 'mentor' in data['data']:
+            live_session_data['mentor'] = data['data']['mentor']
+        if 'tutor' in data['data']:
+            live_session_data['tutor'] = data['data']['tutor']
     
     return live_session_data
     
