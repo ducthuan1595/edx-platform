@@ -41,6 +41,12 @@ def send_sms(message, phone_number):
         "RequestId":"sms_otp_from_lms"
     }
     response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    AUDIT_LOG.info("333333333333333333333333333333333333333333333333")
+    AUDIT_LOG.info("Request to push-brandname-otp: %s", data)
+    AUDIT_LOG.info("Response from push-brandname-otp: %s", response.json())
+    AUDIT_LOG.info("333333333333333333333333333333333333333333333333")
+
     return response.json()
 
 
@@ -112,10 +118,8 @@ def send_otp_to_phone(phone_number):
     pending_user.created_at = timezone.now()
     pending_user.save()
 
-    message = "Ma OTP cua ban la: " + str(pending_user.verification_code)
-    # response = send_sms(message, pending_user.phone)
-    # FX TODO: remove this line after testing
-    response = {}
+    message = str(pending_user.verification_code) + " la ma OTP kich hoat tai khoan cua quy khach. Ma co hieu luc trong 5 phut"
+    response = send_sms(message, pending_user.phone)
     AUDIT_LOG.info("Ma OTP cua ban la: %s" % pending_user.verification_code)
     AUDIT_LOG.info(response)
     if 'error' in response:

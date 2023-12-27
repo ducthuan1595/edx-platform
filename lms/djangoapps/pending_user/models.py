@@ -14,8 +14,8 @@ class PendingUser(models.Model):
         return str(self.phone)
     
     def is_valid(self):
-        """10 mins OTP validation"""
-        lifespan_in_seconds = float(10 * 60)
+        """5 mins OTP validation"""
+        lifespan_in_seconds = float(5 * 60)
         now = timezone.now()
         time_diff = now - self.created_at
         time_diff_in_seconds = time_diff.total_seconds()
@@ -28,7 +28,6 @@ class PendingUser(models.Model):
 def generate_otp():
     """Generate 6 digit OTP"""
     otp = random.randint(100000, 999999)
-    otp = 123456    # FX TODO: remove this line after testing
     return otp
 
 
