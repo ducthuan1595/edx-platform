@@ -463,6 +463,7 @@ $(function () {
         custom_time_input: "Vui lòng nhập thời gian phù hợp với bạn!",
         question: "Vui lòng nhập câu hỏi!"
     };
+    course_list = course_list || [];
 
     if (getCurrentPageUrl().endsWith("#history")) {
         // handle click on history tab when reload page
@@ -969,6 +970,7 @@ $(function () {
             mentor_id: session_data[0],
             start_datetime: session_data[1],
             end_datetime: session_data[2],
+            parent_notes: $("#question").val()
         };
 
         // send POST request to url with body data is payload
