@@ -1107,8 +1107,8 @@ $(function () {
             new_row.append('<div class="table-cell stt">' + (index + 1) + '</div>');
             new_row.append('<div class="table-cell time">' + new Date(item.start_datetime).toLocaleString('vi-VN', { hour: 'numeric', minute: 'numeric' }) + '<br>' + ('0' + new Date(item.start_datetime).getDate()).slice(-2) + '/' + ('0' + (new Date(item.start_datetime).getMonth() + 1)).slice(-2) + '/' + new Date(item.start_datetime).getFullYear() + '</div>');
             new_row.append('<div class="table-cell mentor">' + mentor_name_html + '</div>');
-            new_row.append('<div class="table-cell course">' + '' + '</div>');
-            new_row.append('<div class="table-cell activity">' + '' + '</div>');
+            new_row.append('<div class="table-cell course">' + item.course_id + '</div>');
+            new_row.append('<div class="table-cell activity">' + renderTypeOfSession(item.is_trial_class) + '</div>');
             new_row.append(renderLinkZoomElement(item.zoom_url));
             new_row.append('<div class="table-cell button-column"><button type="button" class="btn-cancel btn btn-primary">Hủy</button></div>');
             new_row.append('<p class="slot-id" style="display: none">' + item.session_id + '</p>');
@@ -1172,6 +1172,14 @@ $(function () {
         }
     }
 
+    function renderTypeOfSession(is_trial_class) {
+        if (is_trial_class) {
+            return "Học thử";
+        } else {
+            return "Combo";
+        }
+    }
+
     // Render link zoom element
     function renderLinkZoomElement(zoom_link) {
         if (zoom_link) {
@@ -1229,8 +1237,8 @@ $(function () {
             new_row.append('<div class="table-cell stt">' + (index + 1) + '</div>');
             new_row.append('<div class="table-cell time">' + new Date(item.start_datetime).toLocaleString('vi-VN', { hour: 'numeric', minute: 'numeric' }) + '<br>' + ('0' + new Date(item.start_datetime).getDate()).slice(-2) + '/' + ('0' + (new Date(item.start_datetime).getMonth() + 1)).slice(-2) + '/' + new Date(item.start_datetime).getFullYear() + '</div>');
             new_row.append('<div class="table-cell mentor">' + mentor_name_html + '</div>');
-            new_row.append('<div class="table-cell course">' + '' + '</div>');
-            new_row.append('<div class="table-cell activity">' + '' + '</div>');
+            new_row.append('<div class="table-cell course">' + item.course_id + '</div>');
+            new_row.append('<div class="table-cell activity">' + renderTypeOfSession(item.is_trial_class) + '</div>');
             new_row.append('<div class="table-cell session-status">' + item.status + '</div>');
             // Append the new row to the table body
             $('.table-took-place-session .table-body').append(new_row);
