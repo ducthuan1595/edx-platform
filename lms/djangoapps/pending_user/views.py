@@ -173,7 +173,7 @@ class CreatePasswordAPI(APIView):
         conflicts = check_account_exists(username, email)
         if conflicts:
             return Response(
-                {"error": True, "error_description": "User already exists"},
+                {"error": 'user_already_exists', "error_description": "User already exists"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
