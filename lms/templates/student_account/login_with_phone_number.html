@@ -66,6 +66,11 @@
                 const password = passwordInput.value;
                 const email = convertPhoneToEmail(phone);
 
+                if (!phone || !password) {
+                    alert('Vui lòng nhập đầy đủ số điện thoại và mật khẩu!');
+                    return;
+                }
+
                 const apiUrl = 'https://' + window.location.hostname + '/user_api/v1/account/login_session/';
                 let csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
                 let formData = new FormData();
@@ -84,7 +89,8 @@
                     .then(response => response.text())
                     .then(data => {
                         if (data) {
-                            alert(data);
+                            console.error('Error:', data);
+                            alert('Số điện thoại hoặc mật khẩu không chính xác!');
                         } else {
                             // Redirect to the home page
                             window.location.href = '/book-giasu'
