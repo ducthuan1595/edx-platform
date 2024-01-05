@@ -16,7 +16,7 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
 
 <%namespace name='static' file='/static_content.html'/>
 
-<%block name="pagetitle">${_("Live Session")}</%block>
+<%block name="pagetitle">${_("Gia su")}</%block>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -87,10 +87,16 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
     box-shadow: inset 0 1px 0 0 #fefefe;
 }
 
+.table-upcoming-session .table-cell {
+    align-self: center;
+}
 .table-upcoming-session .table-cell.stt, .table-took-place-session .table-cell.stt {
     flex: 4%;
 }
 .table-upcoming-session .table-cell.time {
+    flex: 12%;
+}
+.table-upcoming-session .table-cell.duration {
     flex: 12%;
 }
 .table-upcoming-session .table-cell.mentor {
@@ -303,6 +309,7 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
                         <div class="table-row table-header">
                             <div class="table-cell stt">STT</div>
                             <div class="table-cell time">Thời gian</div>
+                            <div class="table-cell duration">Thời lượng dự kiến</div>
                             <div class="table-cell mentor">Gia sư</div>
                             <div class="table-cell course">Môn học</div>
                             <div class="table-cell activity">Hình thức</div>
@@ -1106,6 +1113,7 @@ $(function () {
 
             new_row.append('<div class="table-cell stt">' + (index + 1) + '</div>');
             new_row.append('<div class="table-cell time">' + new Date(item.start_datetime).toLocaleString('vi-VN', { hour: 'numeric', minute: 'numeric' }) + '<br>' + ('0' + new Date(item.start_datetime).getDate()).slice(-2) + '/' + ('0' + (new Date(item.start_datetime).getMonth() + 1)).slice(-2) + '/' + new Date(item.start_datetime).getFullYear() + '</div>');
+            new_row.append('<div class="table-cell duration">' + item.duration + '</div>');
             new_row.append('<div class="table-cell mentor">' + mentor_name_html + '</div>');
             new_row.append('<div class="table-cell course">' + item.course_id + '</div>');
             new_row.append('<div class="table-cell activity">' + renderTypeOfSession(item.is_trial_class) + '</div>');
