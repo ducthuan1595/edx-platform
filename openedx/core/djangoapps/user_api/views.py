@@ -1,15 +1,19 @@
 """HTTP end-points for the User API. """
 import copy
+import logging
+import json
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import NON_FIELD_ERRORS, ImproperlyConfigured, PermissionDenied, ValidationError
 from django.core.urlresolvers import reverse
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
 from django_countries import countries
+from edx_rest_framework_extensions.authentication import JwtAuthentication
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx import locator
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
@@ -21,8 +25,14 @@ import third_party_auth
 from django_comment_common.models import Role
 from edxmako.shortcuts import marketing_link
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
-from openedx.core.lib.api.authentication import SessionAuthenticationAllowInactiveUser
-from openedx.core.lib.api.permissions import ApiKeyHeaderPermission
+from openedx.core.lib.api.authentication import (
+    OAuth2AuthenticationAllowInactiveUser,
+    SessionAuthenticationAllowInactiveUser
+)
+from openedx.core.lib.api.permissions import ApiKeyHeaderPermission, ApiKeyHeaderPermissionIsAuthenticated
+from shoppingcart.models import (
+    CourseMode,
+)
 from student.cookies import set_logged_in_cookies
 from student.forms import get_registration_extension_form
 from student.views import create_account_with_params
@@ -38,11 +48,12 @@ from .accounts import (
     USERNAME_MIN_LENGTH
 )
 from .accounts.api import check_account_exists
-from .helpers import FormDescription, require_post_params, shim_student_view
+from .helpers import FormDescription, require_post_params, require_json_params, shim_student_view
 from .models import UserPreference, UserProfile
 from .preferences.api import get_country_time_zones, update_email_opt_in
 from .serializers import CountryTimeZoneSerializer, UserPreferenceSerializer, UserSerializer
 
+AUDIT_LOG = logging.getLogger("audit")
 
 class LoginSessionView(APIView):
     """HTTP end-points for logging in users. """
@@ -957,6 +968,93 @@ class RegistrationView(APIView):
                         required=False,
                     )
 
+
+class RegistrationCustomView(RegistrationView):
+    """HTTP end-points for creating a new user and enrolling in courses."""
+
+    authentication_classes = (JwtAuthentication, OAuth2AuthenticationAllowInactiveUser, )
+    permission_classes = ApiKeyHeaderPermissionIsAuthenticated,
+
+    @method_decorator(require_json_params(["username", "name", "country", "email", "password", "honor_code", "terms_of_service"]))
+    @method_decorator(csrf_exempt)
+    def post(self, request):
+        """Create the user's account.
+
+        You must send all required form fields with the request.
+
+        Arguments:
+            request (HTTPRequest)
+
+        Returns:
+            HttpResponse: 201 on success
+            HttpResponse: 400 if the request is not valid.
+            HttpResponse: 409 if an account with the given username or email
+                address already exists
+            HttpResponse: 403 operation not allowed
+        """
+        data = json.loads(request.body)
+        
+        email = data.get('email')
+        username = data.get('username')
+
+        # Handle duplicate email/username
+        conflicts = check_account_exists(email=email, username=username)
+        if conflicts:
+            conflict_messages = {
+                "email": _(
+                    # Translators: This message is shown to users who attempt to create a new
+                    # account using an email address associated with an existing account.
+                    u"It looks like {email_address} belongs to an existing account. "
+                    u"Try again with a different email address."
+                ).format(email_address=email),
+                "username": _(
+                    # Translators: This message is shown to users who attempt to create a new
+                    # account using a username associated with an existing account.
+                    u"It looks like {username} belongs to an existing account. "
+                    u"Try again with a different username."
+                ).format(username=username),
+            }
+            errors = {
+                field: [{"user_message": conflict_messages[field]}]
+                for field in conflicts
+            }
+            return JsonResponse(errors, status=409)
+
+        # Backwards compatibility: the student view expects both
+        # terms of service and honor code values.  Since we're combining
+        # these into a single checkbox, the only value we may get
+        # from the new view is "honor_code".
+        # Longer term, we will need to make this more flexible to support
+        # open source installations that may have separate checkboxes
+        # for TOS, privacy policy, etc.
+        if data.get("honor_code") and "terms_of_service" not in data:
+            data["terms_of_service"] = data["honor_code"]
+
+        try:
+            with transaction.atomic():
+                user = create_account_with_params(request, data)
+                user.is_active = True
+                user.save()
+        except ValidationError as err:
+            # Should only get non-field errors from this function
+            assert NON_FIELD_ERRORS not in err.message_dict
+            # Only return first error for each field
+            errors = {
+                field: [{"user_message": error} for error in error_list]
+                for field, error_list in err.message_dict.items()
+            }
+            return JsonResponse(errors, status=400)
+        except PermissionDenied:
+            return HttpResponseForbidden(_("Account creation not allowed."))
+        except IntegrityError:
+            errors = {
+                'username': username, 'email': email, 'response': _('Invalid email {email_address}.').format(email_address=email)
+            }
+            return JsonResponse(errors, status=409)
+
+        response = JsonResponse({"success": True}, status=201)
+        return response
+    
 
 class PasswordResetView(APIView):
     """HTTP end-point for GETting a description of the password reset form. """
