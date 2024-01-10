@@ -42,11 +42,9 @@ def get_live_session_data(user_email):
         return live_session_data
 
     data = response.json()
-    if data and 'data' in data and 'live_session' in data['data']:
-        live_session_data['live_session'] = data['data']['live_session']
-    else:
-        live_session_data['live_session'] = None
-    
+    if data and 'data' in data:
+        if 'live_session' in data['data']:
+            live_session_data['live_session'] = data['data']['live_session']
         if 'general' in data['data']:
             live_session_data['general'] = data['data']['general']
         if 'mentor' in data['data']:
