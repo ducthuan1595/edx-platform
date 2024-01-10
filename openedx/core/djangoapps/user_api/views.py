@@ -2,6 +2,7 @@
 import copy
 import logging
 import json
+from functools import wraps
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -48,7 +49,7 @@ from .accounts import (
     USERNAME_MIN_LENGTH
 )
 from .accounts.api import check_account_exists
-from .helpers import FormDescription, require_post_params, require_json_params, shim_student_view
+from .helpers import FormDescription, require_post_params, shim_student_view
 from .models import UserPreference, UserProfile
 from .preferences.api import get_country_time_zones, update_email_opt_in
 from .serializers import CountryTimeZoneSerializer, UserPreferenceSerializer, UserSerializer
@@ -969,6 +970,36 @@ class RegistrationView(APIView):
                     )
 
 
+def require_json_params(required_params):
+    """
+    View decorator that ensures the required POST params are
+    present. If not, returns an HTTP response with status 400.
+
+    Args:
+        required_params (List[str]): The required parameter keys.
+
+    Returns:
+        JsonResponse: The HTTP response.
+
+    """
+    def _decorator(func):  # pylint: disable=missing-docstring
+        @wraps(func)
+        def _wrapped(*args, **_kwargs):  # pylint: disable=missing-docstring
+            request = args[0]
+            # Get the keys from the request body
+            request_keys = json.loads(request.body).keys()
+            missing_params = set(required_params) - set(request_keys)
+            if len(missing_params) > 0:
+                # Construct the error message
+                msg = u", ".join(missing_params)
+                # Return the HTTP response with status 400
+                return JsonResponse({"Missing JSON parameters": msg}, status=400)
+            else:
+                return func(request)
+        return _wrapped
+    return _decorator
+
+
 class RegistrationCustomView(RegistrationView):
     """HTTP end-points for creating a new user and enrolling in courses."""
 
@@ -1054,7 +1085,7 @@ class RegistrationCustomView(RegistrationView):
 
         response = JsonResponse({"success": True}, status=201)
         return response
-    
+
 
 class PasswordResetView(APIView):
     """HTTP end-point for GETting a description of the password reset form. """
