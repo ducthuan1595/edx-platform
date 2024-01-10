@@ -551,9 +551,6 @@ $(function () {
         if (selected_session == "custom-time" && !$("#custom-time-input").val()) {
             return require_messages.custom_time_input;
         }
-        if (!$("#question").val()) {
-            return require_messages.question;
-        }
 
         return "All variables are defined";
     }
