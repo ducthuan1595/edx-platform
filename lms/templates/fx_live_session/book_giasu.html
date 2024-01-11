@@ -1017,14 +1017,21 @@ $(function () {
                 }
             } else if (data.code == 500 || data.code == 400) {
                 $(".missing-fields").show();
-                $(".missing-fields").text("Đã có lỗi xảy ra. Vui lòng tải lại trang và thử lại!");
-                location.reload();
+                if (data.message == "Vượt quá số lượng tối đa của phiên." || data.message == "Số buổi học đã quá số lượng cho phép.") {
+                    $(".missing-fields").text(data.message + " Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
+                } else {
+                    $(".missing-fields").text("Đã có lỗi xảy ra trong quá trình đặt lịch. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
+                }
+                
+                setTimeout(function () {
+                    location.reload();
+                }, 3000);
             }
         } catch (error) {
             $("#loading-popup").hide();
             $("#close-popup").prop("disabled", false);
             $(".missing-fields").show();
-            $(".missing-fields").text("Đã có lỗi xảy ra. Vui lòng tải lại trang và thử lại!");
+            $(".missing-fields").text("Đã có lỗi xảy ra trong quá trình đặt lịch. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
             console.error('Error:', error);
         }
     }
