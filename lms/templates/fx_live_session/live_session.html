@@ -40,6 +40,10 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
         margin-right: 2rem;
     }
 % endif
+.support-content {
+    display: flex;
+    flex-direction: column;
+}
 </style>
 
 <div id="loading-api" class="overlay text-center mt-5 mb-4">
@@ -194,6 +198,14 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
                         </div>
                         <div class="row col-md-4 flex-nowrap align-items-center fw-semibold custom-time-section">
                             <input id="custom-time-input">
+                        </div>
+                    </div>
+                    <div class="row mb-4 support-content-container" style="display: none;">
+                        <div class="col-md-5">
+                            <label for="support-content" class="form-label">Nội dung cần hỗ trợ trong phiên: <span class="required">(*)</span></label>
+                        </div>
+                        <div class="support-content col-md-7">
+                            
                         </div>
                     </div>
                     <div class="row mb-4 justify-content-center question-container" style="display: none">

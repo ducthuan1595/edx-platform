@@ -13,6 +13,7 @@ $(function () {
         selected_to_date: "Vui lòng chọn ngày!",
         selected_session: "Vui lòng chọn thời gian phù hợp!",
         custom_time_input: "Vui lòng nhập thời gian phù hợp với bạn!",
+        support_content: "Vui lòng chọn nội dung cần hỗ trợ!",
         question: "Vui lòng nhập câu hỏi!"
     };
 
@@ -283,11 +284,13 @@ $(function () {
             $('.question-container').fadeIn();
             $('.submit-button-container').fadeIn();
             $('.custom-time-container').fadeIn();
+            $('.support-content-container').fadeIn();
         } else {
             $('.select-time-container').fadeOut();
             $('.question-container').fadeOut();
             $('.submit-button-container').fadeOut();
             $('.custom-time-container').fadeOut();
+            $('.support-content-container').fadeOut();
         }
     }
 
@@ -516,7 +519,45 @@ $(function () {
 
     // Add change handler to custom time input
     $('input#custom-time-input').on('change', updateTime);
+    
+    // Get support content options from Portal
+    async function getSupportContent() {
+        let url = base_url + "/support_content";
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+            });
+            const data = await response.json();
+            if (data.code == 200) {
+                return data.data;
+            } else {
+                return [];
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            return [];
+        }
+    }
 
+    // HTML for support content input
+    function initSupportContentInput(content_id, content_title) {
+        const supportContentInput = `
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="support-content" id="` + content_id + `" value="` + content_id + `">
+                <label class="form-check-label" for="` + content_id + `">` + content_title + `</label>
+            </div>
+        `
+        return supportContentInput;
+    }
+
+    async function initSupportContent() {
+        const supportContent = await getSupportContent();
+        const supportContentHtml = supportContent.map(content => initSupportContentInput(content.content_id, content.content_title)).join("");
+        
+        $(".support-content").html(supportContentHtml);
+    }
+    initSupportContent();
+    
     // Add click handler to submit button
     $("#submit").click(function () {
         let checkResult = checkRequireFieldsForBookingSession();
@@ -551,6 +592,10 @@ $(function () {
         if (selected_session == "custom-time" && !$("#custom-time-input").val()) {
             return require_messages.custom_time_input;
         }
+        const supportContent = $("input[name='support-content']:checked").val();
+        if (!supportContent) {
+            return require_messages.support_content;
+        }
 
         return "All variables are defined";
     }
@@ -570,7 +615,9 @@ $(function () {
             };
         } else {
             url = base_url + "/book_session";
-
+            const supportContent = $("input[name='support-content']:checked").val();
+            const supportContents = '[' + supportContent + ']'
+            
             if (selected_session == "custom-time") {
                 payload = {
                     "student_email": user_email,
@@ -579,6 +626,7 @@ $(function () {
                     "course_id": selected_course_id,
                     "session_type": selected_session_type,
                     "proposed_plan": $("#custom-time-input").val(),
+                    "content_id": supportContents
                 };
             } else {
                 payload = {
@@ -587,6 +635,7 @@ $(function () {
                     "student_question": $("#question").val(),
                     "course_id": selected_course_id,
                     "session_type": selected_session_type,
+                    "content_id": supportContents
                 };
             }
         }
@@ -628,14 +677,17 @@ $(function () {
                 }
             } else if (data.code == 500 || data.code == 400) {
                 $(".missing-fields").show();
-                $(".missing-fields").text("Đã có lỗi xảy ra. Vui lòng tải lại trang và thử lại!");
-                location.reload();
+                $(".missing-fields").text("Đã có lỗi xảy ra trong quá trình đặt lịch. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
+                
+                setTimeout(function () {
+                    location.reload();
+                }, 3000);
             }
         } catch (error) {
             $("#loading-popup").hide();
             $("#close-popup").prop("disabled", false);
             $(".missing-fields").show();
-            $(".missing-fields").text("Đã có lỗi xảy ra. Vui lòng tải lại trang và thử lại!");
+            $(".missing-fields").text("Đã có lỗi xảy ra trong quá trình đặt lịch. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
             console.error('Error:', error);
         }
     }
