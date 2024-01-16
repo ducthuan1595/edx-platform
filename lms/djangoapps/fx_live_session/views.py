@@ -46,9 +46,9 @@ def live_session(request):
         return redirect(reverse('dashboard'))
 
     context = live_session_context(request)
-    context['general'] = live_session_data['general']
     context['mentor'] = live_session_data['mentor']
     context['tutor'] = live_session_data['tutor']
+    context['general'] = None
 
     return render_to_response('fx_live_session/live_session.html', context)
 
