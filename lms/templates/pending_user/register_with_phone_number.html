@@ -338,7 +338,10 @@
     <div class="loading loading--hidden"></div>
     <script src="${static.url('js/pending_user/handle-utm-source.js')}"></script>
     <script>
-        const portalUrl = 'https://portal-staging.funix.edu.vn';
+        const portalUrl = 'https://portal.funix.edu.vn';
+        const currentUrl = window.location.origin;
+        const sendOtpUrl = currentUrl + '/api-pending-user/send-otp';
+
         document.addEventListener('DOMContentLoaded', function() {
             const sendOtpButton = document.querySelector('#send-otp');
             const phoneInput = document.querySelector('#input-phone');
@@ -448,7 +451,7 @@
         const sendOtp = async (format84Phone) => {
             try {
                 let csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
-                const response = await fetch('https://lmsclone.funix.edu.vn/api-pending-user/send-otp', {
+                const response = await fetch(sendOtpUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -511,7 +514,7 @@
       
           // FETCH COURSES
         const fetchCourses = async() => {
-        const res = await fetch('https://portal-staging.funix.edu.vn/api/v1/private_teacher/trial_course');
+        const res = await fetch('https://portal.funix.edu.vn/api/v1/private_teacher/trial_course');
         const data = await res.json();
         if(data.code == 200) {
           const options = data.data.filter(item => item.is_trial_course).map(mentor => `<div onClick="onSelect('` + mentor.id +`', '` + mentor.title + `')" class="option">`+ mentor.title + `</div>`).join("");
@@ -581,7 +584,7 @@
           const email = document.querySelector('#email').value;
           const note = document.querySelector('#note').value;
           const errEl = document.querySelector('.form-register__error-message');
-          const redirectPage = 'https://lmsclone.funix.edu.vn/login-phone';
+          const redirectPage = 'https://courses.funix.edu.vn/login-phone';
           
           const phoneRegex = /^(84|0)\d{9}$/;
           if(!phoneRegex.test(phone)) {
@@ -601,7 +604,7 @@
           }
           if(!validation(inputValue)) {
             loadingPage.classList.remove('loading--hidden');
-            const res = await fetch('https://portal-staging.funix.edu.vn/api/v1/private_teacher/create_lead', {
+            const res = await fetch('https://portal.funix.edu.vn/api/v1/private_teacher/create_lead', {
               method: 'POST',
               headers: {
                 "Content-Type": "application/json",
