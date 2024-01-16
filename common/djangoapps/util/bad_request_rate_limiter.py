@@ -2,13 +2,18 @@
 A utility class which wraps the RateLimitMixin 3rd party class to do bad request counting
 which can be used for rate limiting
 """
+import logging
+
 from ratelimitbackend.backends import RateLimitMixin
+
+AUDIT_LOG = logging.getLogger("audit")
 
 
 class BadRequestRateLimiter(RateLimitMixin):
     """
     Use the 3rd party RateLimitMixin to help do rate limiting on the Password Reset flows
     """
+    requests = 6
 
     def is_rate_limit_exceeded(self, request):
         """
