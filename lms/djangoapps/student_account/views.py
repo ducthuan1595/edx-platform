@@ -163,7 +163,6 @@ def login_and_registration_form(request, initial_mode="login"):
     return render_to_response('student_account/login_and_register.html', context)
 
 
-# FX TODO: move to views.py of pending_user app
 @require_http_methods(['GET'])
 @ensure_csrf_cookie
 @xframe_allow_whitelisted
@@ -178,29 +177,18 @@ def login_with_phone_number(request):
     phone_number = urlsafe_base64_decode(base64_phone_number)
     cleaned_phone_number = clean_phone(phone_number)
 
-    AUDIT_LOG.info("---------------------------------------------")
     if cleaned_phone_number:
-        AUDIT_LOG.info("login_with_phone_number: %s", cleaned_phone_number)
-
         username = cleaned_phone_number
-
-        AUDIT_LOG.info("login_with_phone_number: %s", username)
-
         account_exists = check_account_exists(username)
-        # FX TODO: optimize this if else block
-        if account_exists:
-            AUDIT_LOG.info("login_with_phone_number: account_exists")
-        else:
-            AUDIT_LOG.info("login_with_phone_number: account_not_exists")
+
+        if account_exists == []:
             return redirect('/register-phone?p=' + base64_phone_number + '&ci=' + course_id)
     else:
         AUDIT_LOG.info("login_with_phone_number: invalid phone_number")
-    AUDIT_LOG.info("---------------------------------------------")
 
     return render_to_response('student_account/login_with_phone_number.html', {})
 
 
-# FX TODO: move to views.py of pending_user app
 @require_http_methods(['GET'])
 @ensure_csrf_cookie
 @xframe_allow_whitelisted
@@ -209,13 +197,6 @@ def verify_otp(request):
     # If we're already logged in, redirect to the dashboard
     if request.user.is_authenticated():
         return redirect(redirect_to)
-
-    base64_phone_number = request.GET.get('p', None)
-    phone_number = urlsafe_base64_decode(base64_phone_number)
-    cleaned_phone_number = clean_phone(phone_number)
-
-    if cleaned_phone_number:
-        AUDIT_LOG.info("sms otp: %s", phone_number)
 
     return render_to_response('student_account/verify_otp.html', {})
 

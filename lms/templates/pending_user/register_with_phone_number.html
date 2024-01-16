@@ -376,7 +376,6 @@
                         const isExistenceStudent = await checkExistenceStudent(format84Phone);
                         
                         if (isExistenceStudent) {
-                            // FX TODO: Need test this case
                             displayNotiStudentExist();
                             return;
                         }
@@ -618,7 +617,6 @@
               // Check existence student after create lead success
               const isExistenceStudent = await checkExistenceStudent(format84Phone);
               if (isExistenceStudent) {
-                // FX TODO: Need test this case
                 loadingPage.classList.add('loading--hidden');
                 displayNotiStudentExist();
                 return;

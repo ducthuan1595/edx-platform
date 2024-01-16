@@ -42,11 +42,6 @@ def send_sms(message, phone_number):
     }
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
-    AUDIT_LOG.info("333333333333333333333333333333333333333333333333")
-    AUDIT_LOG.info("Request to push-brandname-otp: %s", data)
-    AUDIT_LOG.info("Response from push-brandname-otp: %s", response.json())
-    AUDIT_LOG.info("333333333333333333333333333333333333333333333333")
-
     return response.json()
 
 
@@ -54,7 +49,6 @@ def get_token():
     """Get token from FPT SMS API."""
     url = "https://app.sms.fpt.net/oauth2/token"
 
-    # FX TODO: get client_id and client_secret from .env
     payload = json.dumps({
         "client_id": "",
         "client_secret": "",
@@ -67,10 +61,6 @@ def get_token():
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-
-    AUDIT_LOG.info("333333333333333333333333333333333333333333333333")
-    AUDIT_LOG.info("Get token from FPT SMS API: %s", response.json())
-    AUDIT_LOG.info("333333333333333333333333333333333333333333333333")
 
     if 'access_token' not in response.json():
         return None
@@ -86,7 +76,6 @@ def validate_password(password):
     return True
 
 
-# FX TODO: add docstring
 class JwtManager:
     def __init__(self, secret):
         self.key = SYMKey(key=secret, alg="HS256")
@@ -120,8 +109,6 @@ def send_otp_to_phone(phone_number):
 
     message = str(pending_user.verification_code) + " la ma OTP kich hoat tai khoan cua quy khach. Ma co hieu luc trong 5 phut"
     response = send_sms(message, pending_user.phone)
-    AUDIT_LOG.info("Ma OTP cua ban la: %s" % pending_user.verification_code)
-    AUDIT_LOG.info(response)
     if 'error' in response:
         return Response(
             {"error": True, "error_description": "Send OTP fail"},

@@ -175,8 +175,9 @@
                 }
 
                 // Send the POST request
-                // FX TODO: Get current URL and replace the domain name with the API domain name
-                fetch('https://lmsclone.funix.edu.vn/api-pending-user/validate-otp', {
+                const rootUrl = window.location.origin;
+                const validateOtpUrl = rootUrl + '/api-pending-user/validate-otp';
+                fetch(validateOtpUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

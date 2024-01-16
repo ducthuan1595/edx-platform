@@ -27,7 +27,7 @@ from lms.djangoapps.pending_user.models import PendingUser, clean_phone, generat
 from .utils import JwtManager, validate_password, send_sms, send_otp_to_phone
 
 AUDIT_LOG = logging.getLogger("audit")
-SECRET_KEY = 'thisismysecretkey'
+SECRET_KEY = 'secret_key'
 
 class SendOTP(APIView):
     """
@@ -91,7 +91,6 @@ class ValidateOTP(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # FX TODO: change to find pending user by phone number and otp
         pending_user = PendingUser.objects.filter(phone=cleaned_phone).first()
         if pending_user is None:
             return Response(
@@ -102,12 +101,7 @@ class ValidateOTP(APIView):
             pending_user.verification_code = None
             pending_user.save()
 
-            AUDIT_LOG.info(
-                "OTP validation successful for phone number: %s" % cleaned_phone
-            )
-
             payload = {"phone": cleaned_phone}
-            # FX TODO: change secret key
             jwt_manager = JwtManager(SECRET_KEY)
             jwt_token = jwt_manager.encode(payload)
 
@@ -139,7 +133,6 @@ class CreatePasswordAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
         )
 
-        # FX TODO: change secret key
         jwt_manager = JwtManager(SECRET_KEY)
         payload = jwt_manager.decode(jwt_token)
         exp = payload.get('exp')
@@ -169,7 +162,7 @@ class CreatePasswordAPI(APIView):
         
         username = cleaned_phone
         email = cleaned_phone + "@funix.edu.vn"
-        # FX TODO: need modify to update password for existing user
+        
         conflicts = check_account_exists(username, email)
         if conflicts:
             return Response(
@@ -239,7 +232,6 @@ class ChangePasswordAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
         )
 
-        # FX TODO: change secret key
         jwt_manager = JwtManager(SECRET_KEY)
         payload = jwt_manager.decode(jwt_token)
         exp = payload.get('exp')

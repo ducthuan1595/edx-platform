@@ -6,7 +6,7 @@ from django.utils import timezone
 
 class PendingUser(models.Model):
     phone =  models.CharField(max_length=20)
-    password = models.CharField(max_length=128, blank=True, null=True)      # FX TODO: encrypt password/hide password in admin
+    password = models.CharField(max_length=128, blank=True, null=True)
     verification_code = models.CharField(max_length=8, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -24,7 +24,6 @@ class PendingUser(models.Model):
         return True
 
 
-# FX TODO: move to utils.py
 def generate_otp():
     """Generate 6 digit OTP"""
     otp = random.randint(100000, 999999)
