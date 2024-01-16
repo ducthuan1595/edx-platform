@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 from edxmako.shortcuts import render_to_response
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 
-from .utils import get_live_session_data, get_course_list
+from .utils import get_live_session_data, get_course_list, get_private_teacher_course
 
 AUDIT_LOG = logging.getLogger("audit")
 log = logging.getLogger(__name__)
@@ -76,3 +76,33 @@ def live_session_context(request):
         'course_list': course_list,
     }
     return context
+
+
+@login_required
+@require_http_methods(['GET'])
+def book_giasu(request):
+    """Render the book giasu page.
+
+    Args:
+        request (HttpRequest)
+
+    Returns:
+        HttpResponse: 200 if the page was sent successfully
+        HttpResponse: 302 if not logged in (redirect to login page)
+        HttpResponse: 405 if using an unsupported HTTP method
+
+    Example usage:
+
+        GET /book-giasu
+
+    """
+
+    user_email = request.user.email
+    private_teacher_course = get_private_teacher_course(user_email)
+
+    context = {
+        'user_email': user_email,
+        'course_list': private_teacher_course,
+    }
+
+    return render_to_response('fx_live_session/book_giasu.html', context)

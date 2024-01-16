@@ -6,7 +6,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-base_url = 'https://portal.funix.edu.vn/api/v1/live'
+base_url = 'https://portal-staging.funix.edu.vn/api/v1'
 
 
 def get_live_session_data(user_email):
@@ -19,7 +19,7 @@ def get_live_session_data(user_email):
     Returns:
         dict: A dictionary containing the live session data.
     """
-    student_api_url = u'{base_url}/student'.format(base_url=base_url)
+    student_api_url = u'{base_url}/live/student'.format(base_url=base_url)
     params = {'student_email': user_email}
 
     live_session_data = {
@@ -59,7 +59,7 @@ def get_course_list():
     Returns:
         list: A list of courses available for the current user.
     """
-    courses_api_url = u'{base_url}/courses'.format(base_url=base_url)
+    courses_api_url = u'{base_url}/live/courses'.format(base_url=base_url)
 
     try:
         response = requests.get(courses_api_url, timeout=5)
@@ -77,5 +77,35 @@ def get_course_list():
     data = response.json()
     if data and 'data' in data and 'course_list' in data['data']:
         return data['data']['course_list']
+    else:
+        return []
+
+
+def get_private_teacher_course(useremail):
+    """
+    Returns the list of courses available for the current user.
+
+    Returns:
+        list: A list of courses available for the current user.
+    """
+    courses_api_url = u'{base_url}/private_teacher/enrolled_course'.format(base_url=base_url)
+    params = {'email': useremail}
+
+    try:
+        response = requests.get(courses_api_url, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as http_err:
+        log.error(u'HTTP error occurred: {err}'.format(err=http_err))
+        return []
+    except requests.exceptions.Timeout:
+        log.error('The request timed out')
+        return []
+    except Exception as err:
+        log.error(u'Other error occurred: {err}'.format(err=err))
+        return []
+
+    data = response.json()
+    if data and 'data' in data:
+        return data['data']
     else:
         return []

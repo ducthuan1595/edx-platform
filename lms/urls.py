@@ -117,6 +117,26 @@ urlpatterns = (
 
     # Login redirects if user doesn't exist
     url(r'^login-fail$', 'student_account.views.login_fail', name="login_fail"),
+
+    # Login page for phone number verification
+    url(r'^login-phone$', 'student_account.views.login_with_phone_number', name="login_with_phone_number"),
+    # Register with phone number
+    url(r'^register-phone$', 'pending_user.views.register_with_phone_number', name="register_with_phone_number"),
+    # Forgot password
+    url(r'^forgot-password$', 'pending_user.views.forgot_password', name="forgot_password"),
+    # Verify OTP to change password
+    url(r'^verify-to-change-pass$', 'pending_user.views.verify_otp_to_change_pass', name="verify_otp_to_change_pass"),
+    # Input OTP for phone number verification
+    url(r'^verify-phone$', 'student_account.views.verify_otp', name="verify_otp"),
+    # Validate OTP
+    url(r'^api-pending-user/', include('pending_user.urls')),
+    # Create password
+    url(r'^create-password$', 'pending_user.views.create_password', name="create_password"),
+    # Change password
+    url(r'^change-password$', 'pending_user.views.change_password', name="change_password"),
+
+    # Book giasu page
+    url(r'^book-giasu$', 'fx_live_session.views.book_giasu', name="book_giasu"),
 )
 
 # TODO: This needs to move to a separate urls.py once the student_account and
@@ -466,7 +486,7 @@ urlpatterns += (
     ),
     # For FUNiX Score Module
     url(
-        r'^courses/{}/score$'.format(
+        r'^courses/{}/submission$'.format(
             settings.COURSE_ID_PATTERN,
         ),
         'lms.djangoapps.fx_score.views.score_dashboard',

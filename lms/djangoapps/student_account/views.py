@@ -13,6 +13,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import resolve, reverse
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect
+from django.utils import timezone
+from django.utils.http import urlsafe_base64_decode
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
@@ -29,7 +31,7 @@ from openedx.core.djangoapps.lang_pref.api import all_languages, released_langua
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.theming.helpers import is_request_in_themed_site
-from openedx.core.djangoapps.user_api.accounts.api import request_password_change
+from openedx.core.djangoapps.user_api.accounts.api import request_password_change, check_account_exists
 from openedx.core.djangoapps.user_api.errors import UserNotFound
 from openedx.core.lib.edx_api_utils import get_edx_api_data
 from openedx.core.lib.time_zone_utils import TIME_ZONE_CHOICES
@@ -43,6 +45,9 @@ from third_party_auth import pipeline
 from third_party_auth.decorators import xframe_allow_whitelisted
 from util.bad_request_rate_limiter import BadRequestRateLimiter
 from util.date_utils import strftime_localized
+
+from lms.djangoapps.pending_user.models import PendingUser, generate_otp, clean_phone
+from pending_user.utils import send_sms
 
 AUDIT_LOG = logging.getLogger("audit")
 log = logging.getLogger(__name__)
@@ -156,6 +161,44 @@ def login_and_registration_form(request, initial_mode="login"):
     context = update_context_for_enterprise(request, context)
 
     return render_to_response('student_account/login_and_register.html', context)
+
+
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
+def login_with_phone_number(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    base64_phone_number = request.GET.get('p', None)
+    course_id = request.GET.get('ci', '')
+    phone_number = urlsafe_base64_decode(base64_phone_number)
+    cleaned_phone_number = clean_phone(phone_number)
+
+    if cleaned_phone_number:
+        username = cleaned_phone_number
+        account_exists = check_account_exists(username)
+
+        if account_exists == []:
+            return redirect('/register-phone?p=' + base64_phone_number + '&ci=' + course_id)
+    else:
+        AUDIT_LOG.info("login_with_phone_number: invalid phone_number")
+
+    return render_to_response('student_account/login_with_phone_number.html', {})
+
+
+@require_http_methods(['GET'])
+@ensure_csrf_cookie
+@xframe_allow_whitelisted
+def verify_otp(request):
+    redirect_to = get_next_url_for_login_page(request)
+    # If we're already logged in, redirect to the dashboard
+    if request.user.is_authenticated():
+        return redirect(redirect_to)
+
+    return render_to_response('student_account/verify_otp.html', {})
 
 
 @require_http_methods(['GET'])

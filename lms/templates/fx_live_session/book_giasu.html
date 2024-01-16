@@ -1,0 +1,1539 @@
+<%page expression_filter="h"/>
+
+<%!
+import json
+
+from django.core.urlresolvers import reverse
+from django.conf import settings
+from django.utils.translation import ugettext as _
+
+from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_string
+%>
+
+<!--<%namespace name='static' file='/static_content.html'/>-->
+
+<%inherit file="/main.html" />
+
+<%namespace name='static' file='/static_content.html'/>
+
+<%block name="pagetitle">${_("Gia su")}</%block>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap Select -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+<!-- Bootstrap Datepicker -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+<!-- Jquery Timepicker -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+
+<link rel="stylesheet" href="${static.url('css/live-session.css')}">
+<style>
+% if not general or not mentor or not tutor:
+    .select-activity {
+        justify-content: flex-start;
+    }
+    .select-activity .form-check {
+        margin-right: 2rem;
+    }
+% endif
+.wrapper-live-session {
+    max-width: 70rem;
+}
+
+div#booking {
+    max-width: 63rem;
+}
+
+.table-select-mentor-container .mentor {
+    padding-left: 2rem;
+}
+
+div.select-giasu button {
+    border: 1px solid #000000;
+    padding: 0.5rem 1rem;
+    background: white !important;
+    width: 27rem !important;
+}
+div.select-giasu button:active {
+    box-shadow: inset 0 0 8px 4px #ffffff, inset 0 0 8px 4px #cac2c2 !important;
+}
+div.select-giasu .dropdown-menu {
+    min-width: 27rem;
+}
+div.select-giasu .dropdown-menu .bs-searchbox input {
+    width: 24rem;
+}
+
+#search {
+    width: 8rem;
+    height: 3rem;
+    background: #207196;
+    color: white;
+    font-size: 1.2rem;
+    font-style: normal;
+    text-shadow: none;
+    font-weight: 400;
+    border: none;
+    border-radius: 0.7rem;
+    margin-right: 10rem;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+#search:hover {
+    background: #20719691;
+    box-shadow: inset 0 1px 0 0 #fefefe;
+}
+
+.table-upcoming-session .table-cell {
+    align-self: center;
+}
+.table-upcoming-session .table-cell.stt, .table-took-place-session .table-cell.stt {
+    flex: 4%;
+}
+.table-upcoming-session .table-cell.time {
+    flex: 12%;
+}
+.table-upcoming-session .table-cell.duration {
+    flex: 12%;
+}
+.table-upcoming-session .table-cell.mentor {
+    flex: 20%;
+}
+.table-upcoming-session .table-cell.course {
+    flex: 22%;
+}
+.table-upcoming-session .table-cell.activity {
+    flex: 13%;
+}
+.table-upcoming-session .table-cell.link, .table-took-place-session .table-cell.note {
+    flex: 15%;
+}
+
+.table-took-place-session .table-cell.mentor {
+    flex: 20%;
+}
+</style>
+
+<div id="loading-api" class="overlay text-center mt-5 mb-4">
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+<div class="container mt-3 wrapper-live-session">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="booking-tab" data-bs-toggle="tab" href="#booking" role="tab" aria-controls="booking" aria-selected="true">Đặt lịch</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="history-tab" data-bs-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="false">Lịch học</a>
+        </li>
+    </ul>
+    <div class="tab-content mt-4" id="myTabContent">
+        <div id="loading" class="text-center mt-5 mb-4" style="display: none">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="tab-pane fade show active mb-4" id="booking" style="display: none;" role="tabpanel" aria-labelledby="booking-tab">
+            <div class="form-container mt-5">
+                <form>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="email" class="form-label">Chọn môn học: <span class="required">(*)</span></label>
+                        </div>
+                        <div class="col-md-8">
+                            <select class="select-course selectpickerall" data-live-search="true" data-size="5" title="- Chọn môn học -">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="email" class="form-label">Chọn gia sư: </label>
+                        </div>
+                        <div class="col-md-8 select-giasu-container">
+                            <select class="select-giasu selectpickergiasu" data-live-search="true" data-size="5" title="- Chọn gia sư -">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="email" class="form-label">Chọn ngày:</label>
+                        </div>
+                        <div class="col-md-8">
+                            <div id="datepicker-general" class="input-group date" data-date-format="dd-mm-yyyy">
+                                <div class="first row flex-nowrap">
+                                    <input class="select-date form-control" type="text" readonly placeholder="Select a date" value=""/>
+                                    <span class="input-group-addon">
+                                        <span class="input-group-text" id="basic-addon"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                    </span>
+                                </div>
+                                <div class="" style="margin: 0 2rem;">đến</div> 
+                                <div class="second row flex-nowrap">
+                                    <input class="select-date form-control" type="text" readonly placeholder="Select a date" value=""/>
+                                    <span class="input-group-addon">
+                                        <span class="input-group-text" id="basic-addon"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                    </span>
+                                </div>                         
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4 justify-content-end search-button-container">
+                        <button type="button" class="btn btn-primary" id="search">TÌM KIẾM</button>
+                    </div>
+                    <div class="row mb-4 select-time-container" style="display: none">
+                        <div class="row col-md-12 mb-3 align-items-center">
+                            <label for="email" class="form-label col-md-5 mb-0">Chọn thời gian phù hợp với bạn (GMT+7):</label>
+                            <div class="col-md-2 filter-schedule-section ps-0">
+                                <div class="filter-button">
+                                    <span class="filter-icon pe-1">
+                                        <?xml version="1.0" ?><svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M504.6 84.19L320 306.8v149.2c0 19.52-21.97 30.7-37.75 19.66l-80-55.98C195.8 415.2 192 407.8 192 400V306.8L7.375 84.19C-9.965 63.28 5.213 32 32.7 32h446.6C506.8 32 521.1 63.28 504.6 84.19z"/></svg>
+                                    </span>
+                                    <span>Bộ lọc</span>
+                                </div>
+                                <div class="filter-panel">
+                                    <div class="row filter-mentor align-items-center mb-2">
+                                        <div class="col-sm-4">
+                                            <label for="" class="">Mentor:</label>
+                                        </div>
+                                        <div class="select-mentor-section col-sm-8">
+                                            <select class="select-filter-mentor selectpickerfiltermentor" data-live-search="true" data-size="5" title="- Chọn mentor -">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row filter-time align-items-center mb-2">
+                                        <label for="" class="label-from">Thời gian từ</label>
+                                        <input id="filter-time-from">
+                                        <label for="" class="label-to ">đến</label>
+                                        <input id="filter-time-to">
+                                    </div>
+                                    <div class="row filter-submit justify-content-end">
+                                        <button type="button" id="btn-filter">LỌC</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-select-mentor-container">
+                            <!-- Header Row -->
+                            <div class="table-row table-header">
+                                <div class="table-cell date">Ngày</div>
+                                <div class="table-cell time">Thời gian</div>
+                                <div class="table-cell mentor">Mentor phụ trách</div>
+                                <div class="table-cell select-column">Select</div>
+                            </div>
+                            <div class="table-body col-md-12">
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4 justify-content-center question-container" style="display: none">
+                        <div class="col-md-12">
+                            <label for="question" class="form-label">Gửi gắm của phụ huynh: </label>
+                        </div>
+                        <div class="col-md-12">
+                            <textarea class="form-control" id="question" rows="3" placeholder="Nếu có lời nhắn nhủ muốn gửi đến gia sư, phụ huynh hãy nhập tại đây"></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-4 justify-content-end submit-button-container" style="display: none">
+                        <button type="button" class="btn btn-primary" id="submit" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Đặt lịch</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="booking-success" style="display: none;">
+                            <h2>Bạn đã đặt lịch thành công! </h2>
+                            <br/>
+                            <p>Vui lòng kiểm tra tab <b>Lịch sử </b>để nhận đường link Zoom tham gia buổi học.</p>
+                        </div>
+                        <div class="order-custom-session-success" style="display: none;">
+                            <h2>Hệ thống đã ghi nhận thời gian của bạn!</h2>
+                            <br/>
+                            <p>Nếu có phiên phù hợp với thời gian bạn đã chọn, xác nhận sẽ được gửi qua email <b>${user.email}</b></p>
+                        </div>
+                        <div class="session-not-available" style="display: none;">
+                            <h2 style="color: #FF0303">Rất tiếc, lịch bạn chọn không còn trống!</h2>
+                            <br/>
+                            <p>Vui lòng chọn lại thời gian khác.</p>
+                            <i>Trường hợp không tìm thấy lịch phù hợp, vui lòng chọn mục Không tìm thấy thời gian phù hợp? và nhập thời gian của bạn.</i>
+                        </div>
+                        <div class="time-up" style="display: none;">
+                            <h2 style="color: #FF0303">Rất tiếc, bạn đã hết thời lượng cho hoạt động này!</h2>
+                            <br/>
+                            <p>Vui lòng chọn hoạt động khác.</p>
+                        </div>
+                        <div class="missing-fields" style="display: none;">
+                        </div>
+                        <div id="loading-popup" class="text-center mt-5 mb-4" style="display: none">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="close-popup" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+            <div class="container-fluid pb-3">
+                <p class="text-black fs-2 fw-normal m-0 px-3 py-2">
+                Buổi học của bạn
+                </p>
+                <div style="font-style: italic;">
+                    <p class="text-black fs-6 fw-normal m-0 px-3 py-2">
+                    Vui lòng truy cập đường link zoom để tham gia buổi học.
+                    <br>
+                        Lưu ý: Để buổi học đạt được hiệu quả, học viên cần chuẩn bị các nội dung sau:
+                    <br>
+                    - Tham dự đúng giờ.
+                    <br>
+                    - Kiểm tra sẵn sàng: đường truyền internet, camera, mic.
+                    <br>
+                    Trường hợp không thể tham gia vào thời gian đã đăng ký, bấm nút ‘HUỶ’ bên cạnh buổi học để huỷ.
+                    </p>
+                </div>
+            </div>
+            <div class="history-container upcoming">
+                <h3>Phiên sắp diễn ra</h3>
+                <div class="row mb-4 justify-content-center">
+                    <div class="table-upcoming-session">
+                        <!-- Header Row -->
+                        <div class="table-row table-header">
+                            <div class="table-cell stt">STT</div>
+                            <div class="table-cell time">Thời gian</div>
+                            <div class="table-cell duration">Thời lượng dự kiến</div>
+                            <div class="table-cell mentor">Gia sư</div>
+                            <div class="table-cell course">Môn học</div>
+                            <div class="table-cell activity">Hình thức</div>
+                            <div class="table-cell link">Link Zoom</div>
+                            <div class="table-cell button-column-edit"></div>
+                            <div class="table-cell button-column"></div>
+                        </div>
+                        <div class="table-body col-md-12">
+                        
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dimmed-background" id="dimmedBackground"></div>
+                <div class="popup" id="popup">
+                    <div class="popup-content">
+                        <span class="close" id="closePopup">&times;</span>
+                        <div class="confirm-cancel-container" style="display: none">
+                            <h3>Bạn có chắc chắn muốn hủy lịch?</h3>
+                            <button type="button" class="btn btn-primary mt-3" id="confirm-cancel">HỦY LỊCH</button>
+                        </div>
+                        <div class="success-cancel-container noti-container" style="display: none">
+                            <p>Bạn đã huỷ lịch thành công</p>
+                        </div>
+                        <div class="update-session-container" style="display: none">
+                            <div class="form-container mt-5">
+                                <form>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="update-email" class="form-label">Chọn môn học: <span class="required">(*)</span></label>
+                                        </div>
+                                        <div class="col-md-8" style="display: flex">
+                                            <div class="dropdown bootstrap-select dropup">
+                                                <button type="button" tabindex="-1"
+                                                    class="update-course-name btn dropdown-toggle btn-light">
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="email" class="form-label">Chọn ngày: <span class="required">(*)</span></label>
+                                        </div>
+                                        <div class="col-md-8" style="display: flex; align-items: center">
+                                            <div id="update-datepicker" class="input-group date" data-date-format="dd-mm-yyyy">
+                                                
+                                            </div>
+                                            <span class="input-group-addon" style="margin-left: -3rem;">
+                                                <span class="input-group-text" id="basic-addon2"><?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 32 32" height="20px" id="Layer_1" version="1.1" viewBox="0 0 32 32" width="20px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="calendar_1_"><path d="M29.334,3H25V1c0-0.553-0.447-1-1-1s-1,0.447-1,1v2h-6V1c0-0.553-0.448-1-1-1s-1,0.447-1,1v2H9V1   c0-0.553-0.448-1-1-1S7,0.447,7,1v2H2.667C1.194,3,0,4.193,0,5.666v23.667C0,30.806,1.194,32,2.667,32h26.667   C30.807,32,32,30.806,32,29.333V5.666C32,4.193,30.807,3,29.334,3z M30,29.333C30,29.701,29.701,30,29.334,30H2.667   C2.299,30,2,29.701,2,29.333V5.666C2,5.299,2.299,5,2.667,5H7v2c0,0.553,0.448,1,1,1s1-0.447,1-1V5h6v2c0,0.553,0.448,1,1,1   s1-0.447,1-1V5h6v2c0,0.553,0.447,1,1,1s1-0.447,1-1V5h4.334C29.701,5,30,5.299,30,5.666V29.333z" fill="#333332"/><rect fill="#333332" height="3" width="4" x="7" y="12"/><rect fill="#333332" height="3" width="4" x="7" y="17"/><rect fill="#333332" height="3" width="4" x="7" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="22"/><rect fill="#333332" height="3" width="4" x="14" y="17"/><rect fill="#333332" height="3" width="4" x="14" y="12"/><rect fill="#333332" height="3" width="4" x="21" y="22"/><rect fill="#333332" height="3" width="4" x="21" y="17"/><rect fill="#333332" height="3" width="4" x="21" y="12"/></g></svg></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-4 update-select-time-container">
+                                        <div class="row col-md-12 mb-3 align-items-center">
+                                            <label for="email" class="form-label col-md-5 mb-0">Chọn thời gian phù hợp với bạn (GMT+7):</label>
+                                            <div class="col-md-2 filter-schedule-section ps-0">
+                                                <div class="filter-button">
+                                                    <span class="filter-icon pe-1">
+                                                        <?xml version="1.0" ?><svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M504.6 84.19L320 306.8v149.2c0 19.52-21.97 30.7-37.75 19.66l-80-55.98C195.8 415.2 192 407.8 192 400V306.8L7.375 84.19C-9.965 63.28 5.213 32 32.7 32h446.6C506.8 32 521.1 63.28 504.6 84.19z"/></svg>
+                                                    </span>
+                                                    <span>Bộ lọc</span>
+                                                </div>
+                                                <div class="filter-panel">
+                                                    <div class="row filter-mentor align-items-center mb-2">
+                                                        <div class="col-sm-4">
+                                                            <label for="" class="">Mentor:</label>
+                                                        </div>
+                                                        <div class="select-mentor-section col-sm-8">
+                                                            <select class="select-filter-mentor selectpickerupdate" data-live-search="true" data-size="5" title="- Chọn mentor -">
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row filter-time align-items-center mb-2">
+                                                        <label for="" class="label-from">Thời gian từ</label>
+                                                        <input id="update-filter-time-from">
+                                                        <label for="" class="label-to ">đến</label>
+                                                        <input id="update-filter-time-to">
+                                                    </div>
+                                                    <div class="row filter-submit justify-content-end">
+                                                        <button type="button" id="btn-filter-update">LỌC</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="table-select-update-mentor-container">
+                                            <!-- Header Row -->
+                                            <div class="table-row table-header">
+                                                <div class="table-cell time">Thời gian</div>
+                                                <div class="table-cell mentor">Mentor phụ trách</div>
+                                                <div class="table-cell select-column">Select</div>
+                                            </div>
+                                            <div class="table-body col-md-12">
+                                                
+                                            </div>
+                                        </div>
+                                        <p class="update-warning" style="display: none; margin-top: 0.5rem; color: red">* Vui lòng chọn thời gian phù hợp với bạn!</p>
+                                    </div>
+                                    <div class="row mb-4 justify-content-end submit-button-container">
+                                        <button type="button" class="btn btn-primary" id="update">Lưu</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div id="loading-popup-history" class="text-center mt-5 mb-4" style="display: none">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="history-container took-place">
+                <h3>Phiên đã diễn ra/ đã huỷ</h3>
+                <div class="row mb-4 justify-content-center">
+                    <div class="table-took-place-session">
+                        <!-- Header Row -->
+                        <div class="table-row table-header">
+                            <div class="table-cell stt">STT</div>
+                            <div class="table-cell time">Thời gian</div>
+                            <div class="table-cell mentor">Gia sư</div>
+                            <div class="table-cell course">Môn học</div>
+                            <div class="table-cell activity">Hình thức</div>
+                            <div class="table-cell session-status">Trạng thái</div>
+                        </div>
+                        <div class="table-body col-md-12">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%block name="headextra">
+    <%static:css group='style-course'/>
+</%block>
+
+<script>
+    var user_email = ${ user.email | n, dump_js_escaped_json };
+    var course_list = ${ course_list | n, dump_js_escaped_json };
+    var giasu_list = [];
+</script>
+<script>
+$(function () {
+    let selected_course_option, selected_course_id, selected_giasu_option, selected_giasu_id, selected_session, selected_from_date, selected_to_date;
+    let reload_page = false;
+    let current_history_slot_id, loading_popup = false, new_slot_id;
+    const base_url = "https://portal-staging.funix.edu.vn/api/v1/private_teacher";
+    const available_schedule_url = base_url + "/available_schedule";
+    const general_session_url = base_url + "/general_session";
+    const require_messages = {
+        selected_course_id: "Vui lòng lựa chọn môn học!",
+        selected_date: "Vui lòng chọn ngày!",
+        selected_from_date: "Vui lòng chọn ngày!",
+        selected_to_date: "Vui lòng chọn ngày!",
+        selected_session: "Vui lòng chọn thời gian phù hợp!",
+        custom_time_input: "Vui lòng nhập thời gian phù hợp với bạn!",
+        question: "Vui lòng nhập câu hỏi!"
+    };
+    course_list = course_list || [];
+
+    if (getCurrentPageUrl().endsWith("#history")) {
+        // handle click on history tab when reload page
+        $("#loading").hide();
+        clickButtonById("history-tab");
+        handlerOnClickHistoryTab();
+    } else {
+        $("#loading").show();
+        setTimeout(function () {
+            $("#loading").hide();
+            $("#booking").show();
+        }, 500);
+    }
+
+    $("#booking-tab").click(function () {
+        // display booking element when click on booking tab
+        $("#booking").show();
+    });
+
+    function getCurrentPageUrl() {
+        return window.location.href;
+    }
+
+    // simulate click button by id
+    function clickButtonById(id) {
+        document.getElementById(id).click();
+    }
+
+    // sort course list. Udemy course will be on top
+    course_list.sort((a, b) => {
+        if (a.is_udemy && !b.is_udemy) {
+            return -1;
+        }
+        if (!a.is_udemy && b.is_udemy) {
+            return 1;
+        }
+        return 0;
+    });
+    // Define a dictionary where each key is a CSS class and each value is a filtered list of courses
+    let course_lists = {
+        '.selectpickerall': course_list,
+    };
+
+    // For each CSS class in the dictionary, populate the corresponding select element with the associated list of courses
+    for (let selectClass in course_lists) {
+        populateCourseSelect(course_lists[selectClass], selectClass);
+    }
+
+    // Set value for select course and select giasu element
+    if (course_list.length > 0) {
+        $('.select-course').val(course_list[0].class_id).selectpicker('render');
+        selected_course_id = course_list[0].class_id;
+        fetchListGiaSu(course_list[0].class_id);
+    } else {
+        $('.select-course').val('').selectpicker('render');
+    }
+    
+    // Add change handler to all select elements with class 'selectpickerall'
+    $(".selectpickerall").change(function () {
+        selected_course_option = $(this).find(":selected");
+        selected_course_id = selected_course_option.data("tokens");
+        fetchListGiaSu(selected_course_id);
+    });
+
+    // Function to populate a select element with a given list of courses
+    function populateCourseSelect(course_list, selectClass) {
+        const $courseSelect = $(selectClass);
+        $.each(course_list, (index, { class_title, class_id }) => {
+            const optionText = class_title;
+            $courseSelect.append($('<option>').attr({
+                'data-tokens': class_id,
+                'value': class_id
+            }).text(optionText));
+        });
+    }
+
+    // Init select gia su with empty list
+    populateGiaSuSelect([], 'select.select-giasu');
+    $('select.select-giasu').selectpicker();
+
+    // Fetch list giasu when select course change
+    async function fetchListGiaSu(classId) {
+        const url = base_url + "/teacher_list?class_id=" + classId;
+        let request_url = url;
+
+        try {
+            displayLoading();
+
+            // Send request to API to get list giasu
+            const response = await fetch(request_url, {
+                method: 'GET',
+            });
+            const { code, data: giasu_list } = await response.json();
+            hideLoading();
+
+            if (code == 200) {
+                populateGiaSuSelect(giasu_list, 'select.select-giasu');
+                $('select.select-giasu').selectpicker();
+            }
+        } catch (error) {
+            hideLoading();
+            console.error('Error:', error);
+        }
+    }
+
+    // Function to populate a select element with a given list of courses
+    function populateGiaSuSelect(giasu_list, selectClass) {
+        // empty select-giasu-container
+        $('.select-giasu-container').empty();
+        $('.select-giasu-container').append('<select class="select-giasu selectpickergiasu" data-live-search="true" data-size="5" title="- Chọn mentor -"></select>');
+        // Add default option
+        giasu_list.unshift({ mentor_name: "Tất cả", mentor_id: "" });
+
+        const $giasuSelect = $(selectClass);
+        $.each(giasu_list, (index, { mentor_name, mentor_id }) => {
+            const optionText = mentor_name;
+            $giasuSelect.append($('<option>').attr({
+                'data-tokens': mentor_id,
+                'value': mentor_id
+            }).text(optionText));
+        });
+
+        // Add change handler to all select elements with class 'selectpickergiasu'
+        $(".selectpickergiasu").change(function () {
+            selected_giasu_option = $(this).find(":selected");
+            selected_giasu_id = selected_giasu_option.data("tokens");
+        });
+    }
+
+    // Initialize the datepicker
+    const $datepicker_general = $("#datepicker-general");
+
+    $("#datepicker-general .first input").datepicker({
+        autoclose: true,
+        todayHighlight: true,
+        format: "dd/mm/yyyy", // Display format
+        altFormat: "yyyy-mm-dd", // Date format for getting the value
+        startDate: '0d' // Set the minimum date to tomorrow
+    }).on('changeDate', function (selected) {
+        // When the date of the first datepicker changes, update the startDate of the second datepicker
+        selected_from_date = selected.format('yyyy-mm-dd');
+        const minDate = new Date(selected.date.valueOf());
+        minDate.setDate(minDate.getDate() + 1);
+        $("#datepicker-general .second input").datepicker('setStartDate', minDate);
+
+        $("#datepicker-general .second input").datepicker('setDate', undefined);
+        selected_to_date = undefined;
+    });
+
+    $("#datepicker-general .second input").datepicker({
+        autoclose: true,
+        format: "dd/mm/yyyy", // Display format
+        altFormat: "yyyy-mm-dd", // Date format for getting the value
+        startDate: '0d' // Set the minimum date to tomorrow
+    }).on('changeDate', function (selected) {
+        selected_to_date = selected.format('yyyy-mm-dd');
+    });
+
+    // Add click handler to the search button
+    $("#search").click(function () {
+        fetchScheduleData();
+    });
+
+    // Function to fetch schedule session data
+    async function fetchScheduleData() {
+        // Check if all require fields are defined
+        if (!selected_course_id) {
+            console.log("selected_course_id is undefined");
+            return;
+        }
+
+        // Remove all table-row children from table-body
+        $('.table-select-mentor-container .table-body').empty();
+        // Uncheck all input elements with name 'select-session'
+        $("input[name='select-session']").prop('checked', false);
+        selected_session = undefined;
+
+        // FX TO: Update url to get schedule data
+        let queryParams = [];
+        let availableSlotUrl = base_url + "/available_slot?class_id=" + selected_course_id;
+
+        if (selected_giasu_id) {
+            queryParams.push("mentor_id=" + selected_giasu_id);
+        }
+        if (selected_from_date) {
+            queryParams.push("start_date=" + selected_from_date);
+        }
+        if (selected_from_date && selected_to_date) {
+            queryParams.push("end_date=" + selected_to_date);
+        }
+
+        if (queryParams.length > 0) {
+            availableSlotUrl += '&' + queryParams.join('&');
+        }
+        try {
+            displayLoading();
+
+            // Send request to API to get schedule data with params
+            const response = await fetch(availableSlotUrl, {
+                method: 'GET',
+            });
+            const { code, data: schedule } = await response.json();
+            hideLoading();
+
+            if (code == 200) {
+                appendSchedule(schedule);
+                appendListMentor(schedule);
+            }
+        } catch (error) {
+            hideLoading();
+            console.error('Error:', error);
+        }
+    }
+
+    function displayLoading() { $(".overlay").css("display", "flex") }
+
+    function hideLoading() { $(".overlay").css("display", "none") }
+
+    // Function to append schedule session data into table
+    function appendSchedule(dataArray) {
+        // Loop through the array and create rows
+        $.each(dataArray, function (index, item) {
+            const session_value = item.mentor_id + '/' + item.start_datetime + '/' + item.end_datetime;
+
+            // Create a new row element
+            const new_row = $('<div class="table-row"></div>');
+            new_row.append('<div class="table-cell date">' + convertToDate(item.start_datetime) + '</div>');
+            new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + ' - ' + convertToTime(item.end_datetime) + '</div>');
+            new_row.append('<div class="table-cell mentor">' + item.mentor_name + '</div>');
+            new_row.append('<div class="table-cell select-column"><input class="form-check-input" type="radio" name="select-session" value="' + session_value + '"></div>');
+            // Append the new row to the table body
+            $('.table-select-mentor-container .table-body').append(new_row);
+        });
+
+        // Add click handler to all rows 
+        $('.table-select-mentor-container .table-body .table-row').click(function () {
+            // Get the radio button for this row
+            const radio = $(this).find('.select-column input');
+
+            // Select the radio button
+            radio.prop('checked', true);
+            selected_session = $("input[name='select-session']:checked").val();
+        });
+
+        // Show the table and other elements
+        toggleElements(true);
+        $('.table-select-mentor-container .mentor').css("padding-left", "2rem");
+    }
+
+    // Toggles the visibility of the elements with the given class name
+    function toggleElements(shouldShow) {
+        if (shouldShow) {
+            $('.select-time-container').fadeIn();
+            $('.question-container').fadeIn();
+            $('.submit-button-container').fadeIn();
+        } else {
+            $('.select-time-container').fadeOut();
+            $('.question-container').fadeOut();
+            $('.submit-button-container').fadeOut();
+        }
+    }
+
+    // Function to format datetime
+    function convertToTime(datetime) {
+        const date = new Date(datetime);
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        return hours + ':' + (minutes < 10 ? '0' : '') + minutes;
+    }
+
+    function convertToDate(datetime) {
+        const date = new Date(datetime);
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        return day + '/' + month + '/' + year;
+    }
+
+    // FILTER SESSIONS
+    const $filterButton = $('.select-time-container .filter-button');
+    const $filterPanel = $('.select-time-container .filter-panel');
+    const $selectMentorSection = $('.select-time-container .select-mentor-section');
+    const $btnFilter = $('.select-time-container #btn-filter');
+
+    $filterButton.click(function (event) {
+        event.stopPropagation();
+        if ($filterPanel.is(":visible")) {
+            $filterPanel.fadeOut();
+        } else {
+            $filterPanel.fadeIn();
+        }
+    });
+
+    $filterPanel.click(function (event) {
+        event.stopPropagation();
+    });
+
+    function appendListMentor(data) {
+        $selectMentorSection.empty();
+        // Create a new select element
+        const $newSelect = $('<select>', {
+            class: 'select-filter-mentor selectpickerfiltermentor',
+            'data-live-search': 'true',
+            'data-size': '5',
+            title: '- Chọn mentor -'
+        });
+
+        // Append the new select element to the selectMentorSection
+        $selectMentorSection.append($newSelect);
+
+        // Append the default option to the new select element
+        $('.selectpickerfiltermentor').append($('<option>').attr({
+            'data-tokens': 'all',
+            'value': 'all'
+        }).text('Tất cả'));
+
+        let seen = new Set();
+        $.each(data, (index, { mentor_name }) => {
+            if (!seen.has(mentor_name)) {
+                $('.selectpickerfiltermentor').append($('<option>').attr({
+                    'data-tokens': mentor_name,
+                    'value': mentor_name
+                }).text(mentor_name));
+                seen.add(mentor_name);
+            }
+        });
+
+        // Initialize the selectpicker
+        $('.selectpickerfiltermentor').selectpicker();
+
+        // Hide dropdown menu after selecting an option
+        $('.select-time-container .select-mentor-section button').click(function () {
+            $('.select-time-container .select-mentor-section ul.dropdown-menu a').off('click');    // Remove any existing click event handlers from the 'a' elements within the 'ul.dropdown-menu'
+            $('.select-time-container .select-mentor-section ul.dropdown-menu a').click(function () {
+                $('.select-time-container .select-mentor-section div.dropdown-menu').removeClass('show');
+            });
+        });
+    }
+
+    // Initialize the timepicker
+    $('#filter-time-from').timepicker({
+        timeFormat: 'HH:mm',
+        minTime: new Date(0, 0, 0, 0, 0, 0),
+        maxTime: new Date(0, 0, 0, 23, 59, 59),
+        startHour: 0,
+        interval: 30
+    });
+    $('#filter-time-to').timepicker({
+        timeFormat: 'HH:mm',
+        minTime: new Date(0, 0, 0, 0, 0, 0),
+        maxTime: new Date(0, 0, 0, 23, 59, 59),
+        startHour: 0,
+        interval: 30
+    });
+
+    function updateTime() {
+        const time = $(this).val().split(':');
+        const hours = parseInt(time[0]);
+        let minutes = parseInt(time[1]);
+
+        // Round minutes to the nearest 30 (down)
+        minutes = Math.floor(minutes / 30) * 30;
+
+        // If minutes is NaN (not a number), set it to 0
+        if (isNaN(minutes)) {
+            $(this).val(undefined);
+        } else {
+            // Update the time in the input field
+            $(this).val(('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2));
+        }
+    }
+
+    // Add change handler to time inputs
+    $('#filter-time-from, #filter-time-to, #update-filter-time-from, #update-filter-time-to').on('change', updateTime);
+
+    $btnFilter.click(function () {
+        const $sessions = $('.table-select-mentor-container .table-body .table-row');
+        clearSelectedSession();
+        filterSession('.selectpickerfiltermentor', '#filter-time-from', '#filter-time-to', $sessions);
+        $filterPanel.fadeOut();     // Hide filter panel
+    });
+
+    function filterSession(mentorSelector, timeFromSelector, timeToSelector, $sessions) {
+        const mentor = $(mentorSelector).val();
+        const timeFrom = $(timeFromSelector).val();
+        const timeTo = $(timeToSelector).val();
+
+        // Display all sessions before applying filters
+        displayAllSession($sessions);
+
+        // Apply filters
+        if (mentor && mentor !== 'all') {
+            hideSessionByMentor(mentor, $sessions);
+        }
+        if (timeFrom && timeTo) {
+            hideSessionByTime(timeFrom, timeTo, $sessions);
+        }
+    }
+
+    function hideSessionByMentor(mentor_name, $sessions) {
+        $sessions.each(function () {
+            const rowMentorName = $(this).find('div.mentor').text();
+            if (rowMentorName !== mentor_name) {
+                $(this).hide();
+            }
+        });
+    }
+
+    function displayAllSession($sessions) {
+        $sessions.show();
+    }
+
+    function hideSessionByTime(timeFrom, timeTo, $sessions) {
+        $sessions.each(function () {
+            let rowTime = $(this).find('div.time').text();
+            let rowTimeFrom = rowTime.split('-')[0].trim();
+            let rowTimeTo = rowTime.split('-')[1].trim();
+
+            // Convert times to 24-hour format
+            rowTimeFrom = convertTo24Hour(rowTimeFrom);
+            rowTimeTo = convertTo24Hour(rowTimeTo);
+            timeFrom = convertTo24Hour(timeFrom);
+            timeTo = convertTo24Hour(timeTo);
+
+            // Convert midnight to 24:00
+            rowTimeTo = convertMidnightTo24(rowTimeTo);
+            timeTo = convertMidnightTo24(timeTo);
+
+            if (rowTimeFrom < timeFrom || rowTimeTo > timeTo) {
+                $(this).hide();
+            }
+        });
+    }
+
+    function convertTo24Hour(time) {
+        const [hours, minutes] = time.split(':');
+        return ('0' + hours).slice(-2) + ':' + minutes;
+    }
+
+    function convertMidnightTo24(time) {
+        return time === '00:00' ? '24:00' : time;
+    }
+
+    function clearSelectedSession() {
+        $('input[name="select-session"]').prop('checked', false);
+        selected_session = undefined;
+    }
+
+    $(document).mouseup(function (e) {
+        const $uiTimepicker = $('.ui-timepicker-container');
+
+        const isTargetUiTimepicker = $uiTimepicker.is(e.target) || $uiTimepicker.has(e.target).length !== 0;
+        const isTargetFilterPanel = $filterPanel.is(e.target) || $filterPanel.has(e.target).length !== 0;
+        const isTargetUpdateFilterPanel = $updateFilterPanel.is(e.target) || $updateFilterPanel.has(e.target).length !== 0;
+
+        // if the target of the click isn't the container nor a descendant of the container
+        if (!isTargetUiTimepicker && !isTargetFilterPanel) {
+            $filterPanel.fadeOut();
+        }
+        if (!isTargetUiTimepicker && !isTargetUpdateFilterPanel) {
+            $updateFilterPanel.fadeOut();
+        }
+    });
+
+    // Get the selected session
+    $("input[name='select-session']").change(function () {
+        selected_session = $("input[name='select-session']:checked").val();
+    });
+
+    // Add click handler to submit button
+    $("#submit").click(function () {
+        let checkResult = checkRequireFieldsForBookingSession();
+        if (checkResult != "All variables are defined") {
+            $(".missing-fields").show();
+            $(".missing-fields").text(checkResult);
+        } else {
+            bookSession();
+        }
+    });
+
+    // Function to check if all variables are defined
+    function checkRequireFieldsForBookingSession() {
+        if (!selected_course_id) {
+            return require_messages.selected_course_id;
+        }
+        if (!selected_session) {
+            return require_messages.selected_session;
+        }
+
+        return "All variables are defined";
+    }
+
+    // Function to book session
+    async function bookSession() {
+        let url, payload;
+
+        // Define payload data and url based on session type and selected session
+        url = base_url + "/create_session";
+
+        const session_data = selected_session.split('/');
+        payload = {
+            class_id: selected_course_id,
+            mentor_id: session_data[0],
+            start_datetime: session_data[1],
+            end_datetime: session_data[2],
+            parent_notes: $("#question").val()
+        };
+
+        // send POST request to url with body data is payload
+        try {
+            $("#loading-popup").show();
+            $("#close-popup").prop("disabled", true);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            // Update UI
+            $("#loading-popup").hide();
+            $("#close-popup").prop("disabled", false);
+
+            // Show popup based on response code
+            if (data.code == 201) {
+                if (selected_session == "custom-time") {
+                    $(".order-custom-session-success").show();
+                } else {
+                    $(".booking-success").show();
+                }
+
+                $("#close-popup").text("Xác nhận");
+                reload_page = true;
+            } else if (data.code == 200) {
+                if (data.message == "Phiên đã được đặt bởi một lịch khác. Vui lòng chọn thời gian khác.") {
+                    $(".session-not-available").show();
+                    fetchScheduleData();
+                } else {
+                    $(".time-up").show();
+                }
+            } else if (data.code == 500 || data.code == 400) {
+                $(".missing-fields").show();
+                if (data.message == "Vượt quá số lượng tối đa của phiên." || data.message == "Số buổi học đã quá số lượng cho phép.") {
+                    $(".missing-fields").text(data.message + " Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
+                } else {
+                    $(".missing-fields").text("Đã có lỗi xảy ra trong quá trình đặt lịch. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
+                }
+                
+                setTimeout(function () {
+                    location.reload();
+                }, 3000);
+            }
+        } catch (error) {
+            $("#loading-popup").hide();
+            $("#close-popup").prop("disabled", false);
+            $(".missing-fields").show();
+            $(".missing-fields").text("Đã có lỗi xảy ra trong quá trình đặt lịch. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
+            console.error('Error:', error);
+        }
+    }
+
+    // Add click handler to close popup button
+    $(".modal-footer button").click(function () {
+        $(".missing-fields").hide();
+        $(".booking-success").hide();
+        $(".session-not-available").hide();
+        $(".order-custom-session-success").hide();
+        $(".time-up").hide();
+
+        if (reload_page) {
+            redirectToHistoryTab();
+        }
+    });
+
+    function redirectToHistoryTab() {
+        if (!getCurrentPageUrl().endsWith("#history")) {
+            window.location.href = getCurrentPageUrl() + "#history";
+        }
+        location.reload();
+    }
+
+    // Append list session data into table when click on history tab
+    $("#history-tab").click(function () {
+        handlerOnClickHistoryTab();
+    });
+
+    function removeAllRowsFromTablesListSession() {
+        $('.table-upcoming-session .table-body').empty();
+        $('.table-took-place-session .table-body').empty();
+    }
+
+    function handlerOnClickHistoryTab() {
+        removeAllRowsFromTablesListSession();
+        getListSession();
+    }
+
+    // Fetch list session data from API and append to table
+    async function getListSession() {
+        let url = base_url + "/session_list?email=" + user_email;
+        try {
+            displayLoading();
+            const response = await fetch(url, {
+                method: 'GET',
+            });
+            const data = await response.json();
+            hideLoading();
+
+            if (data.code == 200) {
+                // Filter list session by status
+                const list_session = data.data;
+                const upcoming_session = list_session.filter(item => ((item.status == "Đã lên lịch")));
+                const took_place_session = list_session.filter(item => !upcoming_session.includes(item));   // took_place_session = list_session - upcoming_session
+
+                // Sort list session by date
+                const sortedUpcomingSessions = sortSessionsByDate(upcoming_session, true);
+                const sortedTookPlaceSessions = sortSessionsByDate(took_place_session, false);
+
+                // Append list session data into table
+                appendListUpcomingSession(sortedUpcomingSessions);
+                appendListTookPlaceSession(sortedTookPlaceSessions);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function sortSessionsByDate(sessions, isAscending) {
+        return sessions.sort((a, b) => {
+            const dateA = new Date(a.start_datetime);
+            const dateB = new Date(b.start_datetime);
+            return isAscending ? dateA - dateB : dateB - dateA;
+        });
+    }
+
+    // Append list upcoming session data into table
+    function appendListUpcomingSession(list_session) {
+        // Loop through the array and create rows
+        let has_session_can_update = false;
+        $.each(list_session, function (index, item) {
+            // Create a new row element
+            const new_row = $('<div class="table-row align-items-center"></div>');
+            const mentor_name_html = item.mentor_name.split(' - ').reverse().join('<br>');
+
+            new_row.append('<div class="table-cell stt">' + (index + 1) + '</div>');
+            new_row.append('<div class="table-cell time">' + new Date(item.start_datetime).toLocaleString('vi-VN', { hour: 'numeric', minute: 'numeric' }) + '<br>' + ('0' + new Date(item.start_datetime).getDate()).slice(-2) + '/' + ('0' + (new Date(item.start_datetime).getMonth() + 1)).slice(-2) + '/' + new Date(item.start_datetime).getFullYear() + '</div>');
+            new_row.append('<div class="table-cell duration">' + item.duration + '</div>');
+            new_row.append('<div class="table-cell mentor">' + mentor_name_html + '</div>');
+            new_row.append('<div class="table-cell course">' + item.course_id + '</div>');
+            new_row.append('<div class="table-cell activity">' + renderTypeOfSession(item.is_trial_class) + '</div>');
+            new_row.append(renderLinkZoomElement(item.zoom_url));
+            new_row.append('<div class="table-cell button-column"><button type="button" class="btn-cancel btn btn-primary">Hủy</button></div>');
+            new_row.append('<p class="slot-id" style="display: none">' + item.session_id + '</p>');
+            new_row.append('<p class="course-id" style="display: none">' + item.course_id_id + '</p>');
+            // Append the new row to the table body
+            $('.table-upcoming-session .table-body').append(new_row);
+        });
+
+        $('.btn-cancel').click(function () {
+            // Reset UI
+            $(".noti-container").hide();
+            $(".noti-container").text("");  // clear text
+            $(".update-session-container").hide();
+
+            // Show popup with confirm cancel button
+            $(".confirm-cancel-container").show();
+            $("#dimmedBackground").fadeIn();
+            $("#popup").fadeIn();
+
+            // Get data of selected session to cancel
+            current_history_slot_id = undefined;
+            const slot_id = $(this).parent().parent().find('.slot-id').text();
+            current_history_slot_id = slot_id;
+        });
+
+        $('.btn-edit').click(function () {
+            // Reset UI
+            $(".noti-container").hide();
+            $(".noti-container").text("");  // clear text
+            $(".update-warning").hide();
+            $(".confirm-cancel-container").hide();
+
+            // Show popup with update session form
+            $(".update-session-container").show();
+            $("#dimmedBackground").fadeIn();
+            $("#popup").fadeIn();
+            $(".update-session-container").show();
+
+            // Get data of selected session to update
+            current_history_slot_id = undefined;
+            const slot_id = $(this).parent().parent().find('.slot-id').text();
+            const course_title = $(this).parent().parent().find('.course').text();
+            const time = $(this).parent().parent().find('.time').text();
+            const activity = $(this).parent().parent().find('.activity').text();
+            const course_id = $(this).parent().parent().find('.course-id').text();
+
+            // Set data for update session popup
+            current_history_slot_id = slot_id;
+            setValueForUpdateActivity(activity);
+            $('.update-course-name').text(course_title);
+            $('.update-course-name').attr('disabled', true);
+            $('#update-datepicker').text(time.slice(-10));
+            $('#update-datepicker').attr('disabled', true);
+
+            // Fetch schedule update data
+            fetchScheduleUpdateData(course_id, time.slice(-10), activity);
+        })
+
+        if (!has_session_can_update) {
+            $('.table-upcoming-session .table-cell.button-column-edit').css('display', 'none');
+        }
+    }
+
+    function renderTypeOfSession(is_trial_class) {
+        if (is_trial_class) {
+            return "Học thử";
+        } else {
+            return "Combo";
+        }
+    }
+
+    // Render link zoom element
+    function renderLinkZoomElement(zoom_link) {
+        if (zoom_link) {
+            return '<div class="table-cell link"> <a href="' + zoom_link + '" target="_blank">' + extractIdFromZoomLink(zoom_link) + '</a></div>';
+        } else {
+            return '<div class="table-cell link">Chờ xác nhận</div>';
+        }
+    }
+
+    function extractIdFromZoomLink(link) {
+        if (!link) {
+            return "";
+        }
+        const regex = /j\/(\d+)/;
+        const match = link.match(regex);
+        if (match) {
+            return match[1];
+        }
+        return "";
+    }
+
+    function renderEditButton(zoom_link) {
+        if (zoom_link) {
+            return "";
+        }
+        return '<button type="button" class="btn-edit btn btn-primary">Sửa</button>';
+    }
+
+    function setValueForUpdateActivity(activity) {
+        switch (activity) {
+            case "Mentor":
+                document.getElementById("update-mentor").checked = true;
+                break;
+            case "Tutor":
+                document.getElementById("update-tutor").checked = true;
+                break;
+            case "Hỏi đáp chung":
+                document.getElementById("update-other").checked = true;
+                break;
+            default:
+                break;
+        }
+        $("input[name='update-activity']").attr("disabled", true);
+    }
+
+    // Append list took place session data into table
+    function appendListTookPlaceSession(list_session) {
+        // Loop through the array and create rows
+        $.each(list_session, function (index, item) {
+            const cancel_reason = item.cancel_reason ? item.cancel_reason : "";
+            const mentor_name_html = item.mentor_name.split(' - ').reverse().join('<br>');
+
+            // Create a new row element
+            const new_row = $('<div class="table-row align-items-center"></div>');
+            new_row.append('<div class="table-cell stt">' + (index + 1) + '</div>');
+            new_row.append('<div class="table-cell time">' + new Date(item.start_datetime).toLocaleString('vi-VN', { hour: 'numeric', minute: 'numeric' }) + '<br>' + ('0' + new Date(item.start_datetime).getDate()).slice(-2) + '/' + ('0' + (new Date(item.start_datetime).getMonth() + 1)).slice(-2) + '/' + new Date(item.start_datetime).getFullYear() + '</div>');
+            new_row.append('<div class="table-cell mentor">' + mentor_name_html + '</div>');
+            new_row.append('<div class="table-cell course">' + item.course_id + '</div>');
+            new_row.append('<div class="table-cell activity">' + renderTypeOfSession(item.is_trial_class) + '</div>');
+            new_row.append('<div class="table-cell session-status">' + item.status + '</div>');
+            // Append the new row to the table body
+            $('.table-took-place-session .table-body').append(new_row);
+        });
+    }
+
+    // Add click handler to confirm cancel button
+    $("#confirm-cancel").click(function () {
+        cancelSession();
+    });
+
+    // Send cancel session request to API
+    async function cancelSession() {
+        let url = base_url + "/cancel_session";
+        let payload = {
+            "session_id": current_history_slot_id
+        };
+        try {
+            // Hide popup and show loading
+            $(".confirm-cancel-container").hide();
+            $("#loading-popup-history").show();
+            loading_popup = true;
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            // Update UI
+            $("#loading-popup-history").hide();
+            $(".noti-container").show();
+            loading_popup = false;
+
+            if (data.code == 200) {
+                $(".noti-container").text("Bạn đã huỷ lịch thành công");
+                reload_page = true;
+            } else {
+                $(".noti-container").text("Huỷ lịch thất bại. Vui lòng thử lại sau!");
+            }
+        } catch (error) {
+            $("#loading-popup-history").hide();
+            $("#closePopup").prop("disabled", false);
+            $(".noti-container").text("Huỷ lịch thất bại. Vui lòng thử lại sau!");
+            console.error('Error:', error);
+        }
+    }
+
+    // Handle click close icon on popup when cancel session
+    $("#closePopup").click(function () {
+        if (loading_popup) {
+            return;
+        }
+        current_history_slot_id = undefined;
+
+        $("#dimmedBackground").fadeOut();
+        $("#popup").fadeOut();
+
+        if (reload_page) {
+            redirectToHistoryTab();
+        }
+    });
+
+    async function fetchScheduleUpdateData(course_id, start_date, session_type) {
+        // Remove all table-row children from table-body
+        $('.table-select-update-mentor-container .table-body').empty();
+        new_slot_id = undefined;
+
+        let start_date_array = start_date.split("/");
+        let new_start_date = start_date_array[2] + "-" + start_date_array[1] + "-" + start_date_array[0];
+
+        // Convert session type to match with API
+        switch (session_type) {
+            case "Mentor":
+                session_type = "mentor";
+                break;
+            case "Tutor":
+                session_type = "tutor";
+                break;
+            default:
+                break;
+        }
+
+        const url = base_url + "/available_schedule" + "?course_id=" + course_id + "&session_type=" + session_type + "&start_date=" + new_start_date;
+        try {
+            displayLoading();
+            const response = await fetch(url, {
+                method: 'GET',
+            });
+            const { code, data: schedule } = await response.json();
+            hideLoading();
+
+            if (code == 200) {
+                appendScheduleUpdate(schedule);
+                appendListMentorUpdate(schedule);
+            }
+        } catch (error) {
+            hideLoading();
+            console.error('Error:', error);
+        }
+    }
+
+    function appendScheduleUpdate(dataArray) {
+        // Loop through the array and create rows
+        $.each(dataArray, function (index, item) {
+            // Create a new row element
+            const new_row = $('<div class="table-row"></div>');
+            new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + ' - ' + convertToTime(item.end_datetime) + '</div>');
+            new_row.append('<div class="table-cell mentor">' + item.mentor_name + '</div>');
+            new_row.append('<div class="table-cell select-column"><input class="form-check-input" type="radio" name="select-update-session" value="' + item.slot_id + '"></div>');
+            // Append the new row to the table body
+            $('.table-select-update-mentor-container .table-body').append(new_row);
+        });
+
+        // Add click handler to all rows 
+        $('.table-select-update-mentor-container .table-body .table-row').click(function () {
+            // Get the radio button for this row
+            const radio = $(this).find('.select-column input');
+
+            // Select the radio button
+            radio.prop('checked', true);
+            new_slot_id = $("input[name='select-update-session']:checked").val();
+        });
+    }
+
+    // FILTER SESSIONS IN UPDATE SESSION POPUP
+    const $updateFilterButton = $('.update-select-time-container .filter-button');
+    const $updateFilterPanel = $('.update-select-time-container .filter-panel');
+    const $updateSelectMentorSection = $('.update-select-time-container .select-mentor-section');
+    const $updateBtnFilter = $('.update-select-time-container #btn-filter-update');
+
+    $updateFilterButton.click(function (event) {
+        event.stopPropagation();
+        if ($updateFilterPanel.is(":visible")) {
+            $updateFilterPanel.fadeOut();
+        } else {
+            $updateFilterPanel.fadeIn();
+        }
+    });
+
+    function appendListMentorUpdate(data) {
+        $updateSelectMentorSection.empty();
+        // Create a new select element
+        const $newSelect = $('<select>', {
+            class: 'select-filter-mentor selectpickerupdate',
+            'data-live-search': 'true',
+            'data-size': '5',
+            title: '- Chọn mentor -'
+        });
+
+        // Append the new select element to the selectMentorSection
+        $updateSelectMentorSection.append($newSelect);
+
+        // Append the default option to the new select element
+        $('.selectpickerupdate').append($('<option>').attr({
+            'data-tokens': 'all',
+            'value': 'all'
+        }).text('Tất cả'));
+
+        // Append the mentors to the new select element
+        let seen = new Set();
+        $.each(data, (index, { mentor_name }) => {
+            if (!seen.has(mentor_name)) {
+                $('.selectpickerupdate').append($('<option>').attr({
+                    'data-tokens': mentor_name,
+                    'value': mentor_name
+                }).text(mentor_name));
+                seen.add(mentor_name);
+            }
+        });
+
+        // Initialize the selectpicker
+        $('.selectpickerupdate').selectpicker();
+
+        // Hide dropdown menu after selecting an option
+        $('.update-select-time-container .select-mentor-section button').click(function () {
+            $('.update-select-time-container .select-mentor-section ul.dropdown-menu a').off('click');    // Remove any existing click event handlers from the 'a' elements within the 'ul.dropdown-menu'
+            $('.update-select-time-container .select-mentor-section ul.dropdown-menu a').click(function () {
+                $('.update-select-time-container .select-mentor-section div.dropdown-menu').removeClass('show');
+            });
+        });
+    }
+
+    // Initialize the timepicker
+    $('#update-filter-time-from').timepicker({
+        timeFormat: 'HH:mm',
+        minTime: new Date(0, 0, 0, 0, 0, 0),
+        maxTime: new Date(0, 0, 0, 23, 59, 59),
+        startHour: 0,
+        interval: 30
+    });
+    $('#update-filter-time-to').timepicker({
+        timeFormat: 'HH:mm',
+        minTime: new Date(0, 0, 0, 0, 0, 0),
+        maxTime: new Date(0, 0, 0, 23, 59, 59),
+        startHour: 0,
+        interval: 30
+    });
+
+    $updateBtnFilter.click(function () {
+        const $sessions = $('.table-select-update-mentor-container .table-body .table-row');
+        clearSelectedUpdateSession();
+        filterSession('.selectpickerupdate', '#update-filter-time-from', '#update-filter-time-to', $sessions);
+        $updateFilterPanel.fadeOut();       // Hide filter panel
+    });
+
+    function clearSelectedUpdateSession() {
+        $('input[name="select-update-session"]').prop('checked', false);
+        new_slot_id = undefined;
+    }
+
+    // Get the selected session
+    $("input[name='select-update-session']").change(function () {
+        new_slot_id = $("input[name='select-update-session']:checked").val();
+    });
+
+    // Add click handler to submit button
+    $("#update").click(function () {
+        if (!new_slot_id) {
+            $(".update-warning").show();
+        } else {
+            updateSession();
+        }
+    });
+
+    // Send update session request to API
+    async function updateSession() {
+        let url = base_url + "/add_slot";
+
+        let payload = {
+            "student_email": user_email,
+            "slot_id": new_slot_id,
+            "live_session_id": current_history_slot_id
+        };
+
+        try {
+            $(".update-session-container").hide();
+            $("#loading-popup-history").show();
+            loading_popup = true;
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            // Update UI
+            $("#loading-popup-history").hide();
+            loading_popup = false;
+            $(".noti-container").show();
+            $("#close-popup").prop("disabled", false);
+
+            if (data.code == 200) {
+                $(".noti-container").text("Bạn đã thay đổi lịch thành công");
+                reload_page = true;
+            } else {
+                $(".noti-container").text("Thay đổi lịch thất bại. Vui lòng thử lại sau!");
+            }
+        } catch (error) {
+            $("#loading-popup-history").hide();
+            $("#close-popup").prop("disabled", false);
+            $(".noti-container").text("Thay đổi lịch thất bại. Vui lòng thử lại sau!");
+            console.error('Error:', error);
+        }
+    }
+
+    // Handle click outside popup when cancel session
+    $("#dimmedBackground").click(function () {
+        //  make popup have a scale animation when click outside. Just small scale and return to normal. Not fade out
+        $('.popup').css('transform', 'translate(-50%, -50%) scale(1.05)');
+
+        // Set a timeout to return to the original scale after a short delay
+        setTimeout(function () {
+            $('.popup').css('transform', 'translate(-50%, -50%) scale(1)');
+        }, 300);
+    });
+})
+</script>
