@@ -336,7 +336,7 @@
     </div>
 
     <div class="loading loading--hidden"></div>
-    
+    <script src="${static.url('js/pending_user/handle-utm-source.js')}"></script>
     <script>
         const portalUrl = 'https://portal-staging.funix.edu.vn';
         document.addEventListener('DOMContentLoaded', function() {
@@ -590,12 +590,15 @@
             return;
           }
           const format84Phone = phone.replace(/^0/, '84');
+          const infoHannix = JSON.parse(localStorage.getItem('account_hannix')) ? JSON.parse(localStorage.getItem('account_hannix')) : {utm_source_giasu: '', mid_giasu: ''};
           const inputValue = {
             fullname: name,
             course_id: Number(selectValue),
             phone: format84Phone,
             email: email,
-            register_note: note
+            register_note: note,
+            utm_source: infoHannix.utm_source_giasu,
+            mid: infoHannix.mid_giasu
           }
           if(!validation(inputValue)) {
             loadingPage.classList.remove('loading--hidden');
