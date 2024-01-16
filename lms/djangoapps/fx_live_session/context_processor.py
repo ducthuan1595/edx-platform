@@ -6,7 +6,10 @@ navigation.  We want to do this in the context_processor to
 2) because navigation.html is "called" by being included in other templates, there's no "views.py" to put this.
 """
 
+import logging
 from .utils import get_live_session_data
+
+AUDIT_LOG = logging.getLogger("audit")
 
 
 def get_role_in_live_session(request):
@@ -14,6 +17,7 @@ def get_role_in_live_session(request):
         return {'live_session': False}
 
     user_email = request.user.email
-    live_session = get_live_session_data(user_email)['live_session']
+    live_session_data = get_live_session_data(user_email)
+    live_session = live_session_data['live_session']
 
     return {'live_session': live_session}
