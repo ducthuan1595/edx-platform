@@ -6,7 +6,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-base_url = 'https://portal-staging.funix.edu.vn/api/v1'
+base_url = 'https://portal.funix.edu.vn/api/v1'
 
 
 def get_live_session_data(user_email):

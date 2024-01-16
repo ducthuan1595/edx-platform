@@ -60,6 +60,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const currentUrl = window.location.origin;
+            const sendOtpUrl = currentUrl + '/api-pending-user/send-otp';
+
             const countdownTimer = document.querySelector('#countdown');
             const resendOtpMessage = document.querySelector('#resend-otp');
             const verifyOtpButton = document.querySelector('#verify-otp');
@@ -135,7 +138,7 @@
             const sendOtp = async (format84Phone) => {
                 try {
                     let csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
-                    const response = await fetch('https://lmsclone.funix.edu.vn/api-pending-user/send-otp', {
+                    const response = await fetch(sendOtpUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

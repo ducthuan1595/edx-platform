@@ -189,7 +189,7 @@ class CreatePasswordAPI(APIView):
 
         if course_id and lead_id:
             # send post request to API to enroll trial
-            enroll_trial_url = 'https://portal-staging.funix.edu.vn/api/v1/private_teacher/enroll_trial'
+            enroll_trial_url = 'https://portal.funix.edu.vn/api/v1/private_teacher/enroll_trial'
             enroll_trial_data = {
                 'lead_id': lead_id,
                 'course_id': course_id,
