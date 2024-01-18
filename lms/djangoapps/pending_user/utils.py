@@ -63,6 +63,7 @@ def get_token():
     response = requests.request("POST", url, headers=headers, data=payload)
 
     if 'access_token' not in response.json():
+        AUDIT_LOG.error("Cannot get access token from FPT SMS API: %s" % response.json())
         return None
 
     return response.json()['access_token']
@@ -110,6 +111,7 @@ def send_otp_to_phone(phone_number):
     message = str(pending_user.verification_code) + " la ma OTP kich hoat tai khoan cua quy khach. Ma co hieu luc trong 5 phut"
     response = send_sms(message, pending_user.phone)
     if 'error' in response:
+        AUDIT_LOG.error("Send OTP fail: %s" % response)
         return Response(
             {"error": True, "error_description": "Send OTP fail"},
             status=status.HTTP_400_BAD_REQUEST,
