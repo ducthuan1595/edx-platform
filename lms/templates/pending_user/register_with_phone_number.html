@@ -339,9 +339,6 @@
     <script src="${static.url('js/pending_user/handle-utm-source.js')}"></script>
     <script>
         const portalUrl = 'https://portal.funix.edu.vn';
-        const currentUrl = window.location.origin;
-        const sendOtpUrl = currentUrl + '/api-pending-user/send-otp';
-
         document.addEventListener('DOMContentLoaded', function() {
             const sendOtpButton = document.querySelector('#send-otp');
             const phoneInput = document.querySelector('#input-phone');
@@ -451,6 +448,9 @@
         const sendOtp = async (format84Phone) => {
             try {
                 let csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
+                
+                const currentUrl = window.location.origin;
+                const sendOtpUrl = currentUrl + '/api-pending-user/send-otp';
                 const response = await fetch(sendOtpUrl, {
                     method: 'POST',
                     headers: {
