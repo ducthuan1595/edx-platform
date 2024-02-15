@@ -364,10 +364,12 @@
                     return;
                 }
                 const format84Phone = convertPhoneToFormat84(phone);
+                const phone10DiditFormat = convertPhoneTo10DigitFormat(phone);
                 const encodedPhone = btoa(phone);
 
                 try {
-                    const leadId = await checkLeadExist(format84Phone);
+                    let leadId = await checkLeadExist(format84Phone);
+                    leadId = leadId ? leadId : await checkLeadExist(phone10DiditFormat);
 
                     if (leadId) {
                         // Save leadId to localStorage
@@ -397,6 +399,11 @@
         const convertPhoneToFormat84 = (phone) => {
             const format84Phone = phone.replace(/^0/, '84');
             return format84Phone;
+        }
+
+        const convertPhoneTo10DigitFormat = (phone) => {
+            const phone10DiditFormat = phone.replace(/^84/, '0');
+            return phone10DiditFormat;
         }
 
         const checkLeadExist = async (format84Phone) => {
