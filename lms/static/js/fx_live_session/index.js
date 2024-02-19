@@ -1,5 +1,5 @@
 $(function () {
-    let selected_session_type, selected_course_option, selected_course_id, selected_date, selected_session, selected_from_date, selected_to_date;
+    let selected_session_type, selected_course_option, selected_course_id, selected_date, selected_session, sessions, selected_from_date, selected_to_date;
     let reload_page = false;
     let current_history_slot_id, loading_popup = false, new_slot_id;
     const base_url = "https://portal.funix.edu.vn/api/v1/live";
@@ -120,7 +120,7 @@ $(function () {
         autoclose: true,
         format: "dd/mm/yyyy", // Display format
         altFormat: "yyyy-mm-dd", // Date format for getting the value
-        startDate: '+1d' // Set the minimum date to tomorrow
+        startDate: '0d' 
     });
 
     $("#datepicker-general .first input").datepicker({
@@ -128,7 +128,7 @@ $(function () {
         todayHighlight: true,
         format: "dd/mm/yyyy", // Display format
         altFormat: "yyyy-mm-dd", // Date format for getting the value
-        startDate: '0d' // Set the minimum date to tomorrow
+        startDate: '0d' 
     }).on('changeDate', function (selected) {
         // When the date of the first datepicker changes, update the startDate of the second datepicker
         selected_from_date = selected.format('yyyy-mm-dd');
@@ -144,7 +144,7 @@ $(function () {
         autoclose: true,
         format: "dd/mm/yyyy", // Display format
         altFormat: "yyyy-mm-dd", // Date format for getting the value
-        startDate: '0d' // Set the minimum date to tomorrow
+        startDate: '0d' 
     }).on('changeDate', function (selected) {
         selected_to_date = selected.format('yyyy-mm-dd');
         fetchScheduleData();
@@ -194,6 +194,7 @@ $(function () {
         // Uncheck all input elements with name 'select-session'
         $("input[name='select-session']").prop('checked', false);
         selected_session = undefined;
+        sessions = [];
         $('.custom-time-section').hide();
 
         const url = selected_session_type == "general" ? general_session_url : available_schedule_url;
@@ -215,6 +216,7 @@ $(function () {
             hideLoading();
 
             if (code == 200) {
+                sessions = schedule;
                 appendSchedule(schedule);
                 appendListMentor(schedule);
             }
@@ -602,7 +604,7 @@ $(function () {
 
     // Function to book session
     async function bookSession() {
-        let url, payload;
+        let url, payload, start_datetime_selected;
 
         // Define payload data and url based on session type and selected session
         if (selected_session_type == "general") {
@@ -637,6 +639,8 @@ $(function () {
                     "session_type": selected_session_type,
                     "content_id": supportContents
                 };
+
+                start_datetime_selected = sessions.find(item => item.slot_id == selected_session).start_datetime;
             }
         }
 
@@ -663,6 +667,14 @@ $(function () {
                 if (selected_session == "custom-time") {
                     $(".order-custom-session-success").show();
                 } else {
+                    if (start_datetime_selected && compareDateTimes(start_datetime_selected, new Date()) < 3) {
+                        const message_html = `<h2>Hệ thống đã ghi nhận đặt lịch của bạn!</h2>
+                            <br/>
+                            <p>Do phiên được book trong vòng 3 tiếng, bạn vui lòng chờ xác nhận phiên
+                             từ phía mentor để chắc chắn phiên sẽ diễn ra. Xác nhận sẽ được gửi qua 
+                             email <b>` + user_email + `</b>.</p>`
+                        $(".booking-success").html(message_html);
+                    }
                     $(".booking-success").show();
                 }
 
@@ -690,6 +702,13 @@ $(function () {
             $(".missing-fields").text("Đã có lỗi xảy ra trong quá trình đặt lịch. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
             console.error('Error:', error);
         }
+    }
+
+    function compareDateTimes(dateTime1, dateTime2) {
+        const date1 = new Date(dateTime1);
+        const date2 = new Date(dateTime2);
+        const diff = (date1 - date2) / 1000 / 60 / 60;
+        return diff;
     }
 
     // Add click handler to close popup button
