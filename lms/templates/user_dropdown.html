@@ -59,6 +59,9 @@ from openedx.core.djangoapps.user_api.accounts.image_helpers import get_profile_
                     % if live_session:
                         <li class="dropdown-item item has-block-link"><a href="${reverse('live_session')}" role="menuitem" class="action dropdown-menuitem">${_("Live Session")}</a></li>
                     % endif
+                    % if book_giasu:
+                        <li class="dropdown-item item has-block-link"><a href="${reverse('book_giasu')}" role="menuitem" class="action dropdown-menuitem">${_("Tutor")}</a></li>
+                    % endif
                     <li class="dropdown-item item has-block-link"><a href="${reverse('learner_profile', kwargs={'username': self.real_user.username})}" role="menuitem" class="action dropdown-menuitem">${_("Profile")}</a></li>
                     <li class="dropdown-item item has-block-link"><a href="${reverse('account_settings')}" role="menuitem" class="action dropdown-menuitem">${_("Account")}</a></li>
                 </%block>
