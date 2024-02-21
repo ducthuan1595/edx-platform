@@ -49,7 +49,7 @@ def get_live_session_data(user_email):
             live_session_data['mentor'] = data['data']['mentor']
         if 'tutor' in data['data']:
             live_session_data['tutor'] = data['data']['tutor']
-        if 'book_giasu' in data['data']:
+        if 'private_teacher' in data['data']:
             live_session_data['book_giasu'] = data['data']['private_teacher']
     
     return live_session_data
