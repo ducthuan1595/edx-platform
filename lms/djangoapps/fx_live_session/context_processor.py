@@ -19,5 +19,6 @@ def get_role_in_live_session(request):
     user_email = request.user.email
     live_session_data = get_live_session_data(user_email)
     live_session = live_session_data['live_session']
+    book_giasu = live_session_data['book_giasu']
 
-    return {'live_session': live_session}
+    return {'live_session': live_session, 'book_giasu': book_giasu}
