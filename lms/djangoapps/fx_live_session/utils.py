@@ -25,7 +25,8 @@ def get_live_session_data(user_email):
     live_session_data = {
         'live_session': None,
         'mentor': None,
-        'tutor': None
+        'tutor': None,
+        'book_giasu': None,
     }
     try:
         response = requests.get(student_api_url, params=params, timeout=5)
@@ -48,6 +49,8 @@ def get_live_session_data(user_email):
             live_session_data['mentor'] = data['data']['mentor']
         if 'tutor' in data['data']:
             live_session_data['tutor'] = data['data']['tutor']
+        if 'private_teacher' in data['data']:
+            live_session_data['book_giasu'] = data['data']['private_teacher']
     
     return live_session_data
     
