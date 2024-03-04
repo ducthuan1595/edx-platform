@@ -95,12 +95,12 @@ div.select-course .dropdown-menu .bs-searchbox input {
   margin-top: 0.2rem;
   z-index: 2;
 }
-#datepicker-general .input-group-addon {
+#datepicker-group .input-group-addon {
   margin-left: -3.5rem;
   margin-top: 0.2rem;
   z-index: 2;
 }
-#datepicker .input-group-text, #datepicker-general .input-group-text {
+#datepicker .input-group-text, #datepicker-group .input-group-text {
   border: 0;
   background-color: transparent;
 }
@@ -116,18 +116,18 @@ div.select-course .dropdown-menu .bs-searchbox input {
 .datepicker th.prev, .datepicker th.next {
   width: 2rem;
 }
-#datepicker .select-date, #datepicker-general .select-date {
+#datepicker .select-date, #datepicker-group .select-date {
   border: 1px solid !important;
   border-radius: 0.4rem !important;
   padding: 1.2rem 1rem !important;
   z-index: 1;
 }
-#datepicker-general {
+#datepicker-group {
   width: 27rem;
   justify-content: space-around;
   align-items: center;
 }
-#datepicker-general .first, #datepicker-general .second {
+#datepicker-group .first, #datepicker-group .second {
   width: 10rem;
 }
 
