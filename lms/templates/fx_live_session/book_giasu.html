@@ -32,6 +32,15 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
 
 <link rel="stylesheet" href="${static.url('css/live-session.css')}">
 <style>
+
+.enroll-container {
+    background-color: #f5f5f5;
+    border-radius: 1rem;
+    padding: 1rem 1rem;
+    margin: auto;
+    margin-bottom: 2rem;
+}
+
 % if not general or not mentor or not tutor:
     .select-activity {
         justify-content: flex-start;
@@ -87,6 +96,49 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
     box-shadow: inset 0 1px 0 0 #fefefe;
 }
 
+.table-list-course {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    padding: 0 3rem;
+}
+.table-list-course .table-row {
+    display: flex;
+    border-bottom: 1px solid #dee2e6; /* Bootstrap border color */
+    padding: 8px;
+}
+.table-list-course .table-header {
+    font-weight: bold; /* Bootstrap table header background color */
+}
+.table-list-course .table-body {
+    max-height: 400px; /* Adjust as needed */
+    overflow-y: auto;
+}
+.table-list-course .table-cell {
+    flex: 1;
+    padding: 8px;
+}
+.table-list-course .table-cell.title {
+    flex: 60%;
+}
+.table-list-course .enroll-btn {
+    width: 7rem;
+    height: 2.5rem;
+    background: #207196;
+    color: white;
+    font-size: 1rem;
+    font-style: normal;
+    text-shadow: none;
+    font-weight: 400;
+    border: none;
+    border-radius: 0.7rem;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+.table-list-course .enroll-btn:hover {
+    background: #20719691;
+    box-shadow: inset 0 1px 0 0 #fefefe;
+}
+
 .table-upcoming-session .table-cell {
     align-self: center;
 }
@@ -115,6 +167,21 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
 .table-took-place-session .table-cell.mentor {
     flex: 20%;
 }
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: #ffffff;
+    border-radius: 5px;
+}
+::-webkit-scrollbar-thumb {
+    background: #cecaca;
+    border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
 </style>
 
 <div id="loading-api" class="overlay text-center mt-5 mb-4">
@@ -125,7 +192,10 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
 <div class="container mt-3 wrapper-live-session">
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <a class="nav-link active" id="booking-tab" data-bs-toggle="tab" href="#booking" role="tab" aria-controls="booking" aria-selected="true">Đặt lịch</a>
+            <a class="nav-link active" id="enroll-tab" data-bs-toggle="tab" href="#enroll" role="tab" aria-controls="enroll" aria-selected="true">Đăng ký môn học</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="booking-tab" data-bs-toggle="tab" href="#booking" role="tab" aria-controls="booking" aria-selected="true">Đặt lịch</a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link" id="history-tab" data-bs-toggle="tab" href="#history" role="tab" aria-controls="history" aria-selected="false">Lịch học</a>
@@ -135,6 +205,49 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
         <div id="loading" class="text-center mt-5 mb-4" style="display: none">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="tab-pane fade show active mb-4" id="enroll" style="display: none;" role="tabpanel" aria-labelledby="enroll-tab">
+            <div class="container-fluid pb-3">
+                <p class="text-black fs-2 fw-normal m-0 px-3 py-2">
+                    Danh sách môn học 
+                </p>
+                <div style="font-style: italic;">
+                    <p class="text-black fs-6 fw-normal m-0 px-3 py-2">
+                        Để đặt lịch học cho môn học mà bạn muốn học thử, vui lòng nhấn nút ‘Đăng ký' bên cạnh tên môn học.
+                    <br>
+                        Những môn học đã được đăng ký sẽ hiển thị trong phần ‘Chọn môn học' tại màn hình ‘Đặt lịch'.
+                    </p>
+                </div>
+            </div>
+            <div class="enroll-container">
+                <div class="row mb-4 justify-content-center">
+                    <div class="table-list-course">
+                        <!-- Header Row -->
+                        <div class="table-row table-header">
+                            <div class="table-cell course-name">Khoá học gia sư</div>
+                            <div class="table-cell"></div>
+                        </div>
+                        <div class="table-body col-md-12">
+                        
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dimmed-background" id="dimmedBackgroundUpcert"></div>
+            <div class="popup" id="popup-upcert">
+                <div class="popup-content">
+                    <span class="close" id="closePopupUpcert">&times;</span>
+                    <div class="noti-container">
+                        
+                    </div>
+                    <div id="loading-popup-upcert" class="text-center mt-5 mb-4" style="display: none">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="tab-pane fade show active mb-4" id="booking" style="display: none;" role="tabpanel" aria-labelledby="booking-tab">
@@ -457,6 +570,7 @@ div.select-giasu .dropdown-menu .bs-searchbox input {
 $(function () {
     let selected_course_option, selected_course_id, selected_giasu_option, selected_giasu_id, selected_session, selected_from_date, selected_to_date;
     let reload_page = false;
+    let redirect_to_booking = false;
     let current_history_slot_id, loading_popup = false, new_slot_id;
     const base_url = "https://portal.funix.edu.vn/api/v1/private_teacher";
     const available_schedule_url = base_url + "/available_schedule";
@@ -471,23 +585,39 @@ $(function () {
         question: "Vui lòng nhập câu hỏi!"
     };
     course_list = course_list || [];
+    let all_course_list = [];
 
     if (getCurrentPageUrl().endsWith("#history")) {
         // handle click on history tab when reload page
         $("#loading").hide();
         clickButtonById("history-tab");
         handlerOnClickHistoryTab();
-    } else {
+    } else if (getCurrentPageUrl().endsWith("#booking")) {
+        clickButtonById("booking-tab");
         $("#loading").show();
         setTimeout(function () {
             $("#loading").hide();
             $("#booking").show();
         }, 500);
+    } else {
+        $("#loading").show();
+        fetchAllCourse();
+        setTimeout(function () {
+            $("#loading").hide();
+            $("#enroll").show();
+        }, 500);
     }
+
+    $("#enroll-tab").click(function () {
+        fetchAllCourse();
+        $("#enroll").show();
+        window.location.hash = 'enroll';
+    });
 
     $("#booking-tab").click(function () {
         // display booking element when click on booking tab
         $("#booking").show();
+        window.location.hash = 'booking';
     });
 
     function getCurrentPageUrl() {
@@ -497,6 +627,138 @@ $(function () {
     // simulate click button by id
     function clickButtonById(id) {
         document.getElementById(id).click();
+    }
+
+    /**
+     * Fetch all course
+     */
+    async function fetchAllCourse() {
+        const url = base_url + "/trial_course" + "?email=" + user_email;
+        let request_url = url;
+
+        try {
+            displayLoading();
+            // Send request to API to get list giasu
+            const response = await fetch(request_url, {
+                method: 'GET',
+            });
+
+            hideLoading();
+            const { code, data } = await response.json();
+            
+            if (code == 200) {
+                all_course_list = data;
+                appendAllCourseList(all_course_list);
+            }
+        } catch (error) {
+            hideLoading();
+            console.error('Error:', error);
+        }
+    }
+
+    function appendAllCourseList(all_course_list) {
+        // Clear all rows in table
+        $('.table-list-course .table-body').empty();
+
+        $.each(all_course_list, (index, { title, id, is_registered, is_trial_course }) => {
+            if (!is_trial_course) {
+                return;
+            }
+
+            const courseTitle = title;
+            const courseId = id;
+            const enrollButtonHtml = "<div class='table-cell enroll-button'><button type='button' class='btn btn-primary enroll-btn'>Đăng ký</button></div>"
+            const enrolledButtonHtml = "<div class='table-cell enroll-button'><button type='button' class='btn btn-primary enroll-btn' disabled>Đã đăng ký</button></div>"
+            const enrollButton = is_registered ? enrolledButtonHtml : enrollButtonHtml;
+            
+            const newRow = $('<div class="table-row align-items-center"></div>');
+
+            newRow.append('<div class="table-cell title">' + courseTitle + '</div>');
+            newRow.append(enrollButton);
+            // Append the new row to the table body
+            $('.table-list-course .table-body').append(newRow);
+        });
+
+        initEnrollBtnHandler();
+    }
+
+    function initEnrollBtnHandler() {
+        $('.table-list-course .table-body .table-row').each(function (index, row) {
+            const enrollBtn = $(row).find('.enroll-btn');
+            enrollBtn.click(function () {
+                const courseTitle = $(row).find('.title').text();
+                const courseId = all_course_list[index].id;
+                const is_registered = all_course_list[index].is_registered;
+                if (is_registered) {
+                    alert("Bạn đã đăng ký khóa học này!");
+                    return;
+                }
+                // handle enroll button click
+                handleEnrollBtnClick(courseTitle, courseId);
+            });
+        });
+    }
+
+    async function handleEnrollBtnClick(courseTitle, courseId) {
+        const url = base_url + "/upcert_trial_class";
+        const payload = {
+            course_id: courseId,
+            email: user_email
+        };
+
+        try {
+            $("#dimmedBackgroundUpcert").fadeIn();
+            $("#popup-upcert").fadeIn();
+            $("#loading-popup-upcert").show();
+            $("#closePopupUpcert").prop("disabled", true);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            // Update UI
+            $("#loading-popup-upcert").hide();
+            $("#close-popup").prop("disabled", false);
+            handlerOnClickClosePopupUpcert();
+
+            // Show popup based on response code
+            if (data.code == 201) {
+                $("#popup-upcert .noti-container").append("<p>Bạn đã đăng ký khóa học " + courseTitle + " thành công!</p>");
+                redirect_to_booking = true;
+            } else if (data.code == 500 || data.code == 400) {
+                $("#popup-upcert .noti-container").append("<p>Đã có lỗi xảy ra trong quá trình đăng ký khóa học. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
+            }
+            reload_page = true;
+        } catch (error) {
+            console.error('Error:', error);
+            $("#popup-upcert .noti-container").append("<p>Đã có lỗi xảy ra trong quá trình đăng ký khóa học. Vui lòng liên hệ Hannah/ Hannix của bạn để được hỗ trợ");
+            reload_page = true;
+        }
+    }
+
+    function handlerOnClickClosePopupUpcert() {
+        $("#closePopupUpcert").click(function () {
+            $("#dimmedBackgroundUpcert").fadeOut();
+            $("#popup-upcert").fadeOut();
+            
+            if (redirect_to_booking) {
+                redirectToBookingTab();
+            } else if (reload_page) {
+                location.reload();
+            }
+        });
+    }
+
+    function redirectToBookingTab() {
+        if (!getCurrentPageUrl().endsWith("#booking")) {
+            window.location.hash = 'booking';
+        }
+        location.reload();
     }
 
     // sort course list. Udemy course will be on top
@@ -1066,6 +1328,7 @@ $(function () {
     }
 
     function handlerOnClickHistoryTab() {
+        window.location.hash = 'history';
         removeAllRowsFromTablesListSession();
         getListSession();
     }
