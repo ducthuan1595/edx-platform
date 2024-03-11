@@ -43,14 +43,20 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
 .table-select-mentor-container, .table-select-update-mentor-container {
     max-width: 53rem;
 }
+.table-select-mentor-container .time, .table-select-update-mentor-container .time {
+    flex: 0 0 8rem; /* Fixed width for Select column */
+}
 .table-select-mentor-container .mentor, .table-select-update-mentor-container .mentor {
-    padding-left: 0rem;
+    padding-left: 0.9rem;
 }
 .table-select-mentor-container .mentor-code, .table-select-update-mentor-container .mentor-code {
     flex: 0 0 7rem;
 }
 .table-select-mentor-container .table-body .instance-list, .table-select-update-mentor-container .table-body .instance-list {
     font-size: 0.8rem;
+}
+.table-select-mentor-container .select-column, .table-select-update-mentor-container .select-column {
+    flex: 0 0 5rem; /* Fixed width for Select column */
 }
 .table-select-mentor-container .table-body .instance-list .instance, .table-select-update-mentor-container .table-body .instance-list .instance{
     width: fit-content;
@@ -201,6 +207,7 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
                         <div class="table-select-mentor-container">
                             <!-- Header Row -->
                             <div class="table-row table-header">
+                                <div class="table-cell date">Ngày</div>
                                 <div class="table-cell time">Thời gian</div>
                                 <div class="table-cell mentor">Mentor phụ trách</div>
                                 <div class="table-cell mentor-code">Mã mentor</div>

@@ -114,14 +114,7 @@ $(function () {
     }
 
     // Initialize the datepicker
-    // const $datepicker = $("#datepicker");
     const $datepicker_group = $("#datepicker-group");
-    // $datepicker.datepicker({
-    //     autoclose: true,
-    //     format: "dd/mm/yyyy", // Display format
-    //     altFormat: "yyyy-mm-dd", // Date format for getting the value
-    //     startDate: '0d' 
-    // });
 
     $("#datepicker-group .first input").datepicker({
         autoclose: true,
@@ -154,27 +147,12 @@ $(function () {
     $("input[name='activity']").change(function () {
         clearSelectedCourse();
         toggleElements(false);
+
         selected_session_type = $("input[name='activity']:checked").val();
-
-        if (selected_session_type == "general") {
-            // $datepicker.hide();
-            $datepicker_group.show();
-            addDateColumn();
-        } else {
-            // $datepicker.show();
-            // $datepicker_group.hide();
-            removeDateColumn();
-        }
-
         showSelectedCourse(selected_session_type);
+        
         fetchScheduleData();
     });
-
-    // Get the selected date
-    // $datepicker.on('changeDate', function (e) {
-    //     selected_date = e.format('yyyy-mm-dd');
-    //     fetchScheduleData();
-    // });
 
     // Function to fetch schedule session data
     async function fetchScheduleData() {
@@ -198,12 +176,7 @@ $(function () {
         $('.custom-time-section').hide();
 
         const url = selected_session_type == "general" ? general_session_url : available_schedule_url;
-        // const date = selected_session_type == "general" ? selected_from_date : selected_date;
         let request_url = url + "?course_id=" + selected_course_id + "&session_type=" + selected_session_type + "&start_date=" + selected_from_date + "&end_date=" + selected_to_date;
-
-        // if (selected_session_type == "general") {
-        //     request_url += "&end_date=" + selected_to_date;
-        // }
 
         try {
             displayLoading();
@@ -242,10 +215,7 @@ $(function () {
                 "CPP201x_2.1-A_VN"           
             ]
 
-            if (selected_session_type == "general") {
-                new_row.append('<div class="table-cell date">' + convertToDate(item.start_datetime) + '</div>');
-            }
-
+            new_row.append('<div class="table-cell date">' + convertToDate(item.start_datetime) + '</div>');
             new_row.append('<div class="table-cell time">' + convertToTime(item.start_datetime) + ' - ' + convertToTime(item.end_datetime) + '</div>');
             new_row.append('<div class="table-cell mentor">' + item.mentor_name + '</div>');
             new_row.append('<div class="table-cell mentor-code">' + item.mentor_code + '</div>');
@@ -271,7 +241,6 @@ $(function () {
         toggleElements(true);
         if (selected_session_type == "general") {
             $('.custom-time-container').hide();
-            $('.table-select-mentor-container .mentor').css("padding-left", "2rem");
         } else {
             $('.custom-time-container').show();
         }
@@ -286,12 +255,10 @@ $(function () {
 
     function addDateColumn() {
         $('.table-select-mentor-container .table-header').prepend('<div class="table-cell date">Ngày</div>');
-        $('.table-select-mentor-container .mentor').css("padding-left", "2rem");
     }
 
     function removeDateColumn() {
         $('.table-select-mentor-container .table-header .date').remove();
-        $('.table-select-mentor-container .mentor').css("padding-left", "0rem");
     }
 
     // Toggles the visibility of the elements with the given class name
@@ -638,7 +605,7 @@ $(function () {
             if (selected_session == "custom-time") {
                 payload = {
                     "student_email": user_email,
-                    "start_date": selected_date,
+                    "start_date": selected_date,        // TODOFX
                     "student_question": $("#question").val(),
                     "course_id": selected_course_id,
                     "session_type": selected_session_type,
