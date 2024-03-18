@@ -6,54 +6,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="${static.url(static.get_value('favicon_path', settings.FAVICON_PATH))}" />
     <title>FUNiX - Learn with Mentors</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Open Sans', sans-serif;
-        }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-        @media (max-width: 770px) {
-            .bg-image {
-                display: none;
-            }
+    <style>
+        .show-active::before {
+            background-color: #77a7df !important;
+            border-radius: 100%;
         }
     </style>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3C6AF3",
+            },
+            boxShadow: {
+              'bottom': '0px 25px 90px -57px #1069fe',
+            }
+          },
+        },
+      };
+    </script>
 </head>
-<body>
-    <div class="min-h-screen flex flex-wrap">
-        <div class="bg-image w-full md:w-1/2 bg-cover bg-no-repeat"
-            style="background-image: url('${static.url("images/mother-helping-daughter-study_1.png")}');">
+<body class="h-screen">
+    <main class="flex flex-col md:flex-row justify-center gap-8">
+        <div class="h-fit md:h-screen relative">
+          <img src="${static.url("images/pending_user/Learn-funix.png")}" alt="student" class="h-full">
+          <div class="hidden md:flex flex-col gap-2 absolute left-0 right-0 bottom-0 z-50 text-white pb-20 pl-8">
+            <h1 class="text-5xl uppercase italic font-extrabold">học gia sư</h1>
+            <h1 class="text-5xl uppercase italic font-extrabold">toàn diện 1:1</h1>
+            <h4 class="text-3xl font-semibold italic text-right pr-[90px]">Chỉ từ 66k/giờ</h4>
+          </div>
+          <div class="absolute top-[50%] right-0 left-0 bottom-0 z-40  bg-gradient-to-b from-transparent to-primary"></div>
         </div>
-        <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12">
-            <div class="w-full max-w-md">
-                <div class="mb-10">
-                    <img src="${static.url("images/FUNiX-full-logo-original_1.png")}" 
-                        alt="FUNiX logo with the text 'Learn with Mentors'">
-                </div>
-                <div class="mb-6 text-center">
-                    <h2 class="text-2xl font-semibold">HỌC THỬ MIỄN PHÍ KHÔNG GIỚI HẠN!</h2>
-                </div>
-                <div class="space-y-6">
-                    <div class="mb-4">
-                        <input id="phone" type="text" placeholder="Số điện thoại" class="w-full p-4 border border-gray-300 rounded mb-2">
-                        <input id="password" type="password" placeholder="Mật khẩu" class="w-full p-4 border border-gray-300 rounded">
-                    </div>
-                    <div class="text-right mb-8">
-                        <a href="/forgot-password" class="text-blue-500 to-resgister-phone">Quên mật khẩu?</a>
-                    </div>
-                    <button id="login" class="w-full bg-orange-500 text-white p-4 rounded mb-4">Đăng nhập</button>
-                    <div class="text-center">
-                        Bạn chưa có tài khoản? <a href="/register-phone" class="text-blue-500 to-resgister-phone">Đăng ký ngay</a>
-                    </div>
-                </div>
-                <div class="text-center mt-6">
-                    <p>Hotline: 079.233.622 (Zalo/Viber)</p>
-                    <p>Email: info@funix.edu.vn</p>
-                </div>
+    
+        <div class="absolute md:relative w-full md:w-fit z-50 bottom-0 text-center self-end mb-2 md:mb-4 p-[20px] md: p-0">
+          <div class="hidden md:flex justify-center mb-16">
+            <img src="${static.url("images/FUNiX-full-logo-original_1.png")}" alt="Logo FUNiX">
+          </div>
+          <div class="p-6 md:p-8 shadow-bottom bg-white rounded">
+            <div class="font-bold text-xl md:text-2xl">Đăng nhập hệ thống đặt lịch</div>
+            <div class="font-bold text-xl md:text-2xl">gia sư 1:1 by <span class="text-primary">FUNIX</span></div>
+            <div class="text-sm my-3 md:my-5">
+              <div>Đăng nhập để truy cập vào hệ thống đặt lịch và</div>
+              <div>tra cứu lịch học gia sư 1:1 của FUNiX </div>
             </div>
+      
+            <form action="" onsubmit="submitForm(event)">
+              <div class="flex justify-start items-center gap-2 bg-white py-2 px-3 border rounded-md">
+                <img class="grow-0 shrink-0 basis-1 h-[14px]" src="${static.url("images/pending_user/user-vector.png")}" alt="user">
+                <input id="phone" class="w-full md:w-80 text-sm md:text-base outline-none" type="text" name="username" placeholder="Số điện thoại">
+              </div>
+              <div class="flex justify-start items-center gap-2 bg-white py-2 px-3 border rounded-md my-4">
+                <img class="grow-0 shrink-0 basis-1 h-[14px]" src="${static.url("images/pending_user/password-vector.png")}" alt="lock">
+                <input id="password" class="w-full md:w-80 text-sm md:text-base outline-none" type="password" name="password" placeholder="Mật khẩu">
+              </div>
+              <div class="flex justify-between text-xs md:text-sm">
+                <div class="flex items-center">
+                  <i class="fa-regular fa-circle text-xs cursor-pointer pr-2" id="show-password"></i>
+                  <p>Hiện thị mật khẩu</p>
+                </div>
+                <div class="text-primary cursor-pointer">
+                    <a class="text-primary text-xs md:text-sm" href="/forgot-password">Quên mật khẩu</a>
+                </div>
+              </div>
+              <div class="relative mt-8 md:mt-12 mb-4">
+                <div id="error-message" class="absolute top-[-25px] left-0 text-xs text-red-500 italic"></div>
+                <button type="submit" id="login" class="bg-primary text-white w-full py-2 font-semibold rounded-md hover:bg-sky-700">Đăng nhập</button>
+              </div>
+              <div class="text-xs md:text-sm flex justify-center items-center gap-2"><p>Bạn chưa có tài khoản?</p><span><a class="text-primary text-xs md:text-sm" href="/register-phone">Đăng ký</a></span></div>
+            </form>
+          </div>
         </div>
-    </div>
+
+        <div id="overlay" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 hidden">
+            <div class="border-gray-300 h-20 w-20 animate-spin rounded-full border-8 border-t-blue-600" />
+        </div>
+    </main>
+    
     
     <script src="${static.url('js/pending_user/handle-utm-source.js')}"></script>
     <script>
@@ -61,14 +102,19 @@
             const loginButton = document.querySelector('#login');
             const phoneInput = document.querySelector('#phone');
             const passwordInput = document.querySelector('#password');
+
+            const errMessage = document.getElementById('error-message');
+            const showPasswordEl = document.getElementById('show-password');
+            const overlay = document.getElementById('overlay');
             
-            loginButton.addEventListener('click', function() {
+            loginButton.addEventListener('click', function(event) {
+                event.preventDefault();
                 const phone = phoneInput.value;
                 const password = passwordInput.value;
                 const email = convertPhoneToEmail(phone);
-
+                
                 if (!phone || !password) {
-                    alert('Vui lòng nhập đầy đủ số điện thoại và mật khẩu!');
+                    errMessage.innerHTML = 'Vui lòng nhập đầy đủ số điện thoại và mật khẩu!';
                     return;
                 }
 
@@ -79,6 +125,8 @@
                 formData.append('password', password);
                 formData.append('remember', 'true');
                 formData.append('csrfmiddlewaretoken', csrfToken);
+
+                overlay.classList.remove('hidden');
                 // Send the POST request
                 fetch(apiUrl, {
                     method: 'POST',
@@ -90,17 +138,31 @@
                     .then(response => response.text())
                     .then(data => {
                         if (data) {
+                            overlay.classList.add('hidden');
                             console.error('Error:', data);
-                            alert('Số điện thoại hoặc mật khẩu không chính xác!');
+                            errMessage.innerHTML = 'Số điện thoại hoặc mật khẩu không chính xác!';
                         } else {
                             // Redirect to the home page
                             window.location.href = '/book-giasu'
                         }
                     })
                     .catch((error) => {
+                        overlay.classList.add('hidden');
+                        errMessage.innerHTML = 'Có lỗi xảy ra, vui lòng thử lại sau!';
                         console.error('Error:', error);
                     });
             });
+
+            // TOGGLE SHOW PASSWORD
+            showPasswordEl.addEventListener('click', () => {
+                if(passwordInput.type === 'text') {
+                    passwordInput.type = 'password';
+                    showPasswordEl.classList.remove('show-active')
+                } else {
+                    passwordInput.type = 'text';
+                    showPasswordEl.classList.add('show-active')
+                }
+            })
 
             // function to convert phone to email. if phone starts with 0, remove it and add 84 instead
             function convertPhoneToEmail(phone) {
