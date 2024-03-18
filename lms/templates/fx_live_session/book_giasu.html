@@ -30,7 +30,7 @@ from openedx.core.djangolib.js_utils import dump_js_escaped_json, js_escaped_str
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
 
-<link rel="stylesheet" href="${static.url('css/live-session.css')}">
+<link rel="stylesheet" href="${static.url('css/book-giasu.css')}">
 <style>
 
 .enroll-container {
@@ -572,7 +572,7 @@ $(function () {
     let reload_page = false;
     let redirect_to_booking = false;
     let current_history_slot_id, loading_popup = false, new_slot_id;
-    const base_url = "https://portal.funix.edu.vn/api/v1/private_teacher";
+    const base_url = "https://portal-staging.funix.edu.vn/api/v1/private_teacher";
     const available_schedule_url = base_url + "/available_schedule";
     const general_session_url = base_url + "/general_session";
     const require_messages = {
