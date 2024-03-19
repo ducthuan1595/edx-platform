@@ -6,342 +6,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="${static.url(static.get_value('favicon_path', settings.FAVICON_PATH))}" />
     <title>FUNiX - Learn with Mentors</title>
+    
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-        body {
-            font-family: 'Open Sans', sans-serif;
-        }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-        .info-course__button button{
-            font-size: 16px;
-            width: 280px;
-            font-weight: 600;
-            color: #fff;
-            background-color: #0D7DFC;
-            padding: 10px 0;
-            border: none;
-            border-radius: 5px;
-            margin-bottom: 10px;
-          }
-          .info-course__button button:last-child {
-            background-color: #F27123;
-          }
-          .info-course__button button:hover {
-            opacity: 0.75;
-          }
-
-          /* FORM */
-    .form-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      z-index: 999999;
-      background-color: rgba(0, 0, 0, 0.5);
-      opacity: 1;
-      transition: opacity 0.5s ease-in-out;
-      overflow-y: scroll;
-    }
-    .form-hidden {
-      display: none;
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out;
-    }
-    .form-register {
-      position: relative;
-      width: 1000px;
-      margin: 100px auto;
-      font-family: 'Inter', sans-serif;
-      border-radius: 30px;
-      background: #031B49;
-      padding: 50px 80px 50px 80px;
-      position: relative;
-      z-index: 5;
-      overflow: hidden;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 675 560" fill="none"><g style="mix-blend-mode:difference" opacity="0.3"><path fill-rule="evenodd" clip-rule="evenodd" d="M657.303 16.6143C657.303 7.32984 664.795 0 673.917 0H674.08L659.746 25.2472C658.117 22.6411 657.303 19.7091 657.303 16.6143ZM611.695 16.4511C611.695 7.98109 618.536 1.1399 627.006 1.1399C635.476 1.1399 642.317 7.98109 642.317 16.4511C642.317 24.9212 635.476 31.7623 627.006 31.7623C618.536 31.7623 611.695 24.9212 611.695 16.4511ZM249.438 8.46934C250.358 8.46934 251.245 8.64392 252.066 8.96116C256.216 9.05855 259.538 12.4411 259.538 16.6146C259.538 20.6867 255.954 24.2702 251.882 24.2702C250.569 24.2702 249.334 23.9414 248.255 23.3613C244.751 22.8005 242.092 19.778 241.945 15.9621C241.945 11.8899 245.366 8.46934 249.438 8.46934ZM283.645 58.6383C283.645 62.7105 280.225 66.1311 276.152 66.1311C274.622 66.1311 273.183 65.6477 271.983 64.8279C267.954 64.7744 264.587 61.3758 264.587 57.3359C264.587 53.2637 268.008 49.8431 272.08 49.8431C273.611 49.8431 275.049 50.3265 276.249 51.1463C280.279 51.1998 283.645 54.5984 283.645 58.6383ZM182.329 65.3169C186.075 65.3169 189.007 62.3849 189.007 58.6386C189.007 54.8922 186.075 51.9603 182.329 51.9603C178.583 51.9603 175.651 54.8922 175.651 58.6386C175.651 62.2221 178.583 65.3169 182.329 65.3169ZM210.345 99.3597C210.345 103.595 206.925 107.015 202.69 107.015C198.455 107.015 195.034 103.595 195.034 99.3597C195.034 95.1247 198.455 91.7041 202.69 91.7041C206.925 91.7041 210.345 95.1247 210.345 99.3597ZM256.931 99.3596C256.931 103.432 253.51 106.852 249.438 106.852C245.366 106.852 242.108 103.595 241.945 99.3596C241.945 95.2875 245.366 91.8669 249.438 91.8669C253.51 91.8669 256.931 95.2875 256.931 99.3596ZM182.329 148.713C186.075 148.713 189.007 145.781 189.007 142.035C189.007 138.288 186.075 135.357 182.329 135.357C178.583 135.357 175.651 138.288 175.651 142.035C175.651 145.618 178.583 148.713 182.329 148.713ZM210.345 180.965C210.345 185.2 206.925 188.621 202.69 188.621C198.455 188.621 195.034 185.2 195.034 180.965C195.034 176.73 198.455 173.31 202.69 173.31C206.925 173.31 210.345 176.73 210.345 180.965ZM162.457 180.965C162.457 184.712 159.525 187.644 155.779 187.644C152.032 187.644 149.101 184.712 149.101 180.965C149.101 177.219 152.032 174.287 155.779 174.287C159.525 174.287 162.457 177.219 162.457 180.965ZM155.779 106.038C159.525 106.038 162.457 103.106 162.457 99.3599C162.457 95.6135 159.525 92.6816 155.779 92.6816C152.032 92.6816 149.101 95.7764 149.101 99.3599C149.101 103.106 152.032 106.038 155.779 106.038ZM339.839 25.4093C341.437 25.4093 342.936 24.9492 344.208 24.155C344.641 24.2307 345.086 24.2702 345.541 24.2702C349.124 24.2702 352.219 21.8269 353.034 18.4063C351.361 17.2213 349.628 16.066 347.861 14.9534C346.905 11.4215 343.658 8.79502 339.839 8.79502C335.278 8.79502 331.532 12.5414 331.532 17.1022C331.532 21.663 335.278 25.4093 339.839 25.4093ZM155.779 22.6406C159.525 22.6406 162.457 19.7087 162.457 15.9623C162.457 12.2159 159.525 9.28399 155.779 9.28399C152.032 9.28399 149.101 12.3788 149.101 15.9623C149.101 19.5458 152.032 22.6406 155.779 22.6406ZM133.462 141.71C133.462 145.945 130.041 149.366 125.806 149.366C121.571 149.366 118.15 145.945 118.15 141.71C118.15 137.475 121.571 134.055 125.806 134.055C130.041 134.055 133.462 137.475 133.462 141.71ZM45.0142 141.221C48.7606 141.221 51.6926 138.29 51.6926 134.543C51.6926 130.797 48.7606 127.865 45.0142 127.865C41.2679 127.865 38.3359 130.797 38.3359 134.543C38.3359 138.29 41.4308 141.221 45.0142 141.221ZM92.5776 106.364C92.5776 110.11 89.6456 113.042 85.8993 113.042C82.3158 113.042 79.221 109.947 79.221 106.364C79.221 102.618 82.1529 99.6856 85.8993 99.6856C89.6456 99.6856 92.5776 102.618 92.5776 106.364ZM45.0142 64.9903C48.7606 64.9903 51.6926 62.0584 51.6926 58.312C51.6926 54.5657 48.7606 51.6337 45.0142 51.6337C41.2679 51.6337 38.3359 54.5657 38.3359 58.312C38.3359 62.0584 41.4308 64.9903 45.0142 64.9903ZM117.662 58.6383C117.662 62.7105 114.241 66.1311 110.169 66.1311C105.934 66.1311 102.676 62.7105 102.676 58.6383C102.676 54.5662 106.097 51.1456 110.169 51.1456C114.241 51.1456 117.662 54.5662 117.662 58.6383ZM83.4544 23.4548C87.5266 23.4548 90.9472 20.0342 90.9472 15.9621C90.9472 11.8899 87.5266 8.46934 83.4544 8.46934C79.3823 8.46934 75.9617 11.8899 75.9617 15.9621C76.1246 20.1971 79.3823 23.4548 83.4544 23.4548ZM14.2296 15.9623C14.2296 19.7087 11.2977 22.6406 7.55135 22.6406C3.80498 22.6406 0.873047 19.5458 0.873047 15.9623C0.873047 12.3788 3.80498 9.28399 7.55135 9.28399C11.2977 9.28399 14.2296 12.2159 14.2296 15.9623ZM315.242 555.439C318.662 554.461 322.083 553.321 325.504 552.181C324.526 551.692 323.223 551.367 322.083 551.367C318.988 551.204 316.382 552.995 315.242 555.439ZM267.68 559.022C267.68 554.95 271.101 551.53 275.173 551.53C279.245 551.53 282.503 554.787 282.829 559.022C282.829 559.185 282.788 559.348 282.747 559.511C282.706 559.674 282.666 559.837 282.666 560H282.503H267.843C267.68 559.674 267.68 559.348 267.68 559.022ZM228.263 551.367C224.028 551.367 220.607 554.788 220.607 559.023C220.607 559.349 220.607 559.674 220.77 560H235.918C235.918 559.837 235.959 559.674 236 559.511C236.041 559.349 236.081 559.186 236.081 559.023C235.918 554.788 232.498 551.367 228.263 551.367ZM618.7 558.86V559.837H604.203C598.828 559.837 593.453 559.348 588.078 558.697C588.078 550.39 594.919 543.549 603.389 543.549C611.859 543.549 618.7 550.39 618.7 558.86ZM556.476 544.852C553.87 544.852 551.427 545.504 549.309 546.807C555.987 550.227 562.829 552.996 570.158 555.114C568.367 549.087 562.992 544.852 556.476 544.852ZM650.136 542.408C659.421 542.408 666.75 549.901 666.75 559.023C666.75 559.348 666.75 559.511 666.588 560H633.522V559.023C633.522 549.738 641.015 542.408 650.136 542.408ZM348.634 525.794C352.869 525.794 356.29 522.374 356.29 518.139C356.29 513.904 352.869 510.483 348.634 510.483C344.399 510.483 340.978 513.904 340.978 518.139C340.978 522.374 344.399 525.794 348.634 525.794ZM309.216 518.139C309.216 522.211 305.795 525.631 301.723 525.631C297.651 525.631 294.23 522.211 294.23 518.139C294.23 514.066 297.651 510.646 301.723 510.646C305.795 510.646 309.216 514.066 309.216 518.139ZM247.156 518.139C247.156 522.374 250.576 525.794 254.812 525.794C259.047 525.794 262.467 522.374 262.467 518.139C262.467 513.904 259.047 510.483 254.812 510.483C250.576 510.483 247.156 513.904 247.156 518.139ZM549.31 518.139C549.31 525.306 543.446 531.17 536.279 531.17C528.949 531.17 523.248 525.306 523.248 518.139C523.248 510.972 529.112 505.108 536.279 505.108C543.446 505.108 549.31 510.972 549.31 518.139ZM629.936 533.449C638.406 533.449 645.248 526.608 645.248 518.138C645.248 509.668 638.406 502.827 629.936 502.827C621.466 502.827 614.625 509.668 614.625 518.138C614.625 526.608 621.466 533.449 629.936 533.449ZM597.198 518.138C597.198 525.957 590.846 532.309 583.027 532.309C575.208 532.309 568.856 525.957 568.856 518.138C568.856 510.32 575.208 503.967 583.027 503.967C590.846 503.967 597.198 510.32 597.198 518.138ZM368.831 483.769C373.392 483.769 377.138 480.023 377.138 475.462C377.138 470.901 373.392 467.155 368.831 467.155C364.27 467.155 360.524 470.901 360.524 475.462C360.686 480.186 364.27 483.769 368.831 483.769ZM275.173 483.118C271.101 483.118 267.68 479.697 267.68 475.625C267.68 471.39 270.938 468.132 275.173 468.132C279.245 468.132 282.666 471.553 282.666 475.625C282.666 479.697 279.245 483.118 275.173 483.118ZM321.923 483.281C326.158 483.281 329.579 479.86 329.579 475.625C329.579 471.39 326.158 467.97 321.923 467.97C317.688 467.97 314.267 471.39 314.267 475.625C314.267 479.86 317.688 483.281 321.923 483.281ZM509.564 462.595C516.731 462.595 522.595 468.459 522.595 475.626C522.595 482.793 516.731 488.494 509.564 488.657C502.397 488.657 496.533 482.793 496.533 475.626C496.533 468.459 502.397 462.595 509.564 462.595ZM570.648 475.626C570.648 467.807 564.295 461.455 556.477 461.455C548.658 461.455 542.306 467.807 542.306 475.626C542.306 483.444 548.658 489.797 556.477 489.797C564.295 489.797 570.648 483.444 570.648 475.626ZM618.7 475.625C618.7 484.095 611.859 490.936 603.389 490.936C594.919 490.936 588.078 484.095 588.078 475.625C588.078 467.155 594.919 460.314 603.389 460.314C611.859 460.314 618.7 467.155 618.7 475.625ZM392.451 91.7043C387.89 91.7043 384.144 95.4507 384.144 100.011C384.144 104.572 387.89 108.319 392.451 108.319C397.012 108.319 400.758 104.572 400.758 100.011C400.758 95.2878 397.012 91.7043 392.451 91.7043ZM337.885 99.8489C337.885 95.6139 341.306 92.1933 345.541 92.1933C349.776 92.1933 353.359 95.6139 353.197 99.8489C353.197 104.084 349.776 107.505 345.541 107.505C341.306 107.505 337.885 104.084 337.885 99.8489ZM486.273 111.74C492.789 111.74 498.164 106.527 498.164 99.8491C498.164 93.3337 492.951 87.9585 486.273 87.9585C483.993 87.9585 481.875 88.61 480.083 89.7502L474.545 99.5234V99.8491C474.545 106.527 479.758 111.74 486.273 111.74ZM533.182 113.042C526.015 113.042 520.151 107.178 520.151 100.011C520.151 92.6816 526.015 86.9806 533.182 86.9806C540.349 86.9806 546.213 92.8444 546.213 100.011C546.213 107.178 540.349 113.042 533.182 113.042ZM298.629 107.341C302.701 107.341 306.122 103.92 306.122 99.848C306.122 95.7759 302.701 92.3553 298.629 92.3553C294.557 92.3553 291.136 95.7759 291.136 99.848C291.299 104.083 294.557 107.341 298.629 107.341ZM594.267 100.011C594.267 107.83 587.914 114.182 580.096 114.182C572.277 114.182 565.925 107.83 565.925 100.011C565.925 92.1928 572.277 85.8402 580.096 85.8402C587.914 85.8402 594.267 92.1928 594.267 100.011ZM611.695 100.012C611.695 102.455 612.183 104.735 613.324 106.69L625.866 84.7003C617.884 85.189 611.695 91.8673 611.695 100.012ZM374.208 57.3365C374.208 61.8973 370.462 65.6437 365.901 65.6437C361.341 65.6437 357.594 61.8973 357.594 57.3365C357.594 52.7757 361.341 49.0294 365.901 49.0294C370.462 49.0294 374.208 52.7757 374.208 57.3365ZM318.989 49.6803C314.754 49.6803 311.334 53.1009 311.334 57.3359C311.334 61.5709 314.754 64.9915 318.989 64.9915C323.224 64.9915 326.645 61.5709 326.645 57.3359C326.645 53.1009 323.224 49.6803 318.989 49.6803ZM584.981 57.3353C584.981 65.8053 591.822 72.6465 600.292 72.6465C608.762 72.6465 615.603 65.8053 615.603 57.3353C615.603 48.8652 608.762 42.024 600.292 42.024C591.822 42.024 584.981 48.8652 584.981 57.3353ZM553.544 71.5064C545.725 71.5064 539.373 65.1539 539.373 57.3354C539.373 49.5169 545.725 43.1644 553.544 43.1644C561.362 43.1644 567.715 49.5169 567.715 57.3354C567.715 65.1539 561.362 71.5064 553.544 71.5064ZM506.632 70.3668C513.799 70.3668 519.663 64.5029 519.663 57.336C519.663 50.3319 514.288 44.7938 507.284 44.3052C504.841 47.4 502.723 50.6577 500.606 54.0783L495.23 63.5256C497.348 67.5978 501.583 70.3668 506.632 70.3668ZM634.986 68.4126C632.38 65.4807 630.751 61.5714 630.751 57.3364C630.751 48.2148 638.081 40.885 647.365 40.885C648.377 40.885 649.261 41.0133 650.244 41.156C650.368 41.1741 650.495 41.1925 650.623 41.2108L634.986 68.4126ZM298.791 24.1069C294.719 24.1069 291.298 20.6863 291.298 16.6141C291.298 12.3791 294.556 9.12141 298.791 9.12141C302.863 9.12141 306.284 12.542 306.284 16.6141C306.284 20.6863 302.863 24.1069 298.791 24.1069ZM546.216 16.6148C546.216 14.8231 545.89 13.1942 545.238 11.5654C537.746 15.6375 530.904 20.5241 524.389 26.0622C526.669 28.1797 529.764 29.4828 533.185 29.4828C540.352 29.4828 546.216 23.7818 546.216 16.6148ZM580.096 2.44309C572.277 2.44309 565.925 8.79561 565.925 16.6141C565.925 24.4326 572.277 30.7851 580.096 30.7851C587.914 30.7851 594.267 24.4326 594.267 16.6141C594.267 8.63273 587.914 2.44309 580.096 2.44309ZM384.144 433.601C384.144 429.04 387.89 425.294 392.451 425.294C397.012 425.294 400.758 428.877 400.758 433.601C400.758 438.162 397.012 441.908 392.451 441.908C387.89 441.908 384.144 438.162 384.144 433.601ZM533.182 446.469C540.349 446.469 546.213 440.605 546.213 433.438C546.213 426.271 540.349 420.407 533.182 420.407C526.015 420.407 520.151 426.271 520.151 433.438C520.151 440.605 526.015 446.469 533.182 446.469ZM498.164 433.438C498.164 440.116 492.789 445.328 486.273 445.328C479.758 445.328 474.545 439.953 474.382 433.438C474.382 426.759 479.758 421.547 486.273 421.547C492.951 421.547 498.164 426.922 498.164 433.438ZM345.541 441.093C349.776 441.093 353.197 437.673 353.197 433.438C353.197 429.202 349.776 425.782 345.541 425.782C341.306 425.782 337.885 429.202 337.885 433.438C337.885 437.673 341.306 441.093 345.541 441.093ZM298.629 425.946C302.701 425.946 306.122 429.366 306.122 433.438C306.122 437.673 302.864 440.931 298.629 440.931C294.557 440.931 291.136 437.51 291.136 433.438C291.136 429.366 294.557 425.946 298.629 425.946ZM580.096 447.609C587.914 447.609 594.267 441.256 594.267 433.438C594.267 425.619 587.914 419.267 580.096 419.267C572.277 419.267 565.925 425.619 565.925 433.438C565.925 441.256 572.277 447.609 580.096 447.609ZM318.989 383.27C323.224 383.27 326.645 386.69 326.645 390.925C326.645 395.16 323.224 398.581 318.989 398.581C314.754 398.581 311.334 395.16 311.334 390.925C311.334 386.69 314.754 383.27 318.989 383.27ZM412.812 380.338C406.948 380.338 402.224 385.061 402.224 390.925C402.224 396.789 406.948 401.513 412.812 401.513C418.676 401.513 423.399 396.789 423.399 390.925C423.399 385.061 418.676 380.338 412.812 380.338ZM471.613 390.762C471.613 397.44 466.238 402.652 459.723 402.652C453.207 402.652 447.832 397.44 447.832 390.762C447.832 384.084 453.207 378.871 459.723 378.871C466.401 378.871 471.613 384.246 471.613 390.762ZM365.901 399.232C370.462 399.232 374.208 395.485 374.208 390.925C374.208 386.364 370.462 382.617 365.901 382.617C361.341 382.617 357.594 386.364 357.594 390.925C357.594 395.485 361.341 399.232 365.901 399.232ZM493.603 390.925C493.603 383.758 499.467 377.894 506.634 377.894C513.801 377.894 519.664 383.758 519.664 390.925C519.664 398.091 513.801 403.955 506.634 403.955C499.467 403.955 493.603 398.091 493.603 390.925ZM553.544 405.095C561.362 405.095 567.715 398.743 567.715 390.924C567.715 383.106 561.362 376.753 553.544 376.753C545.725 376.753 539.373 383.106 539.373 390.924C539.373 398.743 545.725 405.095 553.544 405.095ZM353.197 350.041C353.197 354.276 349.776 357.697 345.541 357.697C341.306 357.697 337.885 354.276 337.885 350.041C337.885 345.806 341.306 342.386 345.541 342.386C349.776 342.386 353.197 345.806 353.197 350.041ZM533.182 363.071C540.349 363.071 546.213 357.207 546.213 350.04C546.213 342.873 540.349 337.01 533.182 337.01C526.015 337.01 520.151 342.873 520.151 350.04C520.151 357.207 526.015 363.071 533.182 363.071ZM449.949 350.204C449.949 356.068 445.226 360.791 439.362 360.791C433.498 360.791 428.774 355.905 428.774 350.204C428.774 344.34 433.498 339.616 439.362 339.616C445.226 339.616 449.949 344.34 449.949 350.204ZM486.273 361.931C492.789 361.931 498.164 356.719 498.164 350.041C498.164 343.525 492.951 338.15 486.273 338.15C479.758 338.15 474.382 343.362 474.382 350.041C474.545 356.556 479.758 361.931 486.273 361.931ZM384.144 350.203C384.144 345.643 387.89 341.896 392.451 341.896C397.012 341.896 400.758 345.48 400.758 350.203C400.758 354.764 397.012 358.51 392.451 358.51C387.89 358.51 384.144 354.764 384.144 350.203ZM357.594 307.527C357.594 312.088 361.341 315.835 365.901 315.835C370.462 315.835 374.208 312.088 374.208 307.527C374.208 302.967 370.462 299.22 365.901 299.22C361.341 299.22 357.594 302.967 357.594 307.527ZM402.224 307.528C402.224 301.664 406.948 296.94 412.812 296.94C418.676 296.94 423.399 301.664 423.399 307.528C423.399 313.392 418.676 318.115 412.812 318.115C406.948 318.115 402.224 313.392 402.224 307.528ZM459.723 295.637C453.207 295.637 447.832 300.85 447.832 307.528C447.832 314.043 453.044 319.419 459.723 319.419C466.238 319.419 471.613 314.206 471.613 307.528C471.45 301.013 466.238 295.637 459.723 295.637ZM493.603 307.528C493.603 300.361 499.467 294.497 506.634 294.497C513.801 294.497 519.664 300.361 519.664 307.528C519.664 314.695 513.801 320.559 506.634 320.559C499.467 320.559 493.603 314.695 493.603 307.528ZM392.451 260.291C387.89 260.291 384.144 264.037 384.144 268.598C384.144 273.159 387.89 276.905 392.451 276.905C397.012 276.905 400.758 273.159 400.758 268.598C400.758 263.874 397.012 260.291 392.451 260.291ZM449.949 268.598C449.949 274.461 445.226 279.185 439.362 279.185C433.498 279.185 428.774 274.299 428.774 268.598C428.774 262.734 433.498 258.01 439.362 258.01C445.226 258.01 449.949 262.734 449.949 268.598ZM520.151 268.435V269.249L527.318 256.707C523.083 258.987 520.151 263.385 520.151 268.435ZM498.164 268.435C498.164 275.113 492.789 280.326 486.273 280.326C479.758 280.326 474.545 274.951 474.382 268.435C474.382 261.757 479.758 256.544 486.273 256.544C492.951 256.544 498.164 261.92 498.164 268.435ZM412.812 215.335C406.948 215.335 402.224 220.058 402.224 225.922C402.224 231.786 406.948 236.51 412.812 236.51C418.676 236.51 423.399 231.786 423.399 225.922C423.399 220.058 418.676 215.335 412.812 215.335ZM374.208 225.922C374.208 230.483 370.462 234.229 365.901 234.229C361.341 234.229 357.594 230.483 357.594 225.922C357.594 221.361 361.341 217.615 365.901 217.615C370.462 217.615 374.208 221.361 374.208 225.922ZM459.723 214.031C453.207 214.031 447.832 219.243 447.832 225.922C447.832 232.437 453.044 237.812 459.723 237.812C466.238 237.812 471.613 232.6 471.613 225.922C471.45 219.406 466.238 214.031 459.723 214.031ZM506.634 212.891C513.801 212.891 519.664 218.755 519.664 225.922C519.664 233.089 513.801 238.953 506.634 238.953C499.467 238.953 493.603 233.089 493.603 225.922C493.603 218.755 499.467 212.891 506.634 212.891ZM539.373 225.922C539.373 228.365 540.024 230.808 541.164 232.926L553.218 211.914C545.562 211.914 539.373 218.103 539.373 225.922ZM546.213 185.038C546.213 192.205 540.349 198.069 533.182 198.069C526.015 198.069 520.151 192.205 520.151 185.038C520.151 177.871 526.015 172.007 533.182 172.007C540.349 172.007 546.213 177.871 546.213 185.038ZM392.451 176.894C387.89 176.894 384.144 180.64 384.144 185.201C384.144 189.762 387.89 193.508 392.451 193.508C397.012 193.508 400.758 189.762 400.758 185.201C400.758 180.477 397.012 176.894 392.451 176.894ZM439.362 195.625C433.498 195.625 428.774 190.901 428.774 185.037C428.774 179.173 433.498 174.45 439.362 174.45C445.226 174.45 449.949 179.173 449.949 185.037C449.949 190.901 445.226 195.625 439.362 195.625ZM474.545 185.038C474.545 191.553 479.758 196.928 486.436 196.928C492.951 196.928 498.327 191.716 498.327 185.038C498.327 178.522 493.114 173.147 486.436 173.147C479.758 173.31 474.545 178.522 474.545 185.038ZM337.885 185.037C337.885 180.802 341.306 177.382 345.541 177.382C349.776 177.382 353.359 180.802 353.197 185.037C353.197 189.272 349.776 192.693 345.541 192.693C341.306 192.693 337.885 189.272 337.885 185.037ZM565.925 185.038C565.925 186.178 566.088 187.481 566.414 188.621L576.187 171.518C570.323 173.147 565.925 178.685 565.925 185.038ZM311.334 142.525C311.334 138.29 314.754 134.87 318.989 134.87C323.224 134.87 326.645 138.29 326.645 142.525C326.645 146.76 323.224 150.181 318.989 150.181C314.754 150.181 311.334 146.76 311.334 142.525ZM412.812 131.938C406.948 131.938 402.224 136.661 402.224 142.525C402.224 148.389 406.948 153.113 412.812 153.113C418.676 153.113 423.399 148.389 423.399 142.525C423.399 136.661 418.676 131.938 412.812 131.938ZM374.208 142.525C374.208 147.086 370.462 150.832 365.901 150.832C361.341 150.832 357.594 147.086 357.594 142.525C357.594 137.964 361.341 134.218 365.901 134.218C370.462 134.218 374.208 137.964 374.208 142.525ZM459.723 154.252C466.239 154.252 471.614 149.04 471.614 142.362C471.614 135.846 466.402 130.471 459.723 130.471C458.583 130.471 457.443 130.634 456.466 130.96L448.321 145.131C449.625 150.506 454.185 154.252 459.723 154.252ZM506.634 155.555C499.467 155.555 493.603 149.691 493.603 142.524C493.603 135.357 499.467 129.494 506.634 129.494C513.801 129.494 519.664 135.357 519.664 142.524C519.664 149.691 513.801 155.555 506.634 155.555ZM553.544 128.354C545.725 128.354 539.373 134.706 539.373 142.525C539.373 150.343 545.725 156.696 553.544 156.696C561.362 156.696 567.715 150.343 567.715 142.525C567.715 134.706 561.362 128.354 553.544 128.354ZM585.145 142.525C585.145 134.055 591.986 127.213 600.456 127.213H601.596L587.914 151.157C586.122 148.714 585.145 145.782 585.145 142.525Z" fill="url(%23paint0_linear_74_1494)"/></g><defs><linearGradient id="paint0_linear_74_1494" x1="327.341" y1="-74.728" x2="529.631" y2="601.309" gradientUnits="userSpaceOnUse"><stop stop-color="%23FFC289"/><stop offset="1" stop-color="%23FF7A00"/></linearGradient></defs></svg>');
-      background-size: 380px 330px;
-      background-repeat: no-repeat;
-      background-position-x: right;
-      background-position-y: bottom;
-    }
-    .form-svg {
-      position: absolute;
-      bottom: -60px;
-      right: -10px;
-      z-index: 5;
-    }
-    .form-register__close {
-      position: absolute;
-      top: 6px;
-      right: 20px;
-      font-size: 34px;
-      color: #fff;
-      text-align: right;
-      cursor: pointer;
-      padding: 10px;
-    }
-    .form-register__close:hover {
-     opacity: 0.7;
-    }
-    .form-register__title {
-      color: #FFF;
-      text-align: center;
-      font-size: 40px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .form-register__desc {
-      color: #FFF;
-      font-size: 24px;
-      font-weight: 600;
-    }
-    #title-2.form-register__desc {
-      margin-bottom: 30px;
-    }
-    .form-register__inputs {
-      margin-top: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .form-register__input {
-      z-index: 10;
-    }
-    .form-register__input input {
-      width: 410px;
-      /* height: 71px; */
-      padding: 18px 20px;
-      border-radius: 7px;
-      border: 0.5px solid #000;
-      background: #FFF;
-      backdrop-filter: blur(2px);
-    }
-    .form-register__note textarea {
-      width: 100%;
-      margin: 20px 0;
-      padding: 18px 20px;
-      border-radius: 7px;
-    }
-    .form-register__button {
-      text-align: center;
-      margin-top: 10px;
-    }
-    .form-register__button button{
-      font-size: 18px;
-      font-weight: 500;
-      color: #fff;
-      border-radius: 5px;
-      background: #F27123;
-      padding: 15px 80px;
-    }
-    .form-register__button button:hover {
-      opacity: 0.75;
-    }
-    /* select */
-    .form-register__selects {
-      position: relative;
-      width: 410px;
-    }
-    .form-register__selects:hover .form-register__options{
-      opacity: 1;
-      visibility: visible;
-    }
-    .form-register__select {
-      padding: 18px 20px;
-      border-radius: 4px;
-      width: 100%;
-      height: 62px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      background-color: #fff;
-    }
-    .form-register__options {
-      border-radius: 4px;
-      background-color: #fff;
-      position: absolute;
-      top: 110%;
-      left: 0;
-      right: 0;
-      z-index: 10;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.2s linear, visibility 0.2s linear;
-      box-shadow: 0px 10px 24px 0px rgba(4, 23, 118, 0.3);
-      z-index: 30;
-      height: 280px;
-      overflow-y: scroll;
-    }
-    .form-register__options .option {
-      padding: 10px 20px;
-      cursor: pointer;
-    }
-    .form-register__options .option:hover {
-      background-color: #0417764d;
-    }
-    .form-register__error-message {
-      font-size: 13px;
-      text-align: left;
-      color:#F27123;
-    }
-
-    .loading {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 999999;
-      }
-      .loading--hidden {
-        opacity: 0;
-        visibility: hidden;
-      }
-      .loading::after {
-        content: '';
-        width: 75px;
-        height: 75px;
-        border-top-color: #0d7dfc !important;
-        border: 10px solid #dddd;
-        border-radius: 50%;
-        animation: loading 0.75s ease infinite;
-      }
-      @keyframes loading {
-        from {
-          transform: rotate(0turn);
-        }
-        to {
-          transform: rotate(1turn);
-        }
-      }
-
-        @media (max-width: 770px) {
-            .bg-image {
-                display: none;
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3C6AF3",
+            },
+            boxShadow: {
+              'bottom': '0px 25px 90px -57px #1069fe',
             }
-        }
-
-        /* RESPONSE */
-    @media (max-width: 640px) {
-    .form-register {
-      width: fit-content;
-      padding: 50px 45px;
-      margin-top: 66px;
-    }
-    .form-register__title {
-      font-size: 24px;
-    }
-    .form-register__desc {
-      font-size: 18px;
-      font-weight: 400;
-      text-align: center;
-    }
-    .form-register__inputs {
-      flex-direction: column;
-      margin: 0;
-    }.form-register__input {
-      width: 100%;
-      text-align: center;
-    }
-    .form-register__input input {
-      padding: 10px;
-      width: 300px;
-      margin: 10px 0;
-    }
-    .form-register__selects {
-      width: 100%;
-      margin: 10px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .form-register__select {
-      width: 300px;
-    }
-    .form-register__selects:active .form-register__options {
-      opacity: 1;
-      visibility: visible;
-    }
-    .form-register__select {
-      padding: 10px;
-      height: 47px;
-      overflow-y: scroll;
-    }
-    .form-register__options {
-      /* left: 42px; */
-    }
-
-    .form-register__note {
-      width: 100%;
-      text-align: center;
-    }
-    .form-register__note textarea {
-      width: 300px;
-      padding: 10px;
-      height: 80px;
-    }
-    .form-register__button {
-      width: 100%;
-    }
-    .form-register__button button {
-      font-size: 14px;
-      width: 300px;
-      padding: 10px;
-    }
-    .form-register__close {
-      font-size: 22px;
-    }
-  }
-</style>
+          },
+        },
+      };
+    </script>
 </head>
 <body>
-    <div class="flex flex-wrap h-screen">
-        <div class="bg-image w-full md:w-1/2 bg-cover bg-no-repeat"
-            style="background-image: url('${static.url("images/mother-helping-daughter-study_1.png")}');">
-        </div>
-        <div class="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12">
-            <div class="w-full max-w-md">
-                <div class="mb-10">
-                    <img src="${static.url("images/FUNiX-full-logo-original_1.png")}" 
-                        alt="FUNiX logo with the text 'Learn with Mentors'">
-                </div>
-                <div class="mb-6 text-center">
-                    <h2 class="text-2xl font-semibold">HỌC THỬ MIỄN PHÍ KHÔNG GIỚI HẠN!</h2>
-                </div>
-                <div class="space-y-6">
-                    <div class="text-center text-sky-700 text-base font-normal leading-tight">FUNiX cung cấp công cụ cho phép học viên thao tác <br/>đặt lịch trực tiếp với gia sư.<br/>Hãy bắt đầu với bước tạo tài khoản để học thử miễn phí!</div>
-                    <div class="text-center text-xl mb-4">Vui lòng nhập số điện thoại</div>
-                    <div class="mb-4">
-                        <input id="input-phone" type="text" placeholder="Số điện thoại" class="w-full p-4 border border-gray-300 rounded mb-2">
-                    </div>
-                    <button id="send-otp" class="w-full bg-orange-500 text-white p-4 rounded mb-4">Gửi mã xác thực</button>
-                </div>
-                <div class="text-center mt-6">
-                    <p>Hotline: 079.233.622 (Zalo/Viber)</p>
-                    <p>Email: info@funix.edu.vn</p>
-                </div>
-            </div>
-        </div>
+  <main class="h-full flex flex-col md:flex-row justify-center items-center gap-8 p-[20px] md:p-0">
+    <div class="hidden md:block self-center">
+      <div>
+        <img src="${static.url("images/pending_user/group-phone.png")}" alt="student">
+      </div>
+      <div class="italic text-sm text-center w-[650px]">
+        <div>Bạn làm theo hướng dẫn từng bước trên đây để book lịch học thử với gia sư. Nếu có bất kỳ vướng mắc nào cần giải đáp, bạn vui lòng liên hệ email hoặc hotline FUNiX dưới đây!</div>
+        <div>Hotline: 078.2313.602 (Zalo/Viber) </div>
+        <div>Email: info@funix.edu.vn</div>
+      </div>
     </div>
 
-    <!-- Form Resgister -->
-    <div class="form-container form-hidden">
+    <div class="text-center self-center mb-4 w-fit md:w-[530px] mt-0 md:mt-6">
+      <div class="p-6 shadow-bottom ">
+        <div class="font-bold text-2xl md:text-3xl mb-3 text-primary">Đăng ký tài khoản</div>
+        <div class="font-bold text-base md:text-xl text-orange-500 my-2">CHỦ ĐỘNG BOOK LỊCH - HỌC THỬ MIỄN PHÍ</div>
+        <div class="italic text-primary text-sm md:text-base">Phụ huynh/học viên sau khi đăng ký học thử, có thể chủ động book trên hệ thống tự động  lựa chọn gia sư và lịch học theo nhu cầu.</div>
+        <div class="text-md font-semibold mt-4 md:mt-8 mb-1 md:mb-2">Vui lòng nhập thông tin dưới đây</div>
+        <form action="" class="flex flex-col items-center">
+          <div class="flex justify-start items-center gap-3 bg-neutral-100 py-4 px-6 w-full md:w-[80%] rounded-md my-2 md:my-4">
+            <img class="grow-0 shrink-0 basis-1 h-[14px]" src="${static.url("images/pending_user/user-vector.png")}" alt="user">
+            <input class="w-full md:w-80 text-sm md:text-base bg-transparent outline-none" type="text" name="username" placeholder="Họ và tên *">
+          </div>
+          <div class="flex justify-start items-center gap-3 bg-neutral-100 py-4 px-6 w-full md:w-[80%] rounded-md my-2 md:my-4">
+            <img class="grow-0 shrink-0 basis-1 h-[14px]" src="${static.url("images/pending_user/phone-vector.png")}" alt="lock">
+            <input class="w-full md:w-80 text-sm md:text-base bg-transparent outline-none" type="number" name="phone" placeholder="Số điện thoại *">
+          </div>
+          <div class="flex justify-start items-center gap-3 bg-neutral-100 py-4 px-6 w-full md:w-[80%] rounded-md my-2 md:my-4">
+            <img class="grow-0 shrink-0 basis-1 h-[14px]" src="${static.url("images/pending_user/email-vector.png")}" alt="lock">
+            <input class="w-full md:w-80 text-sm md:text-base bg-transparent outline-none" type="email" name="email" placeholder="Email">
+          </div>
+
+          <div class="mt-6 md:mt-8 mb-4 w-full md:w-[80%]">
+            <button type="submit" class="bg-primary text-white w-full py-4 font-semibold rounded-md hover:bg-blue-700" id="send-otp">Đăng ký</button>
+          </div>
+          <div class="text-xs md:text-sm italic flex justify-center items-center gap-2 w-full md:w-[80%]">Vui lòng nhập chính xác số điện thoại, hệ thống sẽ gửi mã OTP xác nhận đăng ký đến số điện thoại của quý khách. </div>
+        </form>
+      </div>
     </div>
 
-    <div class="loading loading--hidden"></div>
+    <div id="overlay" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 hidden">
+      <div class="border-gray-300 h-20 w-20 animate-spin rounded-full border-8 border-t-blue-600" />
+    </div>
+  </main>
+
     <script src="${static.url('js/pending_user/handle-utm-source.js')}"></script>
     <script>
-        const portalUrl = 'https://portal.funix.edu.vn';
+        const portalUrl = 'https://portal-staging.funix.edu.vn';
         document.addEventListener('DOMContentLoaded', function() {
             const sendOtpButton = document.querySelector('#send-otp');
-            const phoneInput = document.querySelector('#input-phone');
+
+            const phoneInput = document.querySelector('input[name="phone"]');
+            const usernameInput = document.querySelector('input[name="username"]');
+            const emailInput = document.querySelector('input[name="email"]');
+
+            const overlay = document.getElementById('overlay');
 
             // get query params from url
             const urlParams = new URLSearchParams(window.location.search);
@@ -356,18 +104,33 @@
                 localStorage.setItem('ci', courseId);
             }
 
-            sendOtpButton.addEventListener('click', async function() {
+            sendOtpButton.addEventListener('click', async function(event) {
+                event.preventDefault();
                 const phone = phoneInput.value;
+                const username = usernameInput.value;
+
+                if (!username) {
+                    alert('Vui lòng nhập họ và tên.');
+                    return;
+                }
+
                 const phoneRegex = /^(84|0)\d{9}$/;
                 if (!phoneRegex.test(phone)) {
                     alert('Vui lòng nhập số điện thoại hợp lệ.');
                     return;
                 }
                 const format84Phone = convertPhoneToFormat84(phone);
+                const phone10DiditFormat = convertPhoneTo10DigitFormat(phone);
                 const encodedPhone = btoa(phone);
 
+                overlay.classList.remove('hidden');
                 try {
-                    const leadId = await checkLeadExist(format84Phone);
+                    let leadId = await checkLeadExist(format84Phone);
+                    leadId = leadId ? leadId : await checkLeadExist(phone10DiditFormat);
+
+                    if (!leadId) {
+                        leadId = await createLead();
+                    }
 
                     if (leadId) {
                         // Save leadId to localStorage
@@ -384,19 +147,52 @@
                         // Redirect to verify-phone
                         window.location.href = 'verify-phone?p=' + encodedPhone;
                         return;
-                    } else {
-                        // Display form register if lead not exist
-                        handleDisplayForm(dataForm[0])
                     }
                 } catch (error) {
+                    overlay.classList.add('hidden');
                     alert(error.message);
                 }
             });
+
+            const createLead = async() => {
+              const infoHannix = JSON.parse(localStorage.getItem('account_hannix')) ? JSON.parse(localStorage.getItem('account_hannix')) : {utm_source_giasu: '', mid_giasu: ''};
+              const inputValue = {
+                fullname: usernameInput.value,
+                phone: phoneInput.value,
+                email: emailInput.value,
+                utm_source: infoHannix.utm_source_giasu,
+                mid: infoHannix.mid_giasu
+              }
+              
+              const createLeadUrl = portalUrl + '/api/v1/private_teacher/create_lead';
+              const res = await fetch(createLeadUrl, {
+                method: 'POST',
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(inputValue)
+              });
+
+              const data = await res.json();
+              if(data.error === '') {
+                
+                const leadId = data.data[0][0];
+                return leadId;
+              } else {
+                console.error('Error:', data);
+                throw new Error('Đăng ký thất bại vui lòng thử lại!');
+              }
+            };
         });
 
         const convertPhoneToFormat84 = (phone) => {
             const format84Phone = phone.replace(/^0/, '84');
             return format84Phone;
+        }
+
+        const convertPhoneTo10DigitFormat = (phone) => {
+          const phone10DiditFormat = phone.replace(/^84/, '0');
+          return phone10DiditFormat;
         }
 
         const checkLeadExist = async (format84Phone) => {
@@ -488,196 +284,6 @@
             </div>
             `;
         }
-    </script>
-    <script>
-        // HAMDLE FORM
-        const dataForm = [
-          {
-            id: 'f2',
-            title: 'ĐĂNG KÝ HỌC THỬ',
-            desc1: "FUNiX cung cấp chính sách học thử miễn phí không giới hạn.",
-            desc2: 'Bạn chưa có tài khoản?',
-            desc3: 'Vui lòng hoàn thiện form thông tin bên dưới để bắt đầu học thử.',
-            button: 'HOÀN THÀNH'
-          },
-        ];
-      
-        const buttons = document.querySelectorAll('.info-course__button button');
-        const form = document.querySelector('.form-container');
-        const formSubmit = document.querySelector('#form-submit');
-        const loadingPage = document.querySelector('.loading');
-        let errMessage = '';
-        let optionsValue = '';
-        let selectValue = '';
-        let formId;
-        let isLoading = false;
-      
-          // FETCH COURSES
-        const fetchCourses = async() => {
-        const res = await fetch('https://portal.funix.edu.vn/api/v1/private_teacher/trial_course');
-        const data = await res.json();
-        if(data.code == 200) {
-          const options = data.data.filter(item => item.is_trial_course).map(mentor => `<div onClick="onSelect('` + mentor.id +`', '` + mentor.title + `')" class="option">`+ mentor.title + `</div>`).join("");
-          optionsValue += options;
-        }
-        };
-        fetchCourses();
-      
-        const handleDisplayForm = (value) => {
-            if(form.classList.contains('form-hidden')) {
-              form.classList.remove('form-hidden');
-            }
-            
-            form.innerHTML = `
-            <div class="form-register">
-              <form id="form-submit" onsubmit="event.preventDefault(); handleSubmit()">
-                <div onClick=onClose() class="form-register__close">x</div>
-                <div class="form-register__title">`+ value.title + `</div>
-                <div id="title-1" class="form-register__desc">` + value.desc1 + `</div>
-                <div id="title-3" class="form-register__desc">` + value.desc2 + `</div>
-                <div id="title-2" class="form-register__desc">` + value.desc3 + `</div>
-                <div class="form-register__inputs">
-                  <div class="form-register__input">
-                    <input type="text" id="name" placeholder="Họ và Tên (*)" name='name'>
-                  </div>
-                  <div class="form-register__selects" onclick="event.preventDefault(); onOnpenOption()">
-                    <div class="form-register__select">
-                      <span class="select">Khóa học gia sư (*)</span>
-                      <i class="fa-solid fa-caret-down"></i>
-                    </div>
-                    <div class="form-register__options form-hidden">
-                    ` + optionsValue + `
-                    </div>
-                  </div>            
-                </div>
-                <div class="form-register__inputs">
-                  <div class="form-register__input">
-                    <input type="number" id="phone" placeholder="Số điện thoại (*)" name='phone-number'>
-                  </div>
-                  <div class="form-register__input">
-                    <input type="email" id="email" placeholder="Email" name="email">
-                  </div>            
-                </div>
-                <div class="form-register__note">
-                  <textarea type="text" id="note" name="note" placeholder="Ghi chú" rows="6"></textarea>
-                </div>
-                <div class="form-register__error-message"></div>
-                <div class="form-register__button">
-                  <button type="submit">` + value.button + `</button>
-                </div>
-              </form>
-              
-            </div>
-            `;
-
-            document.querySelector('#phone').value = document.querySelector('#input-phone').value;
-        };
-      
-        const onSelect = (id, title) => {
-          selectValue = id;
-          document.querySelector('.form-register__select .select').innerHTML = title;
-        };
-      
-        const handleSubmit = async() => {
-          const name = document.querySelector('#name').value;
-          const phone = document.querySelector('#phone').value;
-          const email = document.querySelector('#email').value;
-          const note = document.querySelector('#note').value;
-          const errEl = document.querySelector('.form-register__error-message');
-          const redirectPage = 'https://courses.funix.edu.vn/login-phone';
-          
-          const phoneRegex = /^(84|0)\d{9}$/;
-          if(!phoneRegex.test(phone)) {
-            errEl.innerText = 'Số điện thoại không hợp lệ vui lòng thử lại!';
-            return;
-          }
-          const format84Phone = phone.replace(/^0/, '84');
-          const infoHannix = JSON.parse(localStorage.getItem('account_hannix')) ? JSON.parse(localStorage.getItem('account_hannix')) : {utm_source_giasu: '', mid_giasu: ''};
-          const inputValue = {
-            fullname: name,
-            course_id: Number(selectValue),
-            phone: format84Phone,
-            email: email,
-            register_note: note,
-            utm_source: infoHannix.utm_source_giasu,
-            mid: infoHannix.mid_giasu
-          }
-          if(!validation(inputValue)) {
-            loadingPage.classList.remove('loading--hidden');
-            const res = await fetch('https://portal.funix.edu.vn/api/v1/private_teacher/create_lead', {
-              method: 'POST',
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(inputValue)
-            });
-            const data = await res.json();
-            if(data.error === '') {
-              const leadId = data.data[0][0];
-              const format84Phone = convertPhoneToFormat84(phone);
-              const encodedPhone = btoa(format84Phone);
-
-              // Check existence student after create lead success
-              const isExistenceStudent = await checkExistenceStudent(format84Phone);
-              if (isExistenceStudent) {
-                loadingPage.classList.add('loading--hidden');
-                displayNotiStudentExist();
-                return;
-              }
-              clearForm(errEl);
-              try {
-                // Send OTP to phone
-                const data = await sendOtp(format84Phone);
-                // Redirect to verify-phone
-                window.location.href = 'verify-phone?p=' + encodedPhone;
-              } catch (error) {
-                loadingPage.classList.add('loading--hidden');
-                alert(error.message);
-              }
-            }else {
-              errEl.innerText = 'Đăng ký thất bại vui lòng thử lại!';
-            }
-            loadingPage.classList.add('loading--hidden');
-          }else {
-            errEl.innerText = errMessage;
-          }
-          
-          return false;
-        };
-      
-        const onClose = () => {
-          if(!form.classList.contains('form-hidden')) {
-            form.classList.add('form-hidden');
-          }
-        }
-      
-        const onOnpenOption = () => {
-          const optionEl = document.querySelector('.form-register__options');
-          optionEl.classList.toggle('form-hidden')
-        }
-      
-        const validation = (data) => {
-          let isInvalid = false;
-          if(!data.course_id) {
-            isInvalid = true;
-            errMessage = 'Vui lòng chọn khóa học bạn muốn học!';
-          }
-          if(data.fullname.trim().length < 3) {
-            isInvalid = true;
-            errMessage = 'Họ và Tên là bắt buôc!';
-          }
-          return isInvalid;
-        }
-      
-        const clearForm = (errEl) => {
-          onClose();
-          errEl.innerText = '';
-          name.value = '';
-          phone.value = '';
-          email.value = '';
-          note.value = '';
-        }
-      
     </script>
 </body>
 </html>
